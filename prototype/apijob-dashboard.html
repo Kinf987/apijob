@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API JOB — Tableau de bord</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rouge: #CC0A2B;
+    --rouge-dark: #A00822;
+    --or: #F0A500;
+    --night: #1A0008;
+    --blanc: #FFFFFF;
+    --gris: #F7F3F0;
+    --gris2: #EDE8E3;
+    --muted: rgba(26,0,8,0.45);
+    --border: rgba(204,10,43,0.1);
+    --vert: #1A7A4A;
+    --vert-light: rgba(26,122,74,0.08);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--gris);
+    color: var(--night);
+    min-height: 100vh;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--blanc);
+    border-bottom: 2px solid var(--rouge);
+    padding: 0.9rem 5%;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem;
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem; font-weight: 800;
+    color: var(--rouge); letter-spacing: -0.5px;
+    display: flex; align-items: center; gap: 0.25rem;
+    text-decoration: none; flex-shrink: 0;
+  }
+  .nav-logo span { color: var(--or); }
+
+  /* MODE TOGGLE */
+  .mode-toggle {
+    display: flex;
+    background: var(--gris);
+    border-radius: 50px;
+    padding: 0.25rem; gap: 0.25rem;
+  }
+  .mode-btn {
+    padding: 0.5rem 1.1rem;
+    border-radius: 50px; border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem; font-weight: 600;
+    cursor: pointer; transition: all 0.25s;
+    color: var(--muted); background: transparent;
+    display: flex; align-items: center; gap: 0.35rem;
+  }
+  .mode-btn.active {
+    background: var(--rouge); color: var(--blanc);
+    box-shadow: 0 3px 10px rgba(204,10,43,0.25);
+  }
+
+  .nav-right { display: flex; align-items: center; gap: 1rem; }
+  .nav-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--rouge);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; font-weight: 700; color: white;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .nav-notif {
+    position: relative; cursor: pointer;
+    font-size: 1.2rem;
+  }
+  .notif-dot {
+    position: absolute; top: -2px; right: -2px;
+    width: 8px; height: 8px;
+    background: var(--rouge); border-radius: 50%;
+    border: 2px solid var(--blanc);
+  }
+
+  /* ── LAYOUT ── */
+  .dashboard {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 5%;
+  }
+
+  /* ── HEADER ── */
+  .dash-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
+  }
+  .dash-greeting {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
+    font-weight: 800; letter-spacing: -0.5px;
+  }
+  .dash-greeting span { color: var(--rouge); }
+  .dash-date { font-size: 0.82rem; color: var(--muted); margin-top: 0.2rem; }
+
+  .btn-primary {
+    background: var(--rouge); color: var(--blanc);
+    border: none; padding: 0.7rem 1.5rem;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 0.4rem;
+    white-space: nowrap; text-decoration: none;
+  }
+  .btn-primary:hover { background: var(--rouge-dark); transform: translateY(-1px); }
+
+  /* ── PANELS ── */
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeIn 0.3s ease both; }
+
+  /* ── STATS CARDS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin-bottom: 2rem;
+  }
+  .stat-card {
+    background: var(--blanc);
+    border-radius: 18px; padding: 1.4rem;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(204,10,43,0.08); }
+  .stat-icon { font-size: 1.5rem; margin-bottom: 0.7rem; }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem; font-weight: 800;
+    line-height: 1; color: var(--night);
+  }
+  .stat-num.rouge { color: var(--rouge); }
+  .stat-num.or { color: var(--or); }
+  .stat-num.vert { color: var(--vert); }
+  .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 0.3rem; }
+
+  /* ── JETONS CARD ── */
+  .jetons-card {
+    background: var(--night);
+    border-radius: 20px; padding: 1.6rem;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 2rem; gap: 1rem; flex-wrap: wrap;
+    position: relative; overflow: hidden;
+  }
+  .jetons-card::before {
+    content: '';
+    position: absolute; top: -40px; right: -40px;
+    width: 150px; height: 150px;
+    border-radius: 50%;
+    background: rgba(240,165,0,0.08);
+    pointer-events: none;
+  }
+  .jetons-left { position: relative; z-index: 1; }
+  .jetons-label { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 1px; }
+  .jetons-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.5rem; font-weight: 800;
+    color: var(--or); line-height: 1;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .jetons-sub { font-size: 0.82rem; color: rgba(255,255,255,0.5); margin-top: 0.3rem; }
+  .jetons-right { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+  .btn-jetons {
+    padding: 0.6rem 1.2rem; border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; border: none;
+    text-decoration: none; display: inline-flex; align-items: center;
+  }
+  .btn-jetons-or { background: var(--or); color: var(--night); }
+  .btn-jetons-or:hover { background: #FDD87A; }
+  .btn-jetons-outline {
+    background: transparent; color: rgba(255,255,255,0.7);
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .btn-jetons-outline:hover { border-color: rgba(255,255,255,0.5); color: white; }
+
+  /* ── GRID 2 COL ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+
+  /* ── SECTION CARD ── */
+  .section-card {
+    background: var(--blanc);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .section-card-header {
+    padding: 1.2rem 1.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem; font-weight: 700;
+  }
+  .section-card-link {
+    font-size: 0.78rem; color: var(--rouge);
+    text-decoration: none; font-weight: 500;
+  }
+  .section-card-body { padding: 0; }
+
+  /* ── MISSION ITEM ── */
+  .mission-item {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(204,10,43,0.06);
+    transition: background 0.15s; cursor: pointer;
+  }
+  .mission-item:last-child { border-bottom: none; }
+  .mission-item:hover { background: rgba(204,10,43,0.02); }
+  .mission-emoji { font-size: 1.4rem; flex-shrink: 0; }
+  .mission-info { flex: 1; min-width: 0; }
+  .mission-title {
+    font-weight: 600; font-size: 0.88rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .mission-meta { font-size: 0.75rem; color: var(--muted); margin-top: 0.15rem; }
+  .mission-badge {
+    font-size: 0.7rem; font-weight: 700;
+    padding: 0.2rem 0.6rem; border-radius: 50px;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .badge-attente { background: rgba(240,165,0,0.12); color: #B07800; }
+  .badge-cours { background: rgba(0,107,143,0.1); color: #006B8F; }
+  .badge-termine { background: var(--vert-light); color: var(--vert); }
+  .badge-nouveau { background: rgba(204,10,43,0.08); color: var(--rouge); }
+
+  /* ── ANNONCE ITEM ── */
+  .annonce-item {
+    display: flex; align-items: flex-start; gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(204,10,43,0.06);
+    transition: background 0.15s; cursor: pointer;
+  }
+  .annonce-item:last-child { border-bottom: none; }
+  .annonce-item:hover { background: rgba(204,10,43,0.02); }
+  .annonce-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    flex-shrink: 0; margin-top: 5px;
+  }
+  .dot-rouge { background: var(--rouge); }
+  .dot-or { background: var(--or); }
+  .dot-vert { background: var(--vert); }
+  .annonce-title { font-weight: 600; font-size: 0.88rem; }
+  .annonce-meta { font-size: 0.75rem; color: var(--muted); margin-top: 0.15rem; }
+  .annonce-count {
+    margin-left: auto; flex-shrink: 0;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem; font-weight: 700; color: var(--rouge);
+  }
+
+  /* ── PROFIL CARD ── */
+  .profil-card {
+    background: var(--blanc);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    padding: 1.5rem; text-align: center;
+  }
+  .profil-avatar {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--rouge), #FF4D6A);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.6rem; font-weight: 800; color: white;
+    margin: 0 auto 0.8rem;
+  }
+  .profil-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem; font-weight: 800;
+  }
+  .profil-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: rgba(204,10,43,0.07); color: var(--rouge);
+    font-size: 0.72rem; font-weight: 600;
+    padding: 0.2rem 0.7rem; border-radius: 50px;
+    margin: 0.4rem 0 0.8rem;
+  }
+  .profil-stars { color: var(--or); font-size: 0.85rem; }
+  .profil-reviews { font-size: 0.75rem; color: var(--muted); margin-left: 0.3rem; }
+  .profil-completude {
+    margin: 1rem 0 0.4rem;
+    text-align: left;
+  }
+  .profil-completude-label {
+    display: flex; justify-content: space-between;
+    font-size: 0.75rem; color: var(--muted); margin-bottom: 0.4rem;
+  }
+  .progress-bar {
+    height: 6px; background: var(--gris2);
+    border-radius: 50px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: var(--rouge);
+    border-radius: 50px;
+    transition: width 0.5s ease;
+  }
+  .profil-actions { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
+  .btn-outline-rouge {
+    padding: 0.65rem; border-radius: 50px;
+    border: 1.5px solid rgba(204,10,43,0.2);
+    background: transparent; color: var(--rouge);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-outline-rouge:hover { background: rgba(204,10,43,0.05); border-color: var(--rouge); }
+
+  /* ── AVIS ── */
+  .avis-item {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(204,10,43,0.06);
+  }
+  .avis-item:last-child { border-bottom: none; }
+  .avis-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem; }
+  .avis-author { font-size: 0.82rem; font-weight: 600; }
+  .avis-stars { color: var(--or); font-size: 0.78rem; }
+  .avis-text { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+  .avis-date { font-size: 0.72rem; color: rgba(26,0,8,0.3); margin-top: 0.3rem; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    padding: 2.5rem 1.5rem; text-align: center;
+  }
+  .empty-emoji { font-size: 2.5rem; margin-bottom: 0.8rem; }
+  .empty-title { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .empty-sub { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+
+  .btn-terminer {
+    background: var(--vert-light); color: var(--vert);
+    border: 1.5px solid rgba(26,122,74,0.2);
+    padding: 0.35rem 0.8rem; border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .btn-terminer:hover {
+    background: var(--vert); color: white;
+    border-color: var(--vert);
+  }
+  /* ── ANIMATIONS ── */
+  @keyframes fadeIn {
+    from { opacity:0; transform:translateY(8px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .stats-grid { grid-template-columns: repeat(2,1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+    .grid-3 { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .stats-grid { grid-template-columns: repeat(2,1fr); }
+    .grid-3 { grid-template-columns: 1fr; }
+    .mode-btn span.label { display: none; }
+    nav { padding: 0.9rem 4%; }
+    .dashboard { padding: 1.2rem 4%; }
+    .dash-header { flex-direction: column; align-items: flex-start; }
+    .mission-title { font-size: 0.82rem; }
+    .mission-meta { font-size: 0.7rem; }
+    .btn-terminer { font-size: 0.68rem; padding: 0.3rem 0.6rem; }
+    .section-card-header { padding: 1rem; }
+    .section-card-body .mission-item { padding: 0.8rem 1rem; }
+    .jetons-card { flex-direction: column; }
+    .jetons-right { width: 100%; }
+    .btn-jetons { flex: 1; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <svg width="24" height="24" viewBox="0 0 28 28" style="border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.15);flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="c"><circle cx="14" cy="14" r="14"/></clipPath></defs><g clip-path="url(#c)"><circle cx="14" cy="14" r="14" fill="white"/><g stroke="#F0A500" stroke-width="1.3" stroke-linecap="round"><line x1="14" y1="17" x2="2.2" y2="14.9"/><line x1="14" y1="17" x2="3.4" y2="11.4"/><line x1="14" y1="17" x2="5.7" y2="8.4"/><line x1="14" y1="17" x2="8.5" y2="6.3"/><line x1="14" y1="17" x2="12.1" y2="5.2"/><line x1="14" y1="17" x2="15.9" y2="5.2"/><line x1="14" y1="17" x2="19.5" y2="6.3"/><line x1="14" y1="17" x2="22.3" y2="8.4"/><line x1="14" y1="17" x2="24.6" y2="11.4"/><line x1="14" y1="17" x2="25.8" y2="14.9"/></g><rect x="0" y="17" width="28" height="11" fill="#1E7FC2"/><path d="M7,17.5 Q14,15.5 21,17.5 L20.5,18.5 Q14,16.8 7.5,18.5 Z" fill="#CE1126"/><path d="M3,19.5 Q7,18.5 11,19.5 Q14,20.5 17,19.5 Q21,18.5 25,19.5" fill="none" stroke="white" stroke-width="0.6" opacity="0.8"/><path d="M3,21.5 Q7,20.5 11,21.5 Q14,22.5 17,21.5 Q21,20.5 25,21.5" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/><path d="M3,23.5 Q7,22.5 11,23.5 Q14,24.5 17,23.5 Q21,22.5 25,23.5" fill="none" stroke="white" stroke-width="0.4" opacity="0.4"/></g></svg>
+    API<span>JOB</span>
+  </div>
+
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="btn-presta" onclick="switchMode('prestataire')">
+      🛠️ <span class="label">Je propose</span>
+    </button>
+    <button class="mode-btn" id="btn-client" onclick="switchMode('client')">
+      🔍 <span class="label">Je cherche</span>
+    </button>
+  </div>
+
+  <div class="nav-right">
+    <button id="btn-vide" onclick="toggleEtatVide()" style="font-size:0.75rem;color:var(--muted);background:none;border:1px solid var(--border);padding:0.3rem 0.7rem;border-radius:50px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--rouge)';this.style.color='var(--rouge)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">🆕 Vue nouveau compte</button>
+    <a href="apijob-notifications.html" class="nav-notif" style="text-decoration:none;">🔔<div class="notif-dot"></div></a>
+    <div class="nav-avatar" onclick="toggleMenu()" style="position:relative;">TM
+      <div id="avatar-menu" style="display:none; position:absolute; top:calc(100% + 8px); right:0;
+        background:white; border:1px solid var(--border); border-radius:12px;
+        box-shadow:0 8px 24px rgba(0,0,0,0.1); min-width:160px; z-index:200; overflow:hidden;">
+        <a href="apijob-profil-edit.html" style="display:block; padding:0.75rem 1rem; font-size:0.85rem;
+          color:var(--night); text-decoration:none; transition:background 0.15s;"
+          onmouseover="this.style.background='#f7f3f0'" onmouseout="this.style.background=''">✏️ Mon profil</a>
+        <a href="apijob-parametres.html" style="display:block; padding:0.75rem 1rem; font-size:0.85rem;
+          color:var(--night); text-decoration:none; transition:background 0.15s;"
+          onmouseover="this.style.background='#f7f3f0'" onmouseout="this.style.background=''">⚙️ Paramètres</a>
+        <div style="height:1px; background:var(--border);"></div>
+        <a href="apijob-auth.html" style="display:block; padding:0.75rem 1rem; font-size:0.85rem;
+          color:var(--rouge); text-decoration:none; font-weight:600; transition:background 0.15s;"
+          onmouseover="this.style.background='#f7f3f0'" onmouseout="this.style.background=''">🚪 Se déconnecter</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- DASHBOARD -->
+<div class="dashboard">
+
+  <!-- ── VUE PRESTATAIRE ── -->
+  <div class="panel active" id="panel-prestataire">
+
+    <div class="dash-header">
+      <div>
+        <div class="dash-greeting">Ia ora na, <span>Teiva</span> 🌺</div>
+        <div class="dash-date">Samedi 22 mars 2025 · Tahiti</div>
+      </div>
+      <a href="apijob-annonces.html" class="btn-primary">🔍 Voir les annonces</a>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="1.15em" height="1.15em" style="vertical-align:-0.18em;display:inline-block"><circle cx="16" cy="16" r="15.5" fill="#F0A500"/><circle cx="16" cy="16" r="13" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><g transform="translate(16,16)"><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(72)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(144)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(216)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(288)"/><circle cx="0" cy="0" r="2" fill="#F0A500"/><circle cx="0" cy="0" r="0.9" fill="#C8860A"/></g></svg></div>
+        <div class="stat-num or">5</div>
+        <div class="stat-label">Jetons disponibles</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-num vert">12</div>
+        <div class="stat-label">Missions terminées</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-num rouge">4.8</div>
+        <div class="stat-label">Note moyenne</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📤</div>
+        <div class="stat-num">8</div>
+        <div class="stat-label">Propositions envoyées</div>
+      </div>
+    </div>
+
+    <!-- JETONS -->
+    <div class="jetons-card">
+      <div class="jetons-left">
+        <div class="jetons-label">Mes jetons</div>
+        <div class="jetons-num"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="1.15em" height="1.15em" style="vertical-align:-0.18em;display:inline-block"><circle cx="16" cy="16" r="15.5" fill="#F0A500"/><circle cx="16" cy="16" r="13" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><g transform="translate(16,16)"><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(72)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(144)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(216)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(288)"/><circle cx="0" cy="0" r="2" fill="#F0A500"/><circle cx="0" cy="0" r="0.9" fill="#C8860A"/></g></svg> 5</div>
+        <div class="jetons-sub">Utilisables sur toutes les annonces</div>
+      </div>
+      <div class="jetons-right">
+        <a href="apijob-jetons.html" class="btn-jetons btn-jetons-or">+ Acheter des jetons</a>
+        <a href="apijob-jetons.html#historique" class="btn-jetons btn-jetons-outline">Historique</a>
+      </div>
+    </div>
+
+    <!-- MISSIONS + PROFIL -->
+    <div class="grid-3">
+
+      <!-- MISSIONS EN COURS -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-card-title">📋 Mes missions</div>
+          <a href="apijob-missions.html" class="section-card-link">Tout voir</a>
+        </div>
+        <div class="section-card-body">
+          <div class="data-content">
+          <div class="mission-item">
+            <div class="mission-emoji">🌿</div>
+            <div class="mission-info">
+              <div class="mission-title">Tonte jardin — Punaauia</div>
+              <div class="mission-meta">Marie-Hélène T. · Samedi 22 mars</div>
+            </div>
+            <button class="btn-terminer" onclick="window.location='apijob-evaluation.html'">✅ Mission terminée</button>
+          </div>
+          <div class="mission-item">
+            <div class="mission-emoji">🏠</div>
+            <div class="mission-info">
+              <div class="mission-title">Ménage appartement T3</div>
+              <div class="mission-meta">Poerava M. · Vendredi 21 mars</div>
+            </div>
+            <div class="mission-badge badge-attente">En attente</div>
+          </div>
+          <div class="mission-item">
+            <div class="mission-emoji">🔧</div>
+            <div class="mission-info">
+              <div class="mission-title">Réparation fuite évier</div>
+              <div class="mission-meta">Reva T. · Jeudi 20 mars</div>
+            </div>
+            <div class="mission-badge badge-termine">Terminée</div>
+          </div>
+          <div class="mission-item">
+            <div class="mission-emoji">🐾</div>
+            <div class="mission-info">
+              <div class="mission-title">Garde chien 5 jours</div>
+              <div class="mission-meta">Hina F. · Lundi 18 mars</div>
+            </div>
+            <div class="mission-badge badge-termine">Terminée</div>
+          </div>
+          </div>
+          <div class="empty-content" style="display:none;">
+            <div class="empty-state">
+              <div class="empty-emoji">📋</div>
+              <div class="empty-title">Aucune mission pour l'instant</div>
+              <div class="empty-sub">Parcourez les annonces et proposez vos services pour décrocher votre première mission.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROFIL -->
+      <div class="profil-card">
+        <div class="profil-avatar">TM</div>
+        <div class="profil-name">Teiva Manutahi</div>
+        <div class="profil-badge">✅ Profil vérifié</div>
+        <div>
+          <span class="profil-stars">★★★★★</span>
+          <span class="profil-reviews">4.8 · 12 avis</span>
+        </div>
+        <div class="profil-completude">
+          <div class="profil-completude-label">
+            <span>Complétude du profil</span>
+            <span style="color:var(--rouge); font-weight:600;">75%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:75%"></div>
+          </div>
+        </div>
+        <div class="profil-actions">
+          <a href="apijob-profil-edit.html" class="btn-primary" style="justify-content:center;">✏️ Modifier mon profil</a>
+          <a href="apijob-profil-public.html" class="btn-outline-rouge" style="text-decoration:none; display:flex; align-items:center; justify-content:center; gap:0.4rem;">👁️ Voir mon profil public</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- AVIS RECENTS -->
+    <div class="section-card">
+      <div class="section-card-header">
+        <div class="section-card-title">⭐ Avis reçus</div>
+        <a href="apijob-evaluation.html" class="section-card-link">Tout voir</a>
+      </div>
+      <div class="section-card-body">
+        <div class="data-content">
+        <div class="avis-item">
+          <div class="avis-top">
+            <div class="avis-author">Marie-Hélène T.</div>
+            <div class="avis-stars">★★★★★</div>
+          </div>
+          <div class="avis-text">Très sérieux, travail impeccable. Mon jardin n'a jamais été aussi beau ! Je recommande sans hésiter.</div>
+          <div class="avis-date">Il y a 2 jours</div>
+        </div>
+        <div class="avis-item">
+          <div class="avis-top">
+            <div class="avis-author">Poerava M.</div>
+            <div class="avis-stars">★★★★★</div>
+          </div>
+          <div class="avis-text">Ponctuel et efficace. Appartement nickel en moins de 3h. Je rappelle dès que j'ai besoin.</div>
+          <div class="avis-date">Il y a 5 jours</div>
+        </div>
+        </div>
+        <div class="empty-content" style="display:none;">
+          <div class="empty-state">
+            <div class="empty-emoji">⭐</div>
+            <div class="empty-title">Pas encore d'avis</div>
+            <div class="empty-sub">Vos premiers avis apparaîtront ici après vos premières missions terminées.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── VUE CLIENT ── -->
+  <div class="panel" id="panel-client">
+
+    <div class="dash-header">
+      <div>
+        <div class="dash-greeting">Bonjour, <span>Teiva</span> 👋</div>
+        <div class="dash-date">Samedi 22 mars 2025 · Tahiti</div>
+      </div>
+      <a href="apijob-annonce.html" class="btn-primary">+ Publier une annonce</a>
+    </div>
+
+    <!-- STATS CLIENT -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📢</div>
+        <div class="stat-num rouge">3</div>
+        <div class="stat-label">Annonces actives</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📩</div>
+        <div class="stat-num or">7</div>
+        <div class="stat-label">Propositions reçues</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-num vert">8</div>
+        <div class="stat-label">Missions terminées</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-num">5</div>
+        <div class="stat-label">Avis laissés</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+
+      <!-- MES ANNONCES -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-card-title">📢 Mes annonces</div>
+          <a href="apijob-annonces.html" class="section-card-link">Tout voir</a>
+        </div>
+        <div class="section-card-body">
+          <div class="data-content">
+          <div class="annonce-item">
+            <div class="annonce-dot dot-rouge"></div>
+            <div>
+              <div class="annonce-title">Tonte jardin urgent — Punaauia</div>
+              <div class="annonce-meta">Publiée aujourd'hui · Jardinage</div>
+            </div>
+            <div class="annonce-count">3 prop.</div>
+          </div>
+          <div class="annonce-item">
+            <div class="annonce-dot dot-or"></div>
+            <div>
+              <div class="annonce-title">Baby-sitter mercredi après-midi</div>
+              <div class="annonce-meta">Publiée hier · Baby-sitting</div>
+            </div>
+            <div class="annonce-count">2 prop.</div>
+          </div>
+          <div class="annonce-item">
+            <div class="annonce-dot dot-vert"></div>
+            <div>
+              <div class="annonce-title">Garde chien 10 jours</div>
+              <div class="annonce-meta">Publiée il y a 3 jours · Animaux</div>
+            </div>
+            <div class="annonce-count">2 prop.</div>
+          </div>
+          </div>
+          <div class="empty-content" style="display:none;">
+            <div class="empty-state">
+              <div class="empty-emoji">📢</div>
+              <div class="empty-title">Aucune annonce publiée</div>
+              <div class="empty-sub">Publiez votre première annonce pour recevoir des propositions de prestataires qualifiés.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROPOSITIONS RECUES -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-card-title">📩 Dernières propositions</div>
+          <a href="apijob-messagerie.html" class="section-card-link">Tout voir</a>
+        </div>
+        <div class="section-card-body">
+          <div class="data-content">
+          <a href="apijob-proposition.html" style="text-decoration:none;color:inherit;">
+          <div class="mission-item" style="cursor:pointer;">
+            <div class="mission-emoji">🌿</div>
+            <div class="mission-info">
+              <div class="mission-title">Teiva M. — Jardinier</div>
+              <div class="mission-meta">★★★★★ 4.9 · Pour : Tonte jardin</div>
+            </div>
+            <div class="mission-badge badge-nouveau">Nouveau</div>
+          </div>
+          </a>
+          <a href="apijob-proposition.html" style="text-decoration:none;color:inherit;">
+          <div class="mission-item" style="cursor:pointer;">
+            <div class="mission-emoji">👶</div>
+            <div class="mission-info">
+              <div class="mission-title">Hina R. — Baby-sitter</div>
+              <div class="mission-meta">★★★★★ 5.0 · Pour : Baby-sitter</div>
+            </div>
+            <div class="mission-badge badge-nouveau">Nouveau</div>
+          </div>
+          </a>
+          <a href="apijob-proposition.html" style="text-decoration:none;color:inherit;">
+          <div class="mission-item" style="cursor:pointer;">
+            <div class="mission-emoji">🌿</div>
+            <div class="mission-info">
+              <div class="mission-title">Reva T. — Jardinier</div>
+              <div class="mission-meta">★★★★☆ 4.6 · Pour : Tonte jardin</div>
+            </div>
+            <div class="mission-badge" style="background:var(--vert-light);color:var(--vert);">Voir →</div>
+          </div>
+          </a>
+          </div>
+          <div class="empty-content" style="display:none;">
+            <div class="empty-state">
+              <div class="empty-emoji">📩</div>
+              <div class="empty-title">Aucune proposition pour l'instant</div>
+              <div class="empty-sub">Vos propositions reçues apparaîtront ici. Publiez une annonce pour commencer !</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MISSIONS PASSEES -->
+    <div class="section-card">
+      <div class="section-card-header">
+        <div class="section-card-title">🕐 Missions passées</div>
+        <a href="apijob-missions.html" class="section-card-link">Tout voir</a>
+      </div>
+      <div class="section-card-body">
+        <div class="mission-item">
+          <div class="mission-emoji">🔧</div>
+          <div class="mission-info">
+            <div class="mission-title">Réparation fuite — Māui T.</div>
+            <div class="mission-meta">Terminée le 20 mars · Plomberie</div>
+          </div>
+          <div class="mission-badge badge-termine">Terminée ✓</div>
+        </div>
+        <div class="mission-item">
+          <div class="mission-emoji">🏠</div>
+          <div class="mission-info">
+            <div class="mission-title">Ménage appartement — Hina R.</div>
+            <div class="mission-meta">Terminée le 15 mars · Ménage</div>
+          </div>
+          <div class="mission-badge badge-termine">Terminée ✓</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+  let currentUser = null;
+
+  // ── INIT ──
+  (async () => {
+    currentUser = await requireAuth();
+    if (!currentUser) return;
+
+    // Greeter & avatar
+    const prenom = currentUser.prenom || 'Ia ora na';
+    const nom    = currentUser.nom || '';
+    const initiales = ((currentUser.prenom||'?')[0] + (currentUser.nom||'?')[0]).toUpperCase();
+
+    const greetEl = document.querySelector('.dash-greeting span');
+    if (greetEl) greetEl.textContent = prenom;
+
+    const avatarEl = document.querySelector('.nav-avatar');
+    if (avatarEl) {
+      // Conserver l'onclick toggleMenu, juste remplacer le texte (premier nœud texte)
+      const textNode = Array.from(avatarEl.childNodes).find(n => n.nodeType === 3);
+      if (textNode) textNode.textContent = initiales;
+    }
+
+    // Date actuelle
+    const dateEl = document.querySelector('.dash-date');
+    if (dateEl) {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+      dateEl.textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1) + ' · Tahiti';
+    }
+
+    // Activer le bon panneau selon le rôle
+    const role = currentUser.role;
+    if (role === 'client') {
+      switchMode('client');
+    } else {
+      switchMode('prestataire');
+    }
+
+    // Mettre à jour les jetons (prestataire)
+    if (role === 'prestataire') {
+      const tokens = currentUser.is_pro ? '∞' : currentUser.tokens;
+      document.querySelectorAll('.stat-num.or').forEach(el => el.textContent = tokens);
+      // Jetons card
+      const jetonsNum = document.querySelector('.jetons-num');
+      if (jetonsNum) {
+        const svgEl = jetonsNum.querySelector('svg');
+        jetonsNum.textContent = ' ' + tokens;
+        if (svgEl) jetonsNum.prepend(svgEl);
+      }
+    }
+
+    // Charger les stats
+    await chargerStats();
+
+    // Fixer le lien de déconnexion
+    document.querySelectorAll('a[href="apijob-auth.html"]').forEach(link => {
+      if (link.textContent.includes('déconnecter')) {
+        link.href = '#';
+        link.onclick = async (e) => { e.preventDefault(); await signOut(); };
+      }
+    });
+  })();
+
+  // ── STATS ──
+  async function chargerStats() {
+    if (!currentUser) return;
+    try {
+      if (currentUser.role === 'prestataire') {
+        // Propositions envoyées
+        const { count: nbProps } = await db.from('propositions')
+          .select('*', { count: 'exact', head: true })
+          .eq('prestataire_id', currentUser.id);
+
+        // Missions terminées
+        const { count: nbMissions } = await db.from('missions')
+          .select('*', { count: 'exact', head: true })
+          .eq('prestataire_id', currentUser.id)
+          .eq('statut', 'terminee');
+
+        // Note moyenne
+        const { data: evals } = await db.from('evaluations')
+          .select('note_globale')
+          .eq('cible_id', currentUser.id);
+
+        const stats = document.querySelectorAll('.stat-num');
+        if (stats[1]) stats[1].textContent = nbMissions || 0;
+        if (stats[3]) stats[3].textContent = nbProps || 0;
+        if (stats[2] && evals && evals.length > 0) {
+          const moy = evals.reduce((s, e) => s + e.note_globale, 0) / evals.length;
+          stats[2].textContent = moy.toFixed(1);
+        }
+
+        // Charger les missions en cours
+        await chargerMissionsPresta();
+
+      } else if (currentUser.role === 'client') {
+        // Annonces actives
+        const { count: nbAnnonces } = await db.from('annonces')
+          .select('*', { count: 'exact', head: true })
+          .eq('client_id', currentUser.id)
+          .eq('statut', 'active');
+
+        const { count: nbMissions } = await db.from('missions')
+          .select('*', { count: 'exact', head: true })
+          .eq('client_id', currentUser.id)
+          .eq('statut', 'terminee');
+
+        const statsClient = document.querySelectorAll('#panel-client .stat-num');
+        if (statsClient[0]) statsClient[0].textContent = nbAnnonces || 0;
+        if (statsClient[1]) statsClient[1].textContent = nbMissions || 0;
+
+        // Charger les annonces du client
+        await chargerAnnoncesClient();
+      }
+    } catch(e) { console.error('Erreur stats:', e); }
+  }
+
+  async function chargerMissionsPresta() {
+    const { data } = await db.from('missions')
+      .select('*, annonces(titre, categorie)')
+      .eq('prestataire_id', currentUser.id)
+      .neq('statut', 'terminee')
+      .order('created_at', { ascending: false })
+      .limit(3);
+
+    const list = document.querySelector('#panel-prestataire .data-content .section-card-body');
+    if (!list || !data) return;
+    if (data.length === 0) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-emoji">📭</div><div class="empty-title">Aucune mission en cours</div><div class="empty-sub">Parcourez les annonces pour trouver votre prochaine mission.</div></div>';
+      return;
+    }
+    list.innerHTML = data.map(m => `
+      <div class="mission-item" onclick="location.href='apijob-messagerie.html?mission=${m.id}'">
+        <div class="mission-emoji">${catEmoji(m.annonces?.categorie)}</div>
+        <div class="mission-info">
+          <div class="mission-title">${escDash(m.annonces?.titre)}</div>
+          <div class="mission-meta">${formatDate(m.created_at)}</div>
+        </div>
+        <span class="mission-badge badge-cours">En cours</span>
+      </div>`).join('');
+  }
+
+  async function chargerAnnoncesClient() {
+    const { data } = await db.from('annonces')
+      .select('*')
+      .eq('client_id', currentUser.id)
+      .neq('statut', 'terminee')
+      .order('created_at', { ascending: false })
+      .limit(4);
+
+    const list = document.querySelector('#panel-client .section-card-body');
+    if (!list || !data) return;
+    if (data.length === 0) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-emoji">📭</div><div class="empty-title">Aucune annonce publiée</div><div class="empty-sub">Publiez votre première annonce et recevez des propositions.</div></div>';
+      return;
+    }
+    list.innerHTML = data.map(a => `
+      <div class="annonce-item" onclick="location.href='apijob-annonce-detail.html?id=${a.id}'">
+        <div class="annonce-dot ${a.statut === 'active' ? 'dot-rouge' : a.statut === 'en_cours' ? 'dot-or' : 'dot-vert'}"></div>
+        <div>
+          <div class="annonce-title">${escDash(a.titre)}</div>
+          <div class="annonce-meta">${a.categorie} · ${formatDate(a.created_at)}</div>
+        </div>
+        <div class="annonce-count">${a.nb_propositions} prop.</div>
+      </div>`).join('');
+  }
+
+  function escDash(str) { return String(str||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // ── SWITCH MODE ──
+  function switchMode(mode) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + mode).classList.add('active');
+    document.getElementById('btn-presta').classList.toggle('active', mode === 'prestataire');
+    document.getElementById('btn-client').classList.toggle('active', mode === 'client');
+  }
+
+  function toggleMenu() {
+    const menu = document.getElementById('avatar-menu');
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  }
+
+  document.addEventListener('click', function(e) {
+    const avatar = document.querySelector('.nav-avatar');
+    if (avatar && !avatar.contains(e.target)) {
+      const menu = document.getElementById('avatar-menu');
+      if (menu) menu.style.display = 'none';
+    }
+  });
+
+  // Toggle état vide / état rempli (outil de démo, peut être retiré en prod)
+  let modeVide = false;
+  function toggleEtatVide() {
+    modeVide = !modeVide;
+    document.querySelectorAll('.data-content').forEach(el => el.style.display = modeVide ? 'none' : '');
+    document.querySelectorAll('.empty-content').forEach(el => el.style.display = modeVide ? 'block' : 'none');
+    const btn = document.getElementById('btn-vide');
+    if (btn) btn.textContent = modeVide ? '👤 Voir compte actif' : '🆕 Vue nouveau compte';
+  }
+</script>
+
+</body>
+</html>

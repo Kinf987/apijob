@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API JOB — Administration</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rouge: #CC0A2B;
+    --rouge-dark: #A00822;
+    --or: #F0A500;
+    --night: #1A0008;
+    --blanc: #FFFFFF;
+    --gris: #F7F3F0;
+    --gris2: #EDE8E3;
+    --muted: rgba(26,0,8,0.45);
+    --border: rgba(204,10,43,0.1);
+    --vert: #1A7A4A;
+    --vert-light: rgba(26,122,74,0.08);
+    --sidebar: #0D1520;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { height:100%; }
+  body { font-family:'DM Sans',sans-serif; background:var(--gris); color:var(--night); display:flex; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width:240px; flex-shrink:0;
+    background:var(--sidebar);
+    display:flex; flex-direction:column;
+    position:fixed; left:0; top:0; bottom:0;
+    z-index:100; overflow-y:auto;
+  }
+  .sidebar-logo {
+    padding:1.5rem 1.2rem;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+    display:flex; align-items:center; gap:0.5rem;
+  }
+  .sidebar-logo-text {
+    font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:800;
+    color:white;
+  }
+  .sidebar-logo-text span { color:var(--or); }
+  .admin-badge {
+    background:var(--rouge); color:white;
+    font-size:0.6rem; font-weight:800;
+    padding:0.15rem 0.5rem; border-radius:50px;
+    letter-spacing:0.5px;
+  }
+
+  .sidebar-nav { padding:1rem 0; flex:1; }
+  .nav-section-label {
+    font-size:0.65rem; font-weight:700;
+    text-transform:uppercase; letter-spacing:2px;
+    color:rgba(255,255,255,0.25);
+    padding:0.8rem 1.2rem 0.4rem;
+  }
+  .nav-item {
+    display:flex; align-items:center; gap:0.7rem;
+    padding:0.7rem 1.2rem; cursor:pointer;
+    transition:all 0.2s; color:rgba(255,255,255,0.5);
+    font-size:0.88rem; font-weight:500; border:none;
+    background:none; width:100%; text-align:left;
+    position:relative;
+  }
+  .nav-item:hover { background:rgba(255,255,255,0.05); color:white; }
+  .nav-item.active { background:rgba(204,10,43,0.2); color:white; }
+  .nav-item.active::before {
+    content:''; position:absolute; left:0; top:0; bottom:0;
+    width:3px; background:var(--rouge); border-radius:0 3px 3px 0;
+  }
+  .nav-icon { font-size:1rem; flex-shrink:0; }
+  .nav-badge {
+    margin-left:auto; background:var(--rouge); color:white;
+    font-size:0.65rem; font-weight:800;
+    padding:0.1rem 0.5rem; border-radius:50px;
+  }
+
+  .sidebar-footer {
+    padding:1rem 1.2rem;
+    border-top:1px solid rgba(255,255,255,0.06);
+  }
+  .admin-info {
+    display:flex; align-items:center; gap:0.6rem;
+    font-size:0.8rem; color:rgba(255,255,255,0.5);
+  }
+  .admin-avatar {
+    width:30px; height:30px; border-radius:50%;
+    background:var(--rouge);
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.7rem; font-weight:800; color:white;
+    flex-shrink:0;
+  }
+
+  /* MAIN */
+  .main { margin-left:240px; flex:1; min-height:100vh; }
+
+  /* TOP BAR */
+  .topbar {
+    background:var(--blanc); border-bottom:1px solid var(--border);
+    padding:0.9rem 2rem;
+    display:flex; align-items:center; justify-content:space-between;
+    position:sticky; top:0; z-index:50;
+  }
+  .topbar-title { font-family:'Syne',sans-serif; font-size:1rem; font-weight:800; }
+  .topbar-right { display:flex; align-items:center; gap:1rem; }
+  .topbar-date { font-size:0.78rem; color:var(--muted); }
+  .btn-retour-site {
+    padding:0.5rem 1rem; border-radius:50px;
+    border:1.5px solid var(--border);
+    background:transparent; color:var(--muted);
+    font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:600;
+    cursor:pointer; transition:all 0.2s; text-decoration:none;
+    display:flex; align-items:center; gap:0.3rem;
+  }
+  .btn-retour-site:hover { border-color:var(--rouge); color:var(--rouge); }
+
+  /* CONTENT */
+  .content { padding:2rem; }
+
+  /* PANELS */
+  .panel { display:none; }
+  .panel.active { display:block; animation:fadeUp 0.3s ease both; }
+
+  /* STATS CARDS */
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:2rem; }
+  .stat-card {
+    background:var(--blanc); border-radius:16px;
+    border:1px solid var(--border); padding:1.2rem;
+    transition:all 0.2s;
+  }
+  .stat-card:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(204,10,43,0.08); }
+  .stat-icon { font-size:1.3rem; margin-bottom:0.6rem; }
+  .stat-num { font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:800; line-height:1; }
+  .stat-num.rouge { color:var(--rouge); }
+  .stat-num.or { color:var(--or); }
+  .stat-num.vert { color:var(--vert); }
+  .stat-label { font-size:0.75rem; color:var(--muted); margin-top:0.3rem; }
+  .stat-trend { font-size:0.72rem; margin-top:0.3rem; }
+  .trend-up { color:var(--vert); }
+  .trend-down { color:var(--rouge); }
+
+  /* TABLE CARD */
+  .table-card {
+    background:var(--blanc); border-radius:20px;
+    border:1px solid var(--border); overflow:hidden;
+    margin-bottom:1.5rem;
+  }
+  .table-header {
+    padding:1.2rem 1.5rem;
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid var(--border); flex-wrap:wrap; gap:1rem;
+  }
+  .table-title { font-family:'Syne',sans-serif; font-size:0.95rem; font-weight:800; }
+  .table-actions { display:flex; gap:0.6rem; align-items:center; }
+
+  .search-input {
+    padding:0.5rem 0.8rem 0.5rem 2rem;
+    border:1.5px solid var(--border); border-radius:50px;
+    font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--night);
+    background:var(--gris); outline:none; width:200px;
+    transition:border-color 0.2s;
+  }
+  .search-input:focus { border-color:var(--rouge); background:var(--blanc); }
+  .search-wrap { position:relative; }
+  .search-wrap::before { content:'🔍'; position:absolute; left:0.6rem; top:50%; transform:translateY(-50%); font-size:0.75rem; pointer-events:none; }
+
+  /* TABLE */
+  table { width:100%; border-collapse:collapse; }
+  th {
+    text-align:left; padding:0.8rem 1.2rem;
+    font-size:0.72rem; font-weight:700;
+    text-transform:uppercase; letter-spacing:1px;
+    color:var(--muted); background:var(--gris);
+    border-bottom:1px solid var(--border);
+  }
+  td {
+    padding:0.9rem 1.2rem; font-size:0.85rem;
+    border-bottom:1px solid rgba(204,10,43,0.04);
+    vertical-align:middle;
+  }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(204,10,43,0.02); }
+
+  .user-cell { display:flex; align-items:center; gap:0.7rem; }
+  .user-avatar-sm {
+    width:32px; height:32px; border-radius:50%;
+    background:linear-gradient(135deg,var(--rouge),#FF4D6A);
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.65rem; font-weight:800; color:white; flex-shrink:0;
+  }
+  .user-name { font-weight:600; font-size:0.85rem; }
+  .user-email { font-size:0.72rem; color:var(--muted); }
+
+  .badge {
+    display:inline-flex; align-items:center; gap:0.25rem;
+    font-size:0.7rem; font-weight:700;
+    padding:0.2rem 0.6rem; border-radius:50px;
+    white-space:nowrap;
+  }
+  .badge-actif { background:var(--vert-light); color:var(--vert); }
+  .badge-suspendu { background:rgba(204,10,43,0.08); color:var(--rouge); }
+  .badge-banni { background:rgba(26,0,8,0.08); color:rgba(26,0,8,0.5); }
+  .badge-pro { background:rgba(240,165,0,0.12); color:#B07800; }
+  .badge-verifie { background:var(--vert-light); color:var(--vert); }
+  .badge-pending { background:rgba(240,165,0,0.12); color:#B07800; }
+
+  .action-btns { display:flex; gap:0.4rem; }
+  .btn-action {
+    padding:0.3rem 0.7rem; border-radius:6px; border:none;
+    font-family:'DM Sans',sans-serif; font-size:0.72rem; font-weight:600;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .btn-voir { background:rgba(0,107,143,0.08); color:#006B8F; }
+  .btn-voir:hover { background:rgba(0,107,143,0.15); }
+  .btn-suspendre { background:rgba(240,165,0,0.1); color:#B07800; }
+  .btn-suspendre:hover { background:rgba(240,165,0,0.2); }
+  .btn-bannir { background:rgba(204,10,43,0.08); color:var(--rouge); }
+  .btn-bannir:hover { background:rgba(204,10,43,0.15); }
+  .btn-valider { background:var(--vert-light); color:var(--vert); }
+  .btn-valider:hover { background:rgba(26,122,74,0.15); }
+  .btn-supprimer { background:rgba(204,10,43,0.08); color:var(--rouge); }
+  .btn-supprimer:hover { background:rgba(204,10,43,0.15); }
+  .btn-reactiver { background:var(--vert-light); color:var(--vert); }
+
+  /* SIGNALEMENTS */
+  .signal-card {
+    border:1.5px solid var(--border); border-radius:14px;
+    padding:1.1rem 1.3rem; margin-bottom:0.8rem;
+    display:flex; align-items:flex-start; gap:1rem;
+    transition:all 0.2s;
+  }
+  .signal-card:hover { border-color:var(--rouge); }
+  .signal-card.urgent { border-color:rgba(204,10,43,0.3); background:rgba(204,10,43,0.02); }
+  .signal-icon { font-size:1.2rem; flex-shrink:0; margin-top:2px; }
+  .signal-content { flex:1; }
+  .signal-title { font-weight:700; font-size:0.88rem; margin-bottom:0.2rem; }
+  .signal-desc { font-size:0.78rem; color:var(--muted); line-height:1.5; margin-bottom:0.6rem; }
+  .signal-meta { display:flex; gap:1rem; flex-wrap:wrap; font-size:0.72rem; color:rgba(26,0,8,0.35); }
+  .signal-actions { display:flex; gap:0.5rem; flex-direction:column; flex-shrink:0; }
+
+  /* REVENUS */
+  .revenus-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem; }
+  .revenu-card {
+    background:var(--blanc); border-radius:20px;
+    border:1px solid var(--border); padding:1.5rem;
+  }
+  .revenu-title { font-family:'Syne',sans-serif; font-size:0.88rem; font-weight:800; margin-bottom:1.2rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+  .revenu-num { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; color:var(--rouge); margin-bottom:0.3rem; }
+  .revenu-sub { font-size:0.78rem; color:var(--muted); }
+  .revenu-list { margin-top:1rem; }
+  .revenu-row { display:flex; justify-content:space-between; padding:0.4rem 0; font-size:0.82rem; border-bottom:1px solid rgba(204,10,43,0.05); }
+  .revenu-row:last-child { border-bottom:none; }
+  .revenu-row-label { color:var(--muted); }
+  .revenu-row-val { font-weight:600; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  @media (max-width:900px) {
+    .sidebar { width:60px; }
+    .sidebar-logo-text, .nav-item span:not(.nav-icon), .nav-section-label, .admin-info .admin-name, .admin-badge { display:none; }
+    .main { margin-left:60px; }
+    .stats-grid { grid-template-columns:repeat(2,1fr); }
+    .revenus-grid { grid-template-columns:1fr; }
+  }
+  @media (max-width:600px) {
+    .stats-grid { grid-template-columns:repeat(2,1fr); }
+    .content { padding:1rem; }
+    .topbar { padding:0.9rem 1rem; }
+  }
+</style>
+<script>
+  // Protection — redirige vers login si pas connecté
+  if (!sessionStorage.getItem('apijob_admin')) {
+    window.location.href = 'apijob-admin-login.html';
+  }
+</script>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <svg width="24" height="24" viewBox="0 0 28 28" style="border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.15);flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="c"><circle cx="14" cy="14" r="14"/></clipPath></defs><g clip-path="url(#c)"><circle cx="14" cy="14" r="14" fill="white"/><g stroke="#F0A500" stroke-width="1.3" stroke-linecap="round"><line x1="14" y1="17" x2="2.2" y2="14.9"/><line x1="14" y1="17" x2="3.4" y2="11.4"/><line x1="14" y1="17" x2="5.7" y2="8.4"/><line x1="14" y1="17" x2="8.5" y2="6.3"/><line x1="14" y1="17" x2="12.1" y2="5.2"/><line x1="14" y1="17" x2="15.9" y2="5.2"/><line x1="14" y1="17" x2="19.5" y2="6.3"/><line x1="14" y1="17" x2="22.3" y2="8.4"/><line x1="14" y1="17" x2="24.6" y2="11.4"/><line x1="14" y1="17" x2="25.8" y2="14.9"/></g><rect x="0" y="17" width="28" height="11" fill="#1E7FC2"/><path d="M7,17.5 Q14,15.5 21,17.5 L20.5,18.5 Q14,16.8 7.5,18.5 Z" fill="#CE1126"/><path d="M3,19.5 Q7,18.5 11,19.5 Q14,20.5 17,19.5 Q21,18.5 25,19.5" fill="none" stroke="white" stroke-width="0.6" opacity="0.8"/><path d="M3,21.5 Q7,20.5 11,21.5 Q14,22.5 17,21.5 Q21,20.5 25,21.5" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/><path d="M3,23.5 Q7,22.5 11,23.5 Q14,24.5 17,23.5 Q21,22.5 25,23.5" fill="none" stroke="white" stroke-width="0.4" opacity="0.4"/></g></svg>
+    <div>
+      <div class="sidebar-logo-text">API<span>.</span>JOB</div>
+    </div>
+    <span class="admin-badge">ADMIN</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Général</div>
+    <button class="nav-item active" onclick="showPanel('dashboard')">
+      <span class="nav-icon">📊</span>
+      <span>Tableau de bord</span>
+    </button>
+    <button class="nav-item" onclick="showPanel('utilisateurs')">
+      <span class="nav-icon">👥</span>
+      <span>Utilisateurs</span>
+    </button>
+    <button class="nav-item" onclick="showPanel('signalements')">
+      <span class="nav-icon">⚠️</span>
+      <span>Signalements</span>
+      <span class="nav-badge">3</span>
+    </button>
+
+    <div class="nav-section-label">Contenu</div>
+    <button class="nav-item" onclick="showPanel('annonces')">
+      <span class="nav-icon">📢</span>
+      <span>Annonces</span>
+    </button>
+    <button class="nav-item" onclick="showPanel('avis')">
+      <span class="nav-icon">⭐</span>
+      <span>Avis</span>
+    </button>
+
+    <div class="nav-section-label">Finance</div>
+    <button class="nav-item" onclick="showPanel('revenus')">
+      <span class="nav-icon">💰</span>
+      <span>Revenus & jetons</span>
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="admin-info">
+      <div class="admin-avatar">AD</div>
+      <div>
+        <div style="color:white;font-size:0.8rem;font-weight:600;" class="admin-name">Administrateur</div>
+        <div style="font-size:0.7rem;">API JOB</div>
+      </div>
+    </div>
+    <button onclick="logout()" style="margin-top:0.8rem; width:100%; padding:0.5rem; background:rgba(204,10,43,0.15); color:rgba(255,255,255,0.5); border:none; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:0.75rem; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='rgba(204,10,43,0.3)'" onmouseout="this.style.background='rgba(204,10,43,0.15)'">
+      🚪 Déconnexion
+    </button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">📊 Tableau de bord</div>
+    <div class="topbar-right">
+      <div class="topbar-date">Samedi 22 mars 2025</div>
+      <a href="apijob-v4.html" class="btn-retour-site">🌺 Voir le site</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="panel active" id="panel-dashboard">
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-num">248</div>
+          <div class="stat-label">Utilisateurs inscrits</div>
+          <div class="stat-trend trend-up">↑ +12 cette semaine</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🪙</div>
+          <div class="stat-num or">1 240</div>
+          <div class="stat-label">Jetons vendus ce mois</div>
+          <div class="stat-trend trend-up">↑ +340 vs mois dernier</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-num vert">89</div>
+          <div class="stat-label">Missions terminées</div>
+          <div class="stat-trend trend-up">↑ +23 cette semaine</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-num rouge">3</div>
+          <div class="stat-label">Signalements en attente</div>
+          <div class="stat-trend trend-down">↑ À traiter</div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-num rouge">248 000</div>
+          <div class="stat-label">Revenus XPF ce mois</div>
+          <div class="stat-trend trend-up">↑ +18%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-num or">4.8</div>
+          <div class="stat-label">Note moyenne plateforme</div>
+          <div class="stat-trend trend-up">↑ Stable</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-num">18</div>
+          <div class="stat-label">Prestataires Pro actifs</div>
+          <div class="stat-trend trend-up">↑ +3 ce mois</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📢</div>
+          <div class="stat-num">67</div>
+          <div class="stat-label">Annonces publiées ce mois</div>
+          <div class="stat-trend trend-up">↑ +15%</div>
+        </div>
+      </div>
+
+      <!-- DERNIÈRES INSCRIPTIONS -->
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">👥 Dernières inscriptions</div>
+          <button class="btn-action btn-voir" onclick="showPanel('utilisateurs')">Voir tous →</button>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Utilisateur</th>
+            <th>Date</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td><div class="user-cell"><div class="user-avatar-sm">TM</div><div><div class="user-name">Teiva Manutahi</div><div class="user-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5723323e213617323a363e3b792731">[email&#160;protected]</a></div></div></div></td>
+              <td>Aujourd'hui 14:32</td>
+              <td><span class="badge badge-actif">✅ Actif</span></td>
+              <td><div class="action-btns"><button class="btn-action btn-voir">Voir</button><button class="btn-action btn-suspendre">Suspendre</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="user-cell"><div class="user-avatar-sm" style="background:linear-gradient(135deg,var(--vert),#2EA86A)">HR</div><div><div class="user-name">Hina Rofea</div><div class="user-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b4dcdddad5f4d1d9d5ddd89ac4d2">[email&#160;protected]</a></div></div></div></td>
+              <td>Aujourd'hui 11:15</td>
+              <td><span class="badge badge-pro">⭐ Pro</span></td>
+              <td><div class="action-btns"><button class="btn-action btn-voir">Voir</button><button class="btn-action btn-suspendre">Suspendre</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="user-cell"><div class="user-avatar-sm" style="background:linear-gradient(135deg,#006B8F,#00A8C6)">MT</div><div><div class="user-name">Māui Teriivahine</div><div class="user-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="264b47534f66434b474f4a085640">[email&#160;protected]</a></div></div></div></td>
+              <td>Hier 09:48</td>
+              <td><span class="badge badge-verifie">✅ Vérifié</span></td>
+              <td><div class="action-btns"><button class="btn-action btn-voir">Voir</button><button class="btn-action btn-suspendre">Suspendre</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- ── UTILISATEURS ── -->
+    <div class="panel" id="panel-utilisateurs">
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">👥 Gestion des utilisateurs</div>
+          <div class="table-actions">
+            <div class="search-wrap">
+              <input type="text" class="search-input" placeholder="Rechercher...">
+            </div>
+            <select style="padding:0.5rem 0.8rem; border:1.5px solid var(--border); border-radius:50px; font-size:0.82rem; background:var(--blanc); outline:none; cursor:pointer;">
+              <option>Tous</option>
+              <option>Actifs</option>
+              <option>Suspendus</option>
+              <option>Bannis</option>
+              <option>Pro</option>
+            </select>
+          </div>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Utilisateur</th>
+            <th>Inscription</th>
+            <th>Missions</th>
+            <th>Jetons</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td><div class="user-cell"><div class="user-avatar-sm">TM</div><div><div class="user-name">Teiva Manutahi</div><div class="user-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="ed9988849b8cad88808c8481c39d8b">[email&#160;protected]</a> · Prestataire</div></div></div></td>
+              <td>22 mars 2025</td>
+              <td>58</td>
+              <td>5 🪙</td>
+              <td><span class="badge badge-actif">✅ Actif</span></td>
+              <td><div class="action-btns"><button class="btn-action btn-voir">Voir</button><button class="btn-action btn-suspendre">Suspendre</button><button class="btn-action btn-bannir">Bannir</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="user-cell"><div class="user-avatar-sm" style="background:linear-gradient(135deg,var(--vert),#2EA86A)">HR</div><div><div class="user-name">Hina Rofea</div><div class="user-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="fe9697909fbe9b939f9792d08e98">[email&#160;protected]</a> · Prestataire</div></div></div></td>
+              <td>20 mars 2025</td>
+              <td>34</td>
+              <td>12 🪙</td>
+              <td><span class="badge badge-pro">⭐ Pro</span></td>
+              <td><div class="action-btns"><button class="btn-action btn-voir">Voir</button><button class="btn-action btn-suspendre">Suspendre</button><button class="btn-action btn-bannir">Bannir</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="user-cell"><div class="user-avatar-sm" style="background:linear-gradient(135deg,#8B4513,#D2691E)">MH</div><div><div class="user-name">Marie-Hélène T.</div><div class="user-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="365b5e76535b575f5a184650">[email&#160;protected]</a> · Client</div></div></div></td>
+              <td>18 mars 2025</td>
+              <td>8</td>
+              <td>—</td>
+              <td><span class="badge badge-actif">✅ Actif</span></td>
+              <td><div class="action-btns"><button class="btn-action btn-voir">Voir</button><button class="btn-action btn-suspendre">Suspendre</button><button class="btn-action btn-bannir">Bannir</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="user-cell"><div class="user-avatar-sm" style="background:rgba(26,0,8,0.2)">XX</div><div><div class="user-name">Compte suspendu</div><div class="user-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="730b0b0b33161e121a1f5d0315">[email&#160;protected]</a> · Prestataire</div></div></div></td>
+              <td>10 mars 2025</td>
+              <td>2</td>
+              <td>0 🪙</td>
+              <td><span class="badge badge-suspendu">⏸ Suspendu</span></td>
+              <td><div class="action-btns"><button class="btn-action btn-voir">Voir</button><button class="btn-action btn-reactiver">Réactiver</button><button class="btn-action btn-bannir">Bannir</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── SIGNALEMENTS ── -->
+    <div class="panel" id="panel-signalements">
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">⚠️ Signalements en attente <span style="color:var(--rouge)">(3)</span></div>
+        </div>
+        <div style="padding:1.2rem;">
+
+          <div class="signal-card urgent">
+            <div class="signal-icon">🚫</div>
+            <div class="signal-content">
+              <div class="signal-title">Partage de coordonnées hors plateforme</div>
+              <div class="signal-desc">L'utilisateur "Reva T." aurait partagé son numéro de téléphone dans la description de son annonce. Signalé par un client.</div>
+              <div class="signal-meta">
+                <span>📅 Il y a 2 heures</span>
+                <span>👤 Signalé par : Marie-Hélène T.</span>
+                <span>⚠️ Priorité haute</span>
+              </div>
+            </div>
+            <div class="signal-actions">
+              <button class="btn-action btn-suspendre" style="white-space:nowrap;">Suspendre</button>
+              <button class="btn-action btn-bannir" style="white-space:nowrap;">Bannir</button>
+              <button class="btn-action btn-voir" style="white-space:nowrap;">Ignorer</button>
+            </div>
+          </div>
+
+          <div class="signal-card">
+            <div class="signal-icon">❌</div>
+            <div class="signal-content">
+              <div class="signal-title">Abandon de mission — 2ème récidive</div>
+              <div class="signal-desc">Le client "Teva N." a abandonné une 2ème mission après acceptation sans motif valable. Selon les CGU, le compte doit être suspendu.</div>
+              <div class="signal-meta">
+                <span>📅 Il y a 5 heures</span>
+                <span>👤 Signalé par : système automatique</span>
+                <span>⚠️ CGU Art. 9</span>
+              </div>
+            </div>
+            <div class="signal-actions">
+              <button class="btn-action btn-bannir" style="white-space:nowrap;">Bannir</button>
+              <button class="btn-action btn-voir" style="white-space:nowrap;">Ignorer</button>
+            </div>
+          </div>
+
+          <div class="signal-card">
+            <div class="signal-icon">⭐</div>
+            <div class="signal-content">
+              <div class="signal-title">Avis suspect — note injustifiée</div>
+              <div class="signal-desc">Un avis 1 étoile a été laissé sans commentaire par un compte récemment créé sur le profil de "Teiva M.". Possible faux avis.</div>
+              <div class="signal-meta">
+                <span>📅 Hier à 16:30</span>
+                <span>👤 Signalé par : Teiva M.</span>
+              </div>
+            </div>
+            <div class="signal-actions">
+              <button class="btn-action btn-supprimer" style="white-space:nowrap;">Supprimer avis</button>
+              <button class="btn-action btn-voir" style="white-space:nowrap;">Ignorer</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ANNONCES ── -->
+    <div class="panel" id="panel-annonces">
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">📢 Gestion des annonces</div>
+          <div class="table-actions">
+            <div class="search-wrap"><input type="text" class="search-input" placeholder="Rechercher..."></div>
+          </div>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Annonce</th>
+            <th>Client</th>
+            <th>Date</th>
+            <th>Propositions</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td><div style="font-weight:600;font-size:0.85rem;">🌿 Tonte jardin urgent</div><div style="font-size:0.72rem;color:var(--muted);">Punaauia, Tahiti</div></td>
+              <td>Marie-Hélène T.</td>
+              <td>Aujourd'hui</td>
+              <td>3</td>
+              <td><span class="badge badge-actif">Active</span></td>
+              <td><div class="action-btns"><button class="btn-action btn-voir">Voir</button><button class="btn-action btn-supprimer">Supprimer</button></div></td>
+            </tr>
+            <tr>
+              <td><div style="font-weight:600;font-size:0.85rem;">👶 Baby-sitter mercredi</div><div style="font-size:0.72rem;color:var(--muted);">Papeete, Tahiti</div></td>
+              <td>Poerava M.</td>
+              <td>Hier</td>
+              <td>5</td>
+              <td><span class="badge badge-actif">Active</span></td>
+              <td><div class="action-btns"><button class="btn-action btn-voir">Voir</button><button class="btn-action btn-supprimer">Supprimer</button></div></td>
+            </tr>
+            <tr>
+              <td><div style="font-weight:600;font-size:0.85rem;">🔧 Fuite évier urgent</div><div style="font-size:0.72rem;color:var(--muted);">Haapiti, Moorea</div></td>
+              <td>Reva T.</td>
+              <td>Hier</td>
+              <td>2</td>
+              <td><span class="badge badge-suspendu" style="background:var(--vert-light);color:var(--vert);">Terminée</span></td>
+              <td><div class="action-btns"><button class="btn-action btn-voir">Voir</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── AVIS ── -->
+    <div class="panel" id="panel-avis">
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">⭐ Modération des avis</div>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Avis</th>
+            <th>Client</th>
+            <th>Prestataire</th>
+            <th>Note</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td style="max-width:200px;"><div style="font-size:0.82rem;color:var(--muted);">"Travail impeccable, très sérieux..."</div></td>
+              <td>Marie-Hélène T.</td>
+              <td>Teiva M.</td>
+              <td><span style="color:var(--or);font-weight:700;">★★★★★</span></td>
+              <td>Aujourd'hui</td>
+              <td><div class="action-btns"><button class="btn-action btn-voir">Voir</button><button class="btn-action btn-supprimer">Supprimer</button></div></td>
+            </tr>
+            <tr>
+              <td style="max-width:200px;"><div style="font-size:0.82rem;color:var(--muted);">"..." (sans commentaire)</div></td>
+              <td>Inconnu</td>
+              <td>Teiva M.</td>
+              <td><span style="color:var(--rouge);font-weight:700;">★☆☆☆☆</span></td>
+              <td>Hier</td>
+              <td><div class="action-btns"><button class="btn-action btn-voir">Voir</button><button class="btn-action btn-supprimer">Supprimer</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── REVENUS ── -->
+    <div class="panel" id="panel-revenus">
+
+      <div class="revenus-grid">
+        <div class="revenu-card">
+          <div class="revenu-title">💰 Revenus ce mois</div>
+          <div class="revenu-num">248 000 XPF</div>
+          <div class="revenu-sub">≈ 2 075 € · Mars 2025</div>
+          <div class="revenu-list">
+            <div class="revenu-row"><span class="revenu-row-label">Starter (900 XPF)</span><span class="revenu-row-val">48 × = 43 200 XPF</span></div>
+            <div class="revenu-row"><span class="revenu-row-label">Standard (2 000 XPF)</span><span class="revenu-row-val">62 × = 124 000 XPF</span></div>
+            <div class="revenu-row"><span class="revenu-row-label">Pro (5 900 XPF)</span><span class="revenu-row-val">13 × = 76 700 XPF</span></div>
+          </div>
+        </div>
+        <div class="revenu-card">
+          <div class="revenu-title">🪙 Jetons ce mois</div>
+          <div class="revenu-num" style="color:var(--or);">1 240</div>
+          <div class="revenu-sub">Jetons vendus · Mars 2025</div>
+          <div class="revenu-list">
+            <div class="revenu-row"><span class="revenu-row-label">Jetons vendus</span><span class="revenu-row-val">1 240 🪙</span></div>
+            <div class="revenu-row"><span class="revenu-row-label">Jetons utilisés</span><span class="revenu-row-val">892 🪙</span></div>
+            <div class="revenu-row"><span class="revenu-row-label">Jetons restitués</span><span class="revenu-row-val">14 🪙</span></div>
+            <div class="revenu-row"><span class="revenu-row-label">Taux utilisation</span><span class="revenu-row-val">72%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">📋 Dernières transactions</div>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Utilisateur</th>
+            <th>Pack</th>
+            <th>Montant</th>
+            <th>Méthode</th>
+            <th>Date</th>
+            <th>Statut</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td><div class="user-cell"><div class="user-avatar-sm">TM</div><span>Teiva M.</span></div></td>
+              <td>Standard — 9 jetons</td>
+              <td><strong>2 000 XPF</strong></td>
+              <td>💳 Carte</td>
+              <td>Aujourd'hui 14:32</td>
+              <td><span class="badge badge-actif">✅ Confirmé</span></td>
+            </tr>
+            <tr>
+              <td><div class="user-cell"><div class="user-avatar-sm" style="background:linear-gradient(135deg,var(--vert),#2EA86A)">HR</div><span>Hina R.</span></div></td>
+              <td>Pack Pro — Illimité</td>
+              <td><strong>5 900 XPF</strong></td>
+              <td>🏦 Virement</td>
+              <td>Hier 09:15</td>
+              <td><span class="badge badge-pending">⏳ En attente</span></td>
+            </tr>
+            <tr>
+              <td><div class="user-cell"><div class="user-avatar-sm" style="background:linear-gradient(135deg,#006B8F,#00A8C6)">MT</div><span>Māui T.</span></div></td>
+              <td>Starter — 3 jetons</td>
+              <td><strong>900 XPF</strong></td>
+              <td>🏪 Point relais</td>
+              <td>Hier 08:30</td>
+              <td><span cla

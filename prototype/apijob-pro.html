@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API JOB — Section Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rouge: #CC0A2B;
+    --rouge-dark: #A00822;
+    --or: #F0A500;
+    --or-light: #FDD87A;
+    --night: #1A0008;
+    --blanc: #FFFFFF;
+    --gris: #F7F3F0;
+    --gris2: #EDE8E3;
+    --muted: rgba(26,0,8,0.45);
+    --border: rgba(204,10,43,0.1);
+    --vert: #1A7A4A;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--gris); color:var(--night); min-height:100vh; }
+
+  /* NAV */
+  nav {
+    position:sticky; top:0; z-index:100;
+    background:var(--blanc); border-bottom:2px solid var(--rouge);
+    padding:0.9rem 5%;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .nav-logo {
+    font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800;
+    color:var(--rouge); letter-spacing:-0.5px;
+    display:flex; align-items:center; gap:0.25rem; text-decoration:none;
+  }
+  .nav-logo span { color:var(--or); }
+  .nav-back { font-size:0.88rem; color:var(--muted); text-decoration:none; transition:color 0.2s; }
+  .nav-back:hover { color:var(--rouge); }
+
+  /* HERO */
+  .hero {
+    background:var(--night); padding:3rem 5%; text-align:center;
+    position:relative; overflow:hidden;
+  }
+  .hero::before {
+    content:''; position:absolute; top:-80px; right:-80px;
+    width:300px; height:300px; border-radius:50%;
+    background:rgba(240,165,0,0.06); pointer-events:none;
+  }
+  .hero-badge {
+    display:inline-flex; align-items:center; gap:0.4rem;
+    background:rgba(240,165,0,0.15); color:var(--or);
+    padding:0.35rem 1rem; border-radius:50px;
+    font-size:0.78rem; font-weight:600; margin-bottom:1rem;
+    position:relative; z-index:1;
+  }
+  .hero h1 {
+    font-family:'Syne',sans-serif;
+    font-size:clamp(1.8rem,4vw,2.8rem); font-weight:800;
+    letter-spacing:-1px; color:var(--blanc); line-height:1.1;
+    margin-bottom:0.8rem; position:relative; z-index:1;
+  }
+  .hero h1 span { color:var(--or); }
+  .hero-sub {
+    font-size:0.92rem; color:rgba(255,255,255,0.5);
+    max-width:480px; margin:0 auto; line-height:1.6;
+    position:relative; z-index:1;
+  }
+
+  /* PAGE */
+  .page { max-width:1100px; margin:0 auto; padding:2rem 5%; }
+
+  /* FILTRES */
+  .filtres-bar {
+    background:var(--blanc); border-radius:20px;
+    border:1px solid var(--border); padding:1.2rem 1.5rem;
+    margin-bottom:1.5rem;
+    display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end;
+  }
+  .filtre-group { display:flex; flex-direction:column; gap:0.3rem; flex:1; min-width:140px; }
+  .filtre-label { font-size:0.72rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+  .filtre-select {
+    padding:0.55rem 2rem 0.55rem 0.8rem;
+    border:1.5px solid var(--border); border-radius:10px;
+    font-family:'DM Sans',sans-serif; font-size:0.85rem; color:var(--night);
+    background:var(--gris); outline:none; cursor:pointer;
+    appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23CC0A2B' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 0.8rem center;
+  }
+  .filtre-select:focus { border-color:var(--rouge); background-color:var(--blanc); }
+
+  .view-toggle {
+    display:flex; gap:0.3rem;
+    background:var(--gris); border-radius:10px; padding:0.2rem;
+  }
+  .view-btn {
+    padding:0.45rem 0.8rem; border-radius:8px; border:none;
+    font-size:1rem; cursor:pointer; transition:all 0.2s;
+    background:transparent; color:var(--muted);
+  }
+  .view-btn.active { background:var(--blanc); color:var(--rouge); box-shadow:0 1px 4px rgba(204,10,43,0.1); }
+
+  .results-count { font-size:0.82rem; color:var(--muted); white-space:nowrap; align-self:center; }
+  .results-count strong { color:var(--rouge); }
+
+  /* GRILLE */
+  .view-grille { display:grid; grid-template-columns:repeat(3,1fr); gap:1.2rem; }
+  .view-grille.hidden, .view-liste.hidden { display:none; }
+
+  .pro-card {
+    background:var(--blanc); border-radius:20px;
+    border:1.5px solid var(--border); overflow:hidden;
+    transition:all 0.25s; cursor:pointer;
+  }
+  .pro-card:hover { transform:translateY(-4px); box-shadow:0 12px 36px rgba(204,10,43,0.12); border-color:var(--rouge); }
+
+  .pro-card-header {
+    background:linear-gradient(135deg,var(--night),#2A0012);
+    padding:1.5rem; text-align:center; position:relative;
+  }
+  .pro-badge-top {
+    position:absolute; top:0.8rem; right:0.8rem;
+    background:var(--or); color:var(--night);
+    font-size:0.65rem; font-weight:800;
+    padding:0.2rem 0.6rem; border-radius:50px;
+  }
+  .pro-avatar {
+    width:64px; height:64px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800; color:white;
+    margin:0 auto 0.8rem;
+    border:3px solid rgba(255,255,255,0.15);
+  }
+  .pro-name { font-family:'Syne',sans-serif; font-size:0.95rem; font-weight:800; color:var(--blanc); margin-bottom:0.25rem; }
+  .pro-metier { font-size:0.75rem; color:rgba(255,255,255,0.5); }
+
+  .pro-card-body { padding:1.2rem; }
+  .pro-stats { display:flex; gap:1rem; justify-content:center; margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid var(--border); }
+  .pro-stat { text-align:center; }
+  .pro-stat-num { font-family:'Syne',sans-serif; font-size:1rem; font-weight:800; }
+  .pro-stat-num.or { color:var(--or); }
+  .pro-stat-label { font-size:0.65rem; color:var(--muted); margin-top:0.1rem; }
+
+  .pro-services { display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.8rem; }
+  .pro-tag { font-size:0.72rem; padding:0.2rem 0.6rem; background:var(--gris); border-radius:50px; color:var(--muted); }
+
+  .pro-zone { display:flex; align-items:center; gap:0.3rem; font-size:0.78rem; color:var(--rouge); margin-bottom:1rem; font-weight:500; }
+
+  .btn-contacter {
+    width:100%; padding:0.7rem;
+    background:var(--rouge); color:white; border:none;
+    border-radius:50px; font-family:'DM Sans',sans-serif;
+    font-size:0.82rem; font-weight:700; cursor:pointer; transition:all 0.2s;
+  }
+  .btn-contacter:hover { background:var(--rouge-dark); }
+
+  /* LISTE */
+  .view-liste { display:flex; flex-direction:column; gap:1rem; }
+
+  .pro-row {
+    background:var(--blanc); border-radius:16px;
+    border:1.5px solid var(--border); padding:1.2rem 1.5rem;
+    display:flex; align-items:center; gap:1.2rem;
+    transition:all 0.2s; cursor:pointer; flex-wrap:wrap;
+  }
+  .pro-row:hover { border-color:var(--rouge); transform:translateX(4px); box-shadow:0 4px 16px rgba(204,10,43,0.08); }
+
+  .pro-row-avatar {
+    width:52px; height:52px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Syne',sans-serif; font-size:1rem; font-weight:800; color:white;
+    flex-shrink:0; position:relative;
+  }
+  .pro-row-badge {
+    position:absolute; bottom:-2px; right:-2px;
+    background:var(--or); color:var(--night);
+    font-size:0.5rem; font-weight:800;
+    padding:0.1rem 0.35rem; border-radius:50px;
+  }
+  .pro-row-info { flex:1; min-width:160px; }
+  .pro-row-name { font-family:'Syne',sans-serif; font-size:0.95rem; font-weight:800; margin-bottom:0.15rem; }
+  .pro-row-metier { font-size:0.8rem; color:var(--muted); margin-bottom:0.4rem; }
+  .pro-row-tags { display:flex; flex-wrap:wrap; gap:0.3rem; }
+  .pro-row-tag { font-size:0.7rem; padding:0.15rem 0.5rem; background:var(--gris); border-radius:50px; color:var(--muted); }
+
+  .pro-row-stats { display:flex; gap:1.5rem; flex-shrink:0; }
+  .pro-row-stat { text-align:center; }
+  .pro-row-stat-num { font-family:'Syne',sans-serif; font-size:1rem; font-weight:800; }
+  .pro-row-stat-num.or { color:var(--or); }
+  .pro-row-stat-label { font-size:0.65rem; color:var(--muted); }
+
+  .pro-row-zone { font-size:0.78rem; color:var(--rouge); font-weight:500; flex-shrink:0; }
+
+  .btn-contacter-sm {
+    padding:0.6rem 1.2rem; background:var(--rouge); color:white;
+    border:none; border-radius:50px;
+    font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:700;
+    cursor:pointer; transition:all 0.2s; flex-shrink:0; white-space:nowrap;
+  }
+  .btn-contacter-sm:hover { background:var(--rouge-dark); }
+
+  /* CTA BAS */
+  .cta-pro {
+    background:var(--night); border-radius:20px;
+    padding:2rem; text-align:center; margin-top:2rem;
+    position:relative; overflow:hidden;
+  }
+  .cta-pro-title { font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:800; color:var(--blanc); margin-bottom:0.5rem; }
+  .cta-pro-title span { color:var(--or); }
+  .cta-pro-sub { font-size:0.85rem; color:rgba(255,255,255,0.45); margin-bottom:1.2rem; line-height:1.6; }
+  .btn-devenir-pro {
+    background:var(--or); color:var(--night); border:none;
+    padding:0.8rem 2rem; border-radius:50px;
+    font-family:'DM Sans',sans-serif; font-size:0.9rem; font-weight:700;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .btn-devenir-pro:hover { background:var(--or-light); transform:translateY(-1px); }
+
+  @media (max-width:900px) { .view-grille { grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:580px) {
+    .view-grille { grid-template-columns:1fr; }
+    .filtres-bar { flex-direction:column; }
+    .pro-row { flex-direction:column; align-items:flex-start; }
+    .btn-contacter-sm { width:100%; text-align:center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">API<span>JOB</span></div>
+  <a href="apijob-v4.html" class="nav-back">← Accueil</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">⭐ Prestataires Pro vérifiés</div>
+  <h1>Les <span>Entrepreneurs</span><br>de Tahiti & Moorea</h1>
+  <p class="hero-sub">Découvrez et contactez directement les meilleurs prestataires Pro — vérifiés, notés et disponibles près de chez vous.</p>
+</div>
+
+<div class="page">
+
+  <div class="filtres-bar">
+    <div class="filtre-group">
+      <label class="filtre-label">Catégorie</label>
+      <select class="filtre-select">
+        <option>Tous les services</option>
+        <option>🌿 Jardinage</option>
+        <option>🏠 Ménage</option>
+        <option>🔧 Plomberie</option>
+        <option>⚡ Électricité</option>
+        <option>🛠️ Bricolage</option>
+        <option>📦 Déménagement</option>
+        <option>👶 Baby-sitting</option>
+        <option>🏡 Gardiennage</option>
+        <option>🐾 Animaux</option>
+        <option>🎨 Peinture</option>
+        <option>🚗 Transports</option>
+        <option>🔩 Mécanique</option>
+        <option>🤝 Aide à la personne</option>
+        <option>💻 Informatique</option>
+        <option>🎓 Cours particuliers</option>
+        <option>📋 Démarches & administratif</option>
+        <option>📚 Enseignement</option>
+        <option>🛋️ Aménagement & déco</option>
+        <option>🎉 Événementiel</option>
+        <option>💼 Bureautique & administratif</option>
+        <option>🧘 Bien-être</option>
+        <option>✨ Autre</option>
+      </select>
+    </div>
+    <div class="filtre-group">
+      <label class="filtre-label">Île</label>
+      <select class="filtre-select">
+        <option>Tahiti & Moorea</option>
+        <option>🌺 Tahiti</option>
+        <option>🏝️ Moorea</option>
+      </select>
+    </div>
+    <div class="filtre-group">
+      <label class="filtre-label">Trier par</label>
+      <select class="filtre-select">
+        <option>⭐ Meilleure note</option>
+        <option>📋 Plus de missions</option>
+        <option>🆕 Récemment ajoutés</option>
+      </select>
+    </div>
+    <div>
+      <div class="filtre-label" style="margin-bottom:0.3rem;">Affichage</div>
+      <div class="view-toggle">
+        <button class="view-btn active" id="btn-grille" onclick="setView('grille')">⊞</button>
+        <button class="view-btn" id="btn-liste" onclick="setView('liste')">≡</button>
+      </div>
+    </div>
+    <div class="results-count"><strong>6</strong> prestataires Pro</div>
+  </div>
+
+  <!-- GRILLE -->
+  <div class="view-grille" id="view-grille">
+
+    <div class="pro-card">
+      <div class="pro-card-header">
+        <div class="pro-badge-top">⭐ PRO</div>
+        <div class="pro-avatar" style="background:linear-gradient(135deg,var(--rouge),#FF4D6A);">TM</div>
+        <div class="pro-name">Teiva Manutahi</div>
+        <div class="pro-metier">Jardinier & entretien extérieur</div>
+      </div>
+      <div class="pro-card-body">
+        <div class="pro-stats">
+          <div class="pro-stat"><div class="pro-stat-num or">4.9</div><div class="pro-stat-label">Note</div></div>
+          <div class="pro-stat"><div class="pro-stat-num">58</div><div class="pro-stat-label">Missions</div></div>
+          <div class="pro-stat"><div class="pro-stat-num">3 ans</div><div class="pro-stat-label">Expérience</div></div>
+        </div>
+        <div class="pro-services">
+          <span class="pro-tag">🌿 Tonte</span>
+          <span class="pro-tag">✂️ Haies</span>
+          <span class="pro-tag">🪓 Débroussaillage</span>
+        </div>
+        <div class="pro-zone">📍 Punaauia · Paea · Papara</div>
+        <button class="btn-contacter" onclick="location.href='apijob-profil-public.html'">Voir le profil</button>
+      </div>
+    </div>
+
+    <div class="pro-card">
+      <div class="pro-card-header">
+        <div class="pro-badge-top">⭐ PRO</div>
+        <div class="pro-avatar" style="background:linear-gradient(135deg,var(--vert),#2EA86A);">HR</div>
+        <div class="pro-name">Hina Rofea</div>
+        <div class="pro-metier">Ménage & nettoyage</div>
+      </div>
+      <div class="pro-card-body">
+        <div class="pro-stats">
+          <div class="pro-stat"><div class="pro-stat-num or">5.0</div><div class="pro-stat-label">Note</div></div>
+          <div class="pro-stat"><div class="pro-stat-num">34</div><div class="pro-stat-label">Missions</div></div>
+          <div class="pro-stat"><div class="pro-stat-num">2 ans</div><div class="pro-stat-label">Expérience</div></div>
+        </div>
+        <div class="pro-services">
+          <span class="pro-tag">🏠 Ménage</span>
+          <span class="pro-tag">👔 Repassage</span>
+          <span class="pro-tag">🪟 Vitres</span>
+        </div>
+        <div class="pro-zone">📍 Papeete · Pirae · Faa'a</div>
+        <button class="btn-contacter" onclick="location.href='apijob-profil-public.html'">Voir le profil</button>
+      </div>
+    </div>
+
+    <div class="pro-card">
+      <div class="pro-card-header">
+        <div class="pro-badge-top">⭐ PRO</div>
+        <div class="pro-avatar" style="background:linear-gradient(135deg,#006B8F,#00A8C6);">MT</div>
+        <div class="pro-name">Māui Teriivahine</div>
+        <div class="pro-metier">Plombier certifié</div>
+      </div>
+      <div class="pro-card-body">
+        <div class="pro-stats">
+          <div class="pro-stat"><div class="pro-stat-num or">4.8</div><div class="pro-stat-label">Note</div></div>
+          <div class="pro-stat"><div class="pro-stat-num">41</div><div class="pro-stat-label">Missions</div></div>
+          <div class="pro-stat"><div class="pro-stat-num">5 ans</div><div class="pro-stat-label">Expérience</div></div>
+        </div>
+        <div class="pro-services">
+          <span class="pro-tag">🔧 Dépannage</span>
+          <span class="pro-tag">🚿 Sanitaires</span>
+          <span class="pro-tag">♨️ Chauffe-eau</span>
+        </div>
+        <div class="pro-zone">📍 Moorea — toute l'île</div>
+        <button class="btn-contacter" onclick="location.href='apijob-profil-public.html'">Voir le profil</button>
+      </div>
+    </div>
+
+    <div class="pro-card">
+      <div class="pro-card-header">
+        <div class="pro-badge-top">⭐ PRO</div>
+        <div class="pro-avatar" style="background:linear-gradient(135deg,#8B4513,#D2691E);">PN</div>
+        <div class="pro-name">Poerava Narii</div>
+        <div class="pro-metier">Baby-sitter & aide aux devoirs</div>
+      </div>
+      <div class="pro-card-body">
+        <div class="pro-stats">
+          <div class="pro-stat"><div class="pro-stat-num or">4.9</div><div class="pro-stat-label">Note</div></div>
+          <div class="pro-stat"><div class="pro-stat-num">29</div><div class="pro-stat-label">Missions</div></div>
+          <div class="pro-stat"><div class="pro-stat-num">4 ans</div><div class="pro-stat-label">Expérience</div></div>
+        </div>
+        <div class="pro-services">
+          <span class="pro-tag">👶 Garde</span>
+          <span class="pro-tag">📚 Devoirs</span>
+          <span class="pro-tag">🎨 Activités</span>
+        </div>
+        <div class="pro-zone">📍 Mahina · Arue · Pirae</div>
+        <button class="btn-contacter" onclick="location.href='apijob-profil-public.html'">Voir le profil</button>
+      </div>
+    </div>
+
+    <div class="pro-card">
+      <div class="pro-card-header">
+        <div class="pro-badge-top">⭐ PRO</div>
+        <div class="pro-avatar" style="background:linear-gradient(135deg,#4A0080,#8B00FF);">RT</div>
+        <div class="pro-name">Reva Temarii</div>
+        <div class="pro-metier">Garde d'animaux & pet-sitting</div>
+      </div>
+      <div class="pro-card-body">
+        <div class="pro-stats">
+          <div class="pro-stat"><div class="pro-stat-num or">5.0</div><div class="pro-stat-label">Note</div></div>
+          <div class="pro-stat"><div class="pro-stat-num">22</div><div class="pro-stat-label">Missions</div></div>
+          <div class="pro-stat"><div class="pro-stat-num">2 ans</div><div class="pro-stat-label">Expérience</div></div>
+        </div>
+        <div class="pro-services">
+          <span class="pro-tag">🐕 Chiens</span>
+          <span class="pro-tag">🐈 Chats</span>
+          <span class="pro-tag">🦮 Promenades</span>
+        </div>
+        <div class="pro-zone">📍 Papeete · Faa'a</div>
+        <button class="btn-contacter" onclick="location.href='apijob-profil-public.html'">Voir le profil</button>
+      </div>
+    </div>
+
+    <div class="pro-card">
+      <div class="pro-card-header">
+        <div class="pro-badge-top">⭐ PRO</div>
+        <div class="pro-avatar" style="background:linear-gradient(135deg,#CC6600,#FF8C00);">TN</div>
+        <div class="pro-name">Taaroa Natua</div>
+        <div class="pro-metier">Électricien & bricolage</div>
+      </div>
+      <div class="pro-card-body">
+        <div class="pro-stats">
+          <div class="pro-stat"><div class="pro-stat-num or">4.7</div><div class="pro-stat-label">Note</div></div>
+          <div class="pro-stat"><div class="pro-stat-num">47</div><div class="pro-stat-label">Missions</div></div>
+          <div class="pro-stat"><div class="pro-stat-num">6 ans</div><div class="pro-stat-label">Expérience</div></div>
+        </div>
+        <div class="pro-services">
+          <span class="pro-tag">⚡ Électricité</span>
+          <span class="pro-tag">🛠️ Bricolage</span>
+          <span class="pro-tag">🔌 Installation</span>
+        </div>
+        <div class="pro-zone">📍 Moorea — Haapiti · Paopao</div>
+        <button class="btn-contacter" onclick="location.href='apijob-profil-public.html'">Voir le profil</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- LISTE -->
+  <div class="view-liste hidden" id="view-liste">
+
+    <div class="pro-row">
+      <div class="pro-row-avatar" style="background:linear-gradient(135deg,var(--rouge),#FF4D6A);">TM<div class="pro-row-badge">PRO</div></div>
+      <div class="pro-row-info">
+        <div class="pro-row-name">Teiva Manutahi</div>
+        <div class="pro-row-metier">Jardinier & entretien extérieur</div>
+        <div class="pro-row-tags"><span class="pro-row-tag">🌿 Tonte</span><span class="pro-row-tag">✂️ Haies</span><span class="pro-row-tag">🪓 Débroussaillage</span></div>
+      </div>
+      <div class="pro-row-stats">
+        <div class="pro-row-stat"><div class="pro-row-stat-num or">4.9★</div><div class="pro-row-stat-label">Note</div></div>
+        <div class="pro-row-stat"><div class="pro-row-stat-num">58</div><div class="pro-row-stat-label">Missions</div></div>
+      </div>
+      <div class="pro-row-zone">📍 Punaauia · Tahiti</div>
+      <button class="btn-contacter-sm" onclick="location.href='apijob-profil-public.html'">Voir le profil</button>
+    </div>
+
+    <div class="pro-row">
+      <div class="pro-row-avatar" style="background:linear-gradient(135deg,var(--vert),#2EA86A);">HR<div class="pro-row-badge">PRO</div></div>
+      <div class="pro-row-info">
+        <div class="pro-row-name">Hina Rofea</div>
+        <div class="pro-row-metier">Ménage & nettoyage</div>
+        <div class="pro-row-tags"><span class="pro-row-tag">🏠 Ménage</span><span class="pro-row-tag">👔 Repassage</span><span class="pro-row-tag">🪟 Vitres</span></div>
+      </div>
+      <div class="pro-row-stats">
+        <div class="pro-row-stat"><div class="pro-row-stat-num or">5.0★</div><div class="pro-row-stat-label">Note</div></div>
+        <div class="pro-row-stat"><div class="pro-row-stat-num">34</div><div class="pro-row-stat-label">Missions</div></div>
+      </div>
+      <div class="pro-row-zone">📍 Papeete · Tahiti</div>
+      <button class="btn-contacter-sm" onclick="location.href='apijob-profil-public.html'">Voir le profil</button>
+    </div>
+
+    <div class="pro-row">
+      <div class="pro-row-avatar" style="background:linear-gradient(135deg,#006B8F,#00A8C6);">MT<div class="pro-row-badge">PRO</div></div>
+      <div class="pro-row-info">
+        <div class="pro-row-name">Māui Teriivahine</div>
+        <div class="pro-row-metier">Plombier certifié</div>
+        <div class="pro-row-tags"><span class="pro-row-tag">🔧 Dépannage</span><span class="pro-row-tag">🚿 Sanitaires</span><span class="pro-row-tag">♨️ Chauffe-eau</span></div>
+      </div>
+      <div class="pro-row-stats">
+        <div class="pro-row-stat"><div class="pro-row-stat-num or">4.8★</div><div class="pro-row-stat-label">Note</div></div>
+        <div class="pro-row-stat"><div class="pro-row-stat-num">41</div><div class="pro-row-stat-label">Missions</div></div>
+      </div>
+      <div class="pro-row-zone">📍 Moorea</div>
+      <button class="btn-contacter-sm" onclick="location.href='apijob-profil-public.html'">Voir le profil</button>
+    </div>
+
+    <div class="pro-row">
+      <div class="pro-row-avatar" style="background:linear-gradient(135deg,#8B4513,#D2691E);">PN<div class="pro-row-badge">PRO</div></div>
+      <div class="pro-row-info">
+        <div class="pro-row-name">Poerava Narii</div>
+        <div class="pro-row-metier">Baby-sitter & aide aux devoirs</div>
+        <div class="pro-row-tags"><span class="pro-row-tag">👶 Garde</span><span class="pro-row-tag">📚 Devoirs</span><span class="pro-row-tag">🎨 Activités</span></div>
+      </div>
+      <div class="pro-row-stats">
+        <div class="pro-row-stat"><div class="pro-row-stat-num or">4.9★</div><div class="pro-row-stat-label">Note</div></div>
+        <div class="pro-row-stat"><div class="pro-row-stat-num">29</div><div class="pro-row-stat-label">Missions</div></div>
+      </div>
+      <div class="pro-row-zone">📍 Mahina · Tahiti</div>
+      <button class="btn-contacter-sm" onclick="location.href='apijob-profil-public.html'">Voir le profil</button>
+    </div>
+
+    <div class="pro-row">
+      <div class="pro-row-avatar" style="background:linear-gradient(135deg,#4A0080,#8B00FF);">RT<div class="pro-row-badge">PRO</div></div>
+      <div class="pro-row-info">
+        <div class="pro-row-name">Reva Temarii</div>
+        <div class="pro-row-metier">Garde d'animaux & pet-sitting</div>
+        <div class="pro-row-tags"><span class="pro-row-tag">🐕 Chiens</span><span class="pro-row-tag">🐈 Chats</span><span class="pro-row-tag">🦮 Promenades</span></div>
+      </div>
+      <div class="pro-row-stats">
+        <div class="pro-row-stat"><div class="pro-row-stat-num or">5.0★</div><div class="pro-row-stat-label">Note</div></div>
+        <div class="pro-row-stat"><div class="pro-row-stat-num">22</div><div class="pro-row-stat-label">Missions</div></div>
+      </div>
+      <div class="pro-row-zone">📍 Faa'a · Tahiti</div>
+      <button class="btn-contacter-sm" onclick="location.href='apijob-profil-public.html'">Voir le profil</button>
+    </div>
+
+    <div class="pro-row">
+      <div class="pro-row-avatar" style="background:linear-gradient(135deg,#CC6600,#FF8C00);">TN<div class="pro-row-badge">PRO</div></div>
+      <div class="pro-row-info">
+        <div class="pro-row-name">Taaroa Natua</div>
+        <div class="pro-row-metier">Électricien & bricolage</div>
+        <div class="pro-row-tags"><span class="pro-row-tag">⚡ Électricité</span><span class="pro-row-tag">🛠️ Bricolage</span><span class="pro-row-tag">🔌 Installation</span></div>
+      </div>
+      <div class="pro-row-stats">
+        <div class="pro-row-stat"><div class="pro-row-stat-num or">4.7★</div><div class="pro-row-stat-label">Note</div></div>
+        <div class="pro-row-stat"><div class="pro-row-stat-num">47</div><div class="pro-row-stat-label">Missions</div></div>
+      </div>
+      <div class="pro-row-zone">📍 Moorea</div>
+      <button class="btn-contacter-sm" onclick="location.href='apijob-profil-public.html'">Voir le profil</button>
+    </div>
+
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-pro">
+    <div class="cta-pro-title">Vous êtes prestataire ? Devenez <span>Pro</span> !</div>
+    <div class="cta-pro-sub">Rejoignez la section Entrepreneurs et laissez les clients vous trouver directement — sans dépenser de jetons.</div>
+    <button class="btn-devenir-pro" onclick="window.location='apijob-devenir-pro.html'">⭐ Passer au forfait Pro — 5 900 XPF/mois</button>
+  </div>
+
+</div>
+
+<script>
+  function setView(vue) {
+    document.getElementById('view-grille').classList.toggle('hidden', vue !== 'grille');
+    document.getElementById('view-liste').classList.toggle('hidden', vue !== 'liste');
+    document.getElementById('btn-grille').classList.toggle('active', vue === 'grille');
+    document.getElementById('btn-liste').classList.toggle('active', vue === 'liste');
+  }
+</script>
+
+</body>
+</html>

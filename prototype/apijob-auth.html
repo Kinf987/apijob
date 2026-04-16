@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API JOB — Connexion / Inscription</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rouge: #CC0A2B;
+    --rouge-dark: #A00822;
+    --or: #F0A500;
+    --night: #1A0008;
+    --blanc: #FFFFFF;
+    --gris: #F7F3F0;
+    --muted: rgba(26,0,8,0.45);
+    --border: rgba(204,10,43,0.12);
+    --vert: #1A7A4A;
+    --vert-light: rgba(26,122,74,0.08);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--gris);
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--blanc);
+    border-bottom: 2px solid var(--rouge);
+    padding: 1rem 5%;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem; font-weight: 800;
+    color: var(--rouge); letter-spacing: -0.5px;
+    display: flex; align-items: center; gap: 0.25rem;
+    cursor: default;
+  }
+  .nav-logo span { color: var(--or); }
+  .nav-back {
+    font-size: 0.88rem; color: var(--muted);
+    text-decoration: none; transition: color 0.2s;
+  }
+  .nav-back:hover { color: var(--rouge); }
+
+  /* MAIN */
+  main {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    padding: 2rem 1.5rem;
+  }
+
+  .auth-card {
+    background: var(--blanc);
+    border-radius: 24px;
+    padding: 2.5rem;
+    width: 100%; max-width: 480px;
+    box-shadow: 0 8px 40px rgba(204,10,43,0.08);
+    border: 1px solid var(--border);
+    animation: fadeUp 0.4s ease both;
+  }
+
+  /* ONGLETS */
+  .tabs {
+    display: flex;
+    background: var(--gris);
+    border-radius: 50px;
+    padding: 0.3rem; gap: 0.3rem;
+    margin-bottom: 2rem;
+  }
+  .tab {
+    flex: 1; text-align: center;
+    padding: 0.65rem 1rem;
+    border-radius: 50px; border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; font-weight: 600;
+    cursor: pointer; transition: all 0.25s;
+    color: var(--muted); background: transparent;
+  }
+  .tab.active {
+    background: var(--rouge); color: var(--blanc);
+    box-shadow: 0 4px 12px rgba(204,10,43,0.25);
+  }
+
+  /* PANELS */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .panel-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.55rem; font-weight: 800;
+    letter-spacing: -0.5px; color: var(--night);
+    margin-bottom: 0.4rem;
+  }
+  .panel-sub {
+    font-size: 0.88rem; color: var(--muted);
+    margin-bottom: 1.6rem; line-height: 1.5;
+  }
+
+  /* SOCIAL */
+  .social-btns { display: flex; flex-direction: column; gap: 0.7rem; margin-bottom: 1.5rem; }
+  .social-btn {
+    display: flex; align-items: center; justify-content: center; gap: 0.7rem;
+    padding: 0.8rem; border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: var(--blanc);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; font-weight: 500;
+    cursor: pointer; transition: all 0.2s; color: var(--night);
+  }
+  .social-btn:hover { border-color: var(--rouge); background: rgba(204,10,43,0.02); }
+
+  /* DIVIDER */
+  .divider {
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+  .divider span { font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+
+  /* SÉLECTEUR CLIENT / PRESTATAIRE */
+  .role-selector {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0.8rem; margin-bottom: 1.4rem;
+  }
+  .role-card {
+    border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 1rem 0.8rem;
+    text-align: center; cursor: pointer;
+    transition: all 0.2s; background: var(--blanc);
+  }
+  .role-card:hover { border-color: var(--rouge); }
+  .role-card.selected {
+    border-color: var(--rouge);
+    background: rgba(204,10,43,0.04);
+    box-shadow: 0 0 0 3px rgba(204,10,43,0.08);
+  }
+  .role-emoji { font-size: 1.6rem; margin-bottom: 0.35rem; }
+  .role-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem; font-weight: 700; color: var(--night);
+  }
+  .role-sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.15rem; }
+
+  /* FORM */
+  .form-group { margin-bottom: 1.1rem; }
+  .form-label {
+    display: block; font-size: 0.82rem; font-weight: 600;
+    color: var(--night); margin-bottom: 0.4rem;
+  }
+  .form-label .required { color: var(--rouge); margin-left: 2px; }
+  .form-input {
+    width: 100%; padding: 0.8rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.92rem; color: var(--night);
+    background: var(--blanc);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+  .form-input:focus {
+    border-color: var(--rouge);
+    box-shadow: 0 0 0 3px rgba(204,10,43,0.08);
+  }
+  .form-input::placeholder { color: rgba(26,0,8,0.3); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+
+  /* PHONE */
+  .phone-wrap { display: flex; gap: 0.5rem; }
+  .phone-prefix {
+    padding: 0.8rem; border: 1.5px solid var(--border);
+    border-radius: 12px; font-family: 'DM Sans', sans-serif;
+    font-size: 0.92rem; color: var(--night);
+    background: var(--gris); width: 85px; text-align: center;
+    outline: none;
+  }
+
+  /* BLOC PRESTATAIRE */
+  .presta-fields {
+    display: none;
+    background: rgba(240,165,0,0.06);
+    border: 1.5px solid rgba(240,165,0,0.25);
+    border-radius: 16px;
+    padding: 1.2rem;
+    margin-bottom: 1.2rem;
+  }
+  .presta-fields.visible { display: block; }
+  .presta-fields-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.82rem; font-weight: 700;
+    color: var(--or); margin-bottom: 0.8rem;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .presta-fields .form-group { margin-bottom: 0.9rem; }
+  .presta-fields .form-group:last-child { margin-bottom: 0; }
+
+  .upload-btn {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    background: var(--blanc);
+    cursor: pointer; transition: all 0.2s;
+    width: 100%;
+  }
+  .upload-btn:hover { border-color: var(--rouge); background: rgba(204,10,43,0.02); }
+  .upload-btn input { display: none; }
+  .upload-btn-icon {
+    font-size: 1.3rem; flex-shrink: 0;
+    width: 36px; height: 36px;
+    background: var(--gris); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .upload-btn-text { text-align: left; }
+  .upload-btn-title { font-size: 0.84rem; font-weight: 600; color: var(--night); }
+  .upload-btn-sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; }
+
+  /* CGU */
+  .cgu {
+    display: flex; align-items: flex-start; gap: 0.6rem;
+    margin-bottom: 1rem;
+    font-size: 0.78rem; color: var(--muted); line-height: 1.5;
+  }
+  .cgu input { margin-top: 2px; accent-color: var(--rouge); flex-shrink: 0; }
+  .cgu a { color: var(--rouge); text-decoration: none; }
+
+  .cps-block {
+    background: rgba(204,10,43,0.04);
+    border: 1.5px solid rgba(204,10,43,0.12);
+    border-radius: 12px; padding: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  /* FORGOT */
+  .forgot { text-align: right; margin-top: -0.5rem; margin-bottom: 1rem; }
+  .forgot a { font-size: 0.78rem; color: var(--rouge); text-decoration: none; }
+  .forgot a:hover { text-decoration: underline; }
+
+  /* SUBMIT */
+  .btn-submit {
+    width: 100%; padding: 0.95rem;
+    background: var(--rouge); color: var(--blanc);
+    border: none; border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-submit:hover {
+    background: var(--rouge-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(204,10,43,0.3);
+  }
+
+  /* NOTE */
+  .auth-note {
+    text-align: center; margin-top: 1.2rem;
+    font-size: 0.78rem; color: var(--muted);
+  }
+  .auth-note a { color: var(--rouge); text-decoration: none; font-weight: 600; }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  @media (max-width: 480px) {
+    .auth-card { padding: 1.8rem 1.4rem; }
+    .form-row { grid-template-columns: 1fr; }
+    .panel-title { font-size: 1.3rem; }
+    .role-selector { gap: 0.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">API<span>JOB</span></div>
+  <a href="apijob-v4.html" class="nav-back">← Retour à l'accueil</a>
+</nav>
+
+<main>
+  <div class="auth-card">
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('inscription')">Créer un compte</button>
+      <button class="tab" onclick="switchTab('connexion')">Se connecter</button>
+    </div>
+
+    <!-- ── INSCRIPTION ── -->
+    <div class="panel active" id="panel-inscription">
+      <h1 class="panel-title">Rejoignez API JOB 🌺</h1>
+      <p class="panel-sub">Un seul compte pour proposer et chercher des services à Tahiti & Moorea.</p>
+
+      <!-- RÔLE -->
+      <div class="role-selector">
+        <div class="role-card" data-role="client" onclick="selectRole(this, 'client')">
+          <div class="role-emoji">🙋</div>
+          <div class="role-label">Je suis client</div>
+          <div class="role-sub">Je cherche un service</div>
+        </div>
+        <div class="role-card" data-role="prestataire" onclick="selectRole(this, 'prestataire')">
+          <div class="role-emoji">🔧</div>
+          <div class="role-label">Je suis prestataire</div>
+          <div class="role-sub">Je propose mes services</div>
+        </div>
+      </div>
+
+      <div class="social-btns">
+        <button class="social-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Continuer avec Google
+        </button>
+        <button class="social-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Continuer avec Facebook
+        </button>
+      </div>
+
+      <div class="divider"><span>ou avec votre email</span></div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Prénom <span class="required">*</span></label>
+          <input type="text" class="form-input" id="input-prenom" placeholder="Teiva">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nom <span class="required">*</span></label>
+          <input type="text" class="form-input" id="input-nom" placeholder="Manutahi">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email <span class="required">*</span></label>
+        <input type="email" class="form-input" id="input-email-inscription" placeholder="teiva@email.pf">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Téléphone <span class="required">*</span></label>
+        <div class="phone-wrap">
+          <input type="text" class="phone-prefix" value="+689" readonly>
+          <input type="tel" class="form-input" id="input-tel" placeholder="87 00 00 00">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Mot de passe <span class="required">*</span></label>
+        <input type="password" class="form-input" id="input-password-inscription" placeholder="Minimum 8 caractères">
+      </div>
+
+      <!-- CHAMPS PRESTATAIRE -->
+      <div class="presta-fields" id="presta-fields">
+        <div class="presta-fields-title">🔒 Vérification prestataire</div>
+
+        <div class="form-group">
+          <label class="form-label">Numéro Tahiti <span class="required">*</span></label>
+          <input type="text" class="form-input" id="input-numero-tahiti" placeholder="Ex : 123456789">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Pièce d'identité <span class="required">*</span></label>
+          <label class="upload-btn">
+            <input type="file" accept=".jpg,.jpeg,.png,.pdf" id="fileInput">
+            <div class="upload-btn-icon">📄</div>
+            <div class="upload-btn-text">
+              <div class="upload-btn-title" id="fileLabel">Importer un fichier</div>
+              <div class="upload-btn-sub">CNI, passeport ou titre de séjour — JPG, PNG ou PDF</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="cps-block">
+        <div class="cgu" style="margin-bottom:0;">
+          <input type="checkbox" id="cps" required>
+          <label for="cps">Je suis responsable de mes obligations légales et sociales, notamment vis-à-vis de la <strong>Caisse de Prévoyance Sociale (CPS)</strong> de Polynésie française.</label>
+        </div>
+      </div>
+
+      <div class="cgu">
+        <input type="checkbox" id="cgu" required>
+        <label for="cgu">J'accepte les <a href="apijob-cgu.html">conditions générales d'utilisation</a> et la <a href="apijob-confidentialite.html">politique de confidentialité</a> d'API JOB.</label>
+      </div>
+
+      <button class="btn-submit" id="btn-inscription" onclick="inscrire()">Créer mon compte</button>
+      <div id="msg-inscription" style="display:none;margin-top:0.8rem;font-size:0.82rem;padding:0.7rem 1rem;border-radius:10px;background:rgba(204,10,43,0.06);border:1px solid rgba(204,10,43,0.2);"></div>
+
+      <div class="auth-note">
+        Déjà membre ? <a href="#" onclick="switchTab('connexion'); return false;">Se connecter</a>
+      </div>
+    </div>
+
+    <!-- ── CONNEXION ── -->
+    <div class="panel" id="panel-connexion">
+      <h1 class="panel-title">Bon retour ! 👋</h1>
+      <p class="panel-sub">Connectez-vous à votre compte API JOB.</p>
+
+      <div class="social-btns">
+        <button class="social-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Continuer avec Google
+        </button>
+        <button class="social-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Continuer avec Facebook
+        </button>
+      </div>
+
+      <div class="divider"><span>ou avec votre email</span></div>
+
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="input-email-connexion" placeholder="teiva@email.pf">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Mot de passe</label>
+        <input type="password" class="form-input" id="input-password-connexion" placeholder="••••••••">
+      </div>
+
+      <div class="forgot">
+        <a href="apijob-motdepasse.html">Mot de passe oublié ?</a>
+      </div>
+
+      <button class="btn-submit" id="btn-connexion" onclick="connecter()">Se connecter</button>
+      <div id="msg-connexion" style="display:none;margin-top:0.8rem;font-size:0.82rem;padding:0.7rem 1rem;border-radius:10px;background:rgba(204,10,43,0.06);border:1px solid rgba(204,10,43,0.2);"></div>
+
+      <div class="auth-note">
+        Pas encore de compte ? <a href="#" onclick="switchTab('inscription'); return false;">S'inscrire gratuitement</a>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+  // ── Si déjà connecté, rediriger vers le dashboard ──
+  (async () => {
+    const s = await getSession();
+    if (s) window.location.href = 'apijob-dashboard.html';
+  })();
+
+  // ── TABS ──
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', (tab === 'inscription' && i === 0) || (tab === 'connexion' && i === 1));
+    });
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + tab).classList.add('active');
+  }
+
+  function selectRole(card, role) {
+    document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    const presta = document.getElementById('presta-fields');
+    presta.classList.toggle('visible', role === 'prestataire');
+  }
+
+  // Upload label update
+  document.getElementById('fileInput').addEventListener('change', function() {
+    if (this.files[0]) {
+      document.getElementById('fileLabel').textContent = '✓ ' + this.files[0].name;
+      document.getElementById('fileLabel').style.color = 'var(--vert)';
+    }
+  });
+
+  // ── INSCRIPTION ──
+  async function inscrire() {
+    const roleCard = document.querySelector('.role-card.selected');
+    const role     = roleCard ? roleCard.dataset.role : null;
+    const prenom   = document.getElementById('input-prenom').value.trim();
+    const nom      = document.getElementById('input-nom').value.trim();
+    const email    = document.getElementById('input-email-inscription').value.trim();
+    const tel      = document.getElementById('input-tel').value.trim();
+    const password = document.getElementById('input-password-inscription').value;
+    const cgu      = document.getElementById('cgu').checked;
+    const cps      = document.getElementById('cps').checked;
+
+    // Validation
+    if (!role)     return showMsg('msg-inscription', 'Veuillez choisir votre rôle (client ou prestataire).');
+    if (!prenom)   return showMsg('msg-inscription', 'Veuillez saisir votre prénom.');
+    if (!nom)      return showMsg('msg-inscription', 'Veuillez saisir votre nom.');
+    if (!email)    return showMsg('msg-inscription', 'Veuillez saisir votre email.');
+    if (!password || password.length < 8) return showMsg('msg-inscription', 'Le mot de passe doit contenir au moins 8 caractères.');
+    if (!cps)      return showMsg('msg-inscription', 'Vous devez cocher la déclaration CPS.');
+    if (!cgu)      return showMsg('msg-inscription', 'Vous devez accepter les conditions générales.');
+
+    // Prestataire : champs supplémentaires
+    let numero_tahiti = null;
+    if (role === 'prestataire') {
+      numero_tahiti = document.getElementById('input-numero-tahiti').value.trim();
+      if (!numero_tahiti) return showMsg('msg-inscription', 'Veuillez saisir votre numéro Tahiti.');
+    }
+
+    hideMsg('msg-inscription');
+    setLoading('btn-inscription', true, 'Créer mon compte');
+
+    try {
+      // Inscription Supabase Auth
+      const { data, error } = await db.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { role, prenom, nom, telephone: tel ? '+689' + tel : null, numero_tahiti }
+        }
+      });
+
+      if (error) {
+        let msg = error.message;
+        if (msg.includes('already registered')) msg = 'Cet email est déjà utilisé. Connectez-vous.';
+        if (msg.includes('invalid email'))       msg = 'Adresse email invalide.';
+        if (msg.includes('Password'))            msg = 'Mot de passe trop faible (min. 8 caractères).';
+        showMsg('msg-inscription', msg);
+        return;
+      }
+
+      // Upload pièce d'identité si prestataire
+      const file = document.getElementById('fileInput').files[0];
+      if (role === 'prestataire' && file && data.user) {
+        const ext  = file.name.split('.').pop();
+        const path = `${data.user.id}/identite.${ext}`;
+        await db.storage.from('identites').upload(path, file, { upsert: true });
+      }
+
+      // Redirection vers confirmation email
+      const param = role === 'client' ? 'client' : 'presta';
+      window.location.href = `apijob-confirmation-email.html?role=${param}`;
+
+    } catch (e) {
+      showMsg('msg-inscription', 'Une erreur est survenue. Réessayez.');
+      console.error(e);
+    } finally {
+      setLoading('btn-inscription', false, 'Créer mon compte');
+    }
+  }
+
+  // ── CONNEXION ──
+  async function connecter() {
+    const email    = document.getElementById('input-email-connexion').value.trim();
+    const password = document.getElementById('input-password-connexion').value;
+
+    if (!email)    return showMsg('msg-connexion', 'Veuillez saisir votre email.');
+    if (!password) return showMsg('msg-connexion', 'Veuillez saisir votre mot de passe.');
+
+    hideMsg('msg-connexion');
+    setLoading('btn-connexion', true, 'Se connecter');
+
+    try {
+      const { data, error } = await db.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        let msg = error.message;
+        if (msg.includes('Invalid login'))      msg = 'Email ou mot de passe incorrect.';
+        if (msg.includes('Email not confirmed')) msg = 'Veuillez confirmer votre email avant de vous connecter.';
+        showMsg('msg-connexion', msg);
+        return;
+      }
+
+      // Vérifier si banni
+      const { data: profile } = await db.from('profiles').select('is_banned').eq('id', data.user.id).single();
+      if (profile?.is_banned) {
+        await db.auth.signOut();
+        showMsg('msg-connexion', 'Votre compte a été suspendu. Contactez le support.');
+        return;
+      }
+
+      window.location.href = 'apijob-dashboard.html';
+
+    } catch (e) {
+      showMsg('msg-connexion', 'Une erreur est survenue. Réessayez.');
+      console.error(e);
+    } finally {
+      setLoading('btn-connexion', false, 'Se connecter');
+    }
+  }
+
+  // Permettre la touche Entrée dans les champs connexion
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const activePanel = document.querySelector('.panel.active');
+      if (!activePanel) return;
+      if (activePanel.id === 'panel-connexion') connecter();
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API JOB — Mon profil</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rouge: #CC0A2B;
+    --rouge-dark: #A00822;
+    --or: #F0A500;
+    --night: #1A0008;
+    --blanc: #FFFFFF;
+    --gris: #F7F3F0;
+    --gris2: #EDE8E3;
+    --muted: rgba(26,0,8,0.45);
+    --border: rgba(204,10,43,0.1);
+    --vert: #1A7A4A;
+    --vert-light: rgba(26,122,74,0.08);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--gris); color:var(--night); min-height:100vh; }
+
+  /* NAV */
+  nav {
+    position:sticky; top:0; z-index:100;
+    background:var(--blanc); border-bottom:2px solid var(--rouge);
+    padding:0.9rem 5%;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .nav-logo {
+    font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800;
+    color:var(--rouge); letter-spacing:-0.5px;
+    display:flex; align-items:center; gap:0.25rem; text-decoration:none;
+  }
+  .nav-logo span { color:var(--or); }
+  .nav-back { font-size:0.88rem; color:var(--muted); text-decoration:none; transition:color 0.2s; }
+  .nav-back:hover { color:var(--rouge); }
+
+  /* PAGE */
+  .page { max-width:680px; margin:0 auto; padding:2.5rem 5%; }
+
+  /* HEADER */
+  .page-header { margin-bottom:2rem; }
+  .page-title { font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800; letter-spacing:-0.5px; margin-bottom:0.3rem; }
+  .page-sub { font-size:0.85rem; color:var(--muted); }
+
+  /* COMPLETUDE */
+  .completude-bar {
+    background:var(--blanc); border-radius:16px;
+    border:1px solid var(--border); padding:1.2rem 1.5rem;
+    margin-bottom:2rem;
+    display:flex; align-items:center; gap:1.2rem; flex-wrap:wrap;
+  }
+  .completude-info { flex:1; }
+  .completude-label { display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:0.5rem; }
+  .completude-pct { font-family:'Syne',sans-serif; font-weight:800; color:var(--rouge); }
+  .progress-track { height:8px; background:var(--gris2); border-radius:50px; overflow:hidden; }
+  .progress-fill { height:100%; background:var(--rouge); border-radius:50px; transition:width 0.5s ease; }
+  .completude-note { font-size:0.75rem; color:var(--muted); margin-top:0.4rem; }
+
+  /* SECTION */
+  .section-card {
+    background:var(--blanc); border-radius:20px;
+    border:1px solid var(--border); margin-bottom:1.2rem;
+    overflow:hidden;
+  }
+  .section-header {
+    padding:1.2rem 1.5rem; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:0.6rem;
+  }
+  .section-icon { font-size:1.1rem; }
+  .section-title { font-family:'Syne',sans-serif; font-size:0.95rem; font-weight:800; }
+  .section-body { padding:1.5rem; }
+
+  /* PHOTO */
+  .photo-zone {
+    display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap;
+  }
+  .photo-preview {
+    width:80px; height:80px; border-radius:50%;
+    background:linear-gradient(135deg,var(--rouge),#FF4D6A);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800; color:white;
+    flex-shrink:0; cursor:pointer; position:relative;
+    border:3px solid var(--gris2); transition:all 0.2s;
+  }
+  .photo-preview:hover { border-color:var(--rouge); }
+  .photo-preview .photo-overlay {
+    position:absolute; inset:0; border-radius:50%;
+    background:rgba(204,10,43,0.7);
+    display:none; align-items:center; justify-content:center;
+    font-size:1.2rem;
+  }
+  .photo-preview:hover .photo-overlay { display:flex; }
+  .photo-info { flex:1; }
+  .photo-title { font-weight:600; font-size:0.88rem; margin-bottom:0.3rem; }
+  .photo-sub { font-size:0.78rem; color:var(--muted); line-height:1.5; margin-bottom:0.8rem; }
+  .btn-photo {
+    padding:0.55rem 1.2rem; border-radius:50px;
+    border:1.5px solid var(--border);
+    background:transparent; color:var(--rouge);
+    font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .btn-photo:hover { border-color:var(--rouge); background:rgba(204,10,43,0.04); }
+
+  /* FORM */
+  .form-group { margin-bottom:1.2rem; }
+  .form-group:last-child { margin-bottom:0; }
+  .form-label { display:block; font-size:0.82rem; font-weight:600; color:var(--night); margin-bottom:0.4rem; }
+  .form-label span { color:var(--rouge); }
+  .form-input, .form-select, .form-textarea {
+    width:100%; padding:0.8rem 1rem;
+    border:1.5px solid var(--border); border-radius:12px;
+    font-family:'DM Sans',sans-serif; font-size:0.92rem; color:var(--night);
+    background:var(--blanc); outline:none;
+    transition:border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color:var(--rouge); box-shadow:0 0 0 3px rgba(204,10,43,0.08);
+  }
+  .form-input::placeholder, .form-textarea::placeholder { color:rgba(26,0,8,0.3); }
+  .form-textarea { resize:vertical; min-height:100px; line-height:1.6; }
+  .char-count { text-align:right; font-size:0.72rem; color:var(--muted); margin-top:0.3rem; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; }
+
+  /* SERVICES CHECKBOXES */
+  .services-grid {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:0.6rem;
+  }
+  .service-check {
+    display:flex; align-items:center; gap:0.5rem;
+    padding:0.6rem 0.8rem;
+    border:1.5px solid var(--border); border-radius:10px;
+    cursor:pointer; transition:all 0.2s; font-size:0.82rem;
+    user-select:none;
+  }
+  .service-check:hover { border-color:var(--rouge); }
+  .service-check.checked { border-color:var(--rouge); background:rgba(204,10,43,0.04); color:var(--rouge); font-weight:600; }
+  .service-check input { display:none; }
+
+  /* TARIFS */
+  .tarif-row {
+    display:flex; align-items:center; gap:0.8rem;
+    margin-bottom:0.8rem; flex-wrap:wrap;
+  }
+  .tarif-row:last-child { margin-bottom:0; }
+  .tarif-service { font-size:0.85rem; min-width:140px; }
+  .tarif-input-wrap { display:flex; align-items:center; gap:0.5rem; flex:1; }
+  .tarif-input {
+    width:100%; padding:0.6rem 0.8rem;
+    border:1.5px solid var(--border); border-radius:10px;
+    font-family:'DM Sans',sans-serif; font-size:0.88rem; color:var(--night);
+    background:var(--blanc); outline:none; transition:border-color 0.2s;
+  }
+  .tarif-input:focus { border-color:var(--rouge); }
+  .tarif-unit { font-size:0.78rem; color:var(--muted); white-space:nowrap; }
+
+  /* ZONES */
+  .zones-wrap { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem; }
+  .zone-tag {
+    display:inline-flex; align-items:center; gap:0.4rem;
+    padding:0.35rem 0.8rem; border-radius:50px;
+    background:rgba(204,10,43,0.07); color:var(--rouge);
+    font-size:0.8rem; font-weight:500;
+  }
+  .zone-remove {
+    cursor:pointer; font-size:0.7rem; opacity:0.7;
+    background:none; border:none; color:var(--rouge);
+    padding:0; line-height:1;
+  }
+  .zone-remove:hover { opacity:1; }
+  .zone-add { display:flex; gap:0.6rem; }
+  .zone-add select {
+    flex:1; padding:0.65rem 0.8rem;
+    border:1.5px solid var(--border); border-radius:10px;
+    font-family:'DM Sans',sans-serif; font-size:0.85rem; color:var(--night);
+    background:var(--blanc); outline:none; cursor:pointer;
+  }
+  .zone-add select:focus { border-color:var(--rouge); }
+  .btn-add-zone {
+    padding:0.65rem 1.2rem; border-radius:10px;
+    background:var(--rouge); color:white; border:none;
+    font-family:'DM Sans',sans-serif; font-size:0.85rem; font-weight:600;
+    cursor:pointer; transition:all 0.2s; white-space:nowrap;
+  }
+  .btn-add-zone:hover { background:var(--rouge-dark); }
+
+  /* DISPONIBILITES */
+  .dispo-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:0.5rem; }
+  .dispo-day {
+    display:flex; flex-direction:column; align-items:center; gap:0.4rem;
+    cursor:pointer; user-select:none;
+  }
+  .dispo-label { font-size:0.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+  .dispo-toggle {
+    width:36px; height:36px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.75rem; font-weight:700;
+    border:2px solid var(--border); background:var(--blanc);
+    color:var(--muted); transition:all 0.2s;
+  }
+  .dispo-day.active .dispo-toggle {
+    background:var(--rouge); color:white; border-color:var(--rouge);
+  }
+
+  /* SAVE */
+  .save-bar {
+    position:sticky; bottom:0;
+    background:var(--blanc); border-top:1px solid var(--border);
+    padding:1rem 1.5rem;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:1rem; margin-top:2rem;
+    border-radius:0 0 20px 20px;
+    box-shadow:0 -4px 20px rgba(204,10,43,0.06);
+  }
+  .save-note { font-size:0.78rem; color:var(--muted); }
+  .btn-save {
+    background:var(--rouge); color:white; border:none;
+    padding:0.85rem 2rem; border-radius:50px;
+    font-family:'DM Sans',sans-serif; font-size:0.92rem; font-weight:700;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .btn-save:hover { background:var(--rouge-dark); transform:translateY(-1px); box-shadow:0 6px 20px rgba(204,10,43,0.3); }
+
+  /* TOAST */
+  .toast {
+    position:fixed; bottom:2rem; left:50%; transform:translateX(-50%) translateY(100px);
+    background:var(--night); color:white;
+    padding:0.8rem 1.5rem; border-radius:50px;
+    font-size:0.88rem; font-weight:500;
+    transition:transform 0.35s ease;
+    z-index:200; white-space:nowrap;
+  }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  .page { animation:fadeUp 0.4s ease both; }
+
+  @media (max-width:500px) {
+    .services-grid { grid-template-columns:repeat(2,1fr); }
+    .form-row { grid-template-columns:1fr; }
+    .dispo-grid { gap:0.3rem; }
+    .dispo-toggle { width:32px; height:32px; font-size:0.65rem; }
+    .tarif-row { flex-direction:column; align-items:flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">API<span>JOB</span></div>
+  <a href="apijob-dashboard.html" class="nav-back">← Tableau de bord</a>
+</nav>
+
+<div class="page">
+
+  <div class="page-header">
+    <div class="page-title">✏️ Mon profil</div>
+    <div class="page-sub">Complétez votre profil pour inspirer confiance aux clients.</div>
+  </div>
+
+  <!-- COMPLÉTUDE -->
+  <div class="completude-bar">
+    <div class="completude-info">
+      <div class="completude-label">
+        <span>Complétude du profil</span>
+        <span class="completude-pct" id="pct">75%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:75%"></div>
+      </div>
+      <div class="completude-note">💡 Un profil complet à 100% reçoit 3x plus de missions</div>
+    </div>
+  </div>
+
+  <!-- PHOTO -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="section-icon">📸</span>
+      <span class="section-title">Photo de profil</span>
+    </div>
+    <div class="section-body">
+      <div class="photo-zone">
+        <div class="photo-preview" onclick="document.getElementById('photo-input').click()">
+          TM
+          <div class="photo-overlay">📷</div>
+        </div>
+        <div class="photo-info">
+          <div class="photo-title">Votre photo de profil</div>
+          <div class="photo-sub">Une vraie photo inspire confiance. Évitez les logos ou photos floues. Format JPG ou PNG, max 5MB.</div>
+          <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="previewPhoto(this)">
+          <button class="btn-photo" onclick="document.getElementById('photo-input').click()">📷 Choisir une photo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DESCRIPTION -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="section-icon">📝</span>
+      <span class="section-title">À propos de vous</span>
+    </div>
+    <div class="section-body">
+      <div class="form-group">
+        <label class="form-label">Titre de votre profil <span>*</span></label>
+        <input type="text" class="form-input" id="titre" placeholder="Ex : Jardinier expérimenté à Tahiti" maxlength="60" oninput="updateCompletude()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description <span>*</span></label>
+        <textarea class="form-textarea" id="description" placeholder="Présentez-vous : votre expérience, vos compétences, ce qui vous différencie..." maxlength="500" oninput="updateCount(); updateCompletude()"></textarea>
+        <div class="char-count"><span id="char-count">0</span>/500</div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Expérience</label>
+          <select class="form-select" onchange="updateCompletude()">
+            <option value="">Choisir</option>
+            <option>Moins d'1 an</option>
+            <option>1 à 2 ans</option>
+            <option>3 à 5 ans</option>
+            <option selected>Plus de 5 ans</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Temps de réponse</label>
+          <select class="form-select">
+            <option>Moins d'1 heure</option>
+            <option selected>Moins de 2 heures</option>
+            <option>Dans la journée</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SERVICES -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="section-icon">🛠️</span>
+      <span class="section-title">Services proposés <span style="color:var(--rouge)">*</span></span>
+    </div>
+    <div class="section-body">
+      <div class="services-grid">
+        <label class="service-check checked" onclick="toggleService(this)">
+          <input type="checkbox" checked> 🌿 Jardinage
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> 🏠 Ménage
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> 🔧 Plomberie
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> ⚡ Électricité
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> 🛠️ Bricolage
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> 📦 Déménagement
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> 👶 Baby-sitting
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> 🏡 Gardiennage
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> 🐾 Animaux
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> 🎨 Peinture
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> 🚗 Transports
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> 🔩 Mécanique
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> 🤝 Aide à la personne
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> 💻 Informatique
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> 🎓 Cours particuliers
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> 📋 Démarches & administratif
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> 📚 Enseignement
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> 🛋️ Aménagement & déco
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> 🎉 Événementiel
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> 💼 Bureautique & administratif
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> 🧘 Bien-être
+        </label>
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> ✨ Autre
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- TARIFS -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="section-icon">💰</span>
+      <span class="section-title">Tarifs indicatifs</span>
+    </div>
+    <div class="section-body">
+      <div class="tarif-row">
+        <div class="tarif-service">🌿 Jardinage</div>
+        <div class="tarif-input-wrap">
+          <input type="number" class="tarif-input" placeholder="Ex : 2500" min="0">
+          <span class="tarif-unit">XPF / heure</span>
+        </div>
+      </div>
+      <div class="tarif-row">
+        <div class="tarif-service">🏠 Ménage</div>
+        <div class="tarif-input-wrap">
+          <input type="number" class="tarif-input" placeholder="Ex : 2000" min="0">
+          <span class="tarif-unit">XPF / heure</span>
+        </div>
+      </div>
+      <div class="tarif-row">
+        <div class="tarif-service">🔧 Plomberie</div>
+        <div class="tarif-input-wrap">
+          <input type="number" class="tarif-input" placeholder="Ex : 4000" min="0">
+          <span class="tarif-unit">XPF / heure</span>
+        </div>
+      </div>
+      <p style="font-size:0.75rem;color:var(--muted);margin-top:1rem;">Ces tarifs sont indicatifs et visibles sur votre profil. Vous pouvez ajuster le prix lors de chaque proposition.</p>
+    </div>
+  </div>
+
+  <!-- ZONE -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="section-icon">📍</span>
+      <span class="section-title">Zone d'intervention <span style="color:var(--rouge)">*</span></span>
+    </div>
+    <div class="section-body">
+      <div class="zones-wrap" id="zones-wrap">
+        <span class="zone-tag">Punaauia <button class="zone-remove" onclick="removeZone(this)">✕</button></span>
+        <span class="zone-tag">Paea <button class="zone-remove" onclick="removeZone(this)">✕</button></span>
+        <span class="zone-tag">Papara <button class="zone-remove" onclick="removeZone(this)">✕</button></span>
+      </div>
+      <div class="zone-add">
+        <select id="zone-select">
+          <option value="">Ajouter une commune...</option>
+          <optgroup label="🌺 Tahiti">
+            <option>Papeete</option>
+            <option>Faa'a</option>
+            <option>Punaauia</option>
+            <option>Paea</option>
+            <option>Papara</option>
+            <option>Pirae</option>
+            <option>Arue</option>
+            <option>Mahina</option>
+            <option>Hitiaa O Te Ra</option>
+            <option>Taiarapu-Est</option>
+            <option>Taiarapu-Ouest</option>
+            <option>Teva I Uta</option>
+          </optgroup>
+          <optgroup label="🏝️ Moorea">
+            <option>Afareaitu</option>
+            <option>Haapiti</option>
+            <option>Maharepa</option>
+            <option>Papetoai</option>
+            <option>Paopao</option>
+            <option>Teavaro</option>
+          </optgroup>
+        </select>
+        <button class="btn-add-zone" onclick="addZone()">+ Ajouter</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISPONIBILITÉS -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="section-icon">📅</span>
+      <span class="section-title">Disponibilités</span>
+    </div>
+    <div class="section-body">
+      <div class="dispo-grid">
+        <div class="dispo-day active" onclick="toggleDispo(this)">
+          <div class="dispo-label">Lun</div>
+          <div class="dispo-toggle">✓</div>
+        </div>
+        <div class="dispo-day active" onclick="toggleDispo(this)">
+          <div class="dispo-label">Mar</div>
+          <div class="dispo-toggle">✓</div>
+        </div>
+        <div class="dispo-day active" onclick="toggleDispo(this)">
+          <div class="dispo-label">Mer</div>
+          <div class="dispo-toggle">✓</div>
+        </div>
+        <div class="dispo-day active" onclick="toggleDispo(this)">
+          <div class="dispo-label">Jeu</div>
+          <div class="dispo-toggle">✓</div>
+        </div>
+        <div class="dispo-day active" onclick="toggleDispo(this)">
+          <div class="dispo-label">Ven</div>
+          <div class="dispo-toggle">✓</div>
+        </div>
+        <div class="dispo-day active" onclick="toggleDispo(this)">
+          <div class="dispo-label">Sam</div>
+          <div class="dispo-toggle">✓</div>
+        </div>
+        <div class="dispo-day" onclick="toggleDispo(this)">
+          <div class="dispo-label">Dim</div>
+          <div class="dispo-toggle">✕</div>
+        </div>
+      </div>
+      <p style="font-size:0.75rem; color:var(--muted); margin-top:1rem;">Cliquez sur un jour pour activer ou désactiver votre disponibilité.</p>
+    </div>
+  </div>
+
+  <!-- SAVE BAR -->
+  <div class="save-bar">
+    <div class="save-note">Les modifications sont sauvegardées instantanément</div>
+    <button class="btn-save" onclick="sauvegarder()">💾 Sauvegarder le profil</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast">✅ Profil sauvegardé !</div>
+
+<script>
+  function updateCount() {
+    const val = document.getElementById('description').value.length;
+    document.getElementById('char-count').textContent = val;
+  }
+
+  function toggleService(label) {
+    label.classList.toggle('checked');
+    updateCompletude();
+  }
+
+  function toggleDispo(day) {
+    const isActive = day.classList.toggle('active');
+    day.querySelector('.dispo-toggle').textContent = isActive ? '✓' : '✕';
+  }
+
+  function addZone() {
+    const select = document.getElementById('zone-select');
+    const val = select.value;
+    if (!val) return;
+    const wrap = document.getElementById('zones-wrap');
+    const existing = Array.from(wrap.querySelectorAll('.zone-tag')).map(z => z.textContent.replace('✕','').trim());
+    if (existing.includes(val)) return;
+    const tag = document.createElement('span');
+    tag.className = 'zone-tag';
+    tag.innerHTML = `${val} <button class="zone-remove" onclick="removeZone(this)">✕</button>`;
+    wrap.appendChild(tag);
+    select.value = '';
+    updateCompletude();
+  }
+
+  function removeZone(btn) {
+    btn.closest('.zone-tag').remove();
+    updateCompletude();
+  }
+
+  function previewPhoto(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const preview = document.querySelector('.photo-preview');
+        preview.style.backgroundImage = `url(${e.target.result})`;
+        preview.style.backgroundSize = 'cover';
+        preview.style.backgroundPosition = 'center';
+        preview.textContent = '';
+        preview.appendChild(document.querySelector('.photo-overlay') || (() => {
+          const div = document.createElement('div');
+          div.className = 'photo-overlay';
+          div.textContent = '📷';
+          return div;
+        })());
+      };
+      reader.readAsDataURL(input.files[0]);
+      updateCompletude();
+    }
+  }
+
+  function updateCompletude() {
+    let score = 0;
+    if (document.getElementById('titre').value) score += 20;
+    if (document.getElementById('description').value.length > 50) score += 25;
+    if (document.querySelectorAll('.service-check.checked').length > 0) score += 20;
+    if (document.getElementById('zones-wrap').querySelectorAll('.zone-tag').length > 0) score += 20;
+    if (document.querySelectorAll('.dispo-day.active').length > 0) score += 15;
+    document.getElementById('pct').textContent = score + '%';
+    document.getElementById('progress-fill').style.width = score + '%';
+  }
+
+  function sauvegarder() {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // Init
+  updateCompletude();
+</script>
+
+</body>
+</html>

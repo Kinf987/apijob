@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API JOB — Conditions Générales d'Utilisation</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rouge: #CC0A2B;
+    --or: #F0A500;
+    --night: #1A0008;
+    --blanc: #FFFFFF;
+    --gris: #F7F3F0;
+    --muted: rgba(26,0,8,0.55);
+    --border: rgba(204,10,43,0.1);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--gris); color:var(--night); }
+
+  nav {
+    position:sticky; top:0; z-index:100;
+    background:var(--blanc); border-bottom:2px solid var(--rouge);
+    padding:0.9rem 5%;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .nav-logo {
+    font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800;
+    color:var(--rouge); letter-spacing:-0.5px;
+    display:flex; align-items:center; gap:0.25rem; text-decoration:none;
+  }
+  .nav-logo span { color:var(--or); }
+  .nav-back { font-size:0.88rem; color:var(--muted); text-decoration:none; transition:color 0.2s; }
+  .nav-back:hover { color:var(--rouge); }
+
+  .page {
+    max-width:760px; margin:0 auto;
+    padding:3rem 5%;
+  }
+
+  .cgu-header {
+    background:var(--blanc);
+    border-radius:20px; padding:2rem;
+    border:1px solid var(--border);
+    margin-bottom:2rem;
+    text-align:center;
+  }
+  .cgu-title {
+    font-family:'Syne',sans-serif;
+    font-size:clamp(1.6rem,3vw,2.2rem);
+    font-weight:800; letter-spacing:-1px;
+    margin-bottom:0.5rem;
+  }
+  .cgu-title span { color:var(--rouge); }
+  .cgu-date { font-size:0.82rem; color:var(--muted); margin-bottom:1rem; }
+  .cgu-intro {
+    font-size:0.9rem; color:var(--muted);
+    line-height:1.7; max-width:560px; margin:0 auto;
+  }
+
+  .cgu-card {
+    background:var(--blanc);
+    border-radius:20px; padding:2rem;
+    border:1px solid var(--border);
+    margin-bottom:1.2rem;
+  }
+
+  .article-num {
+    font-size:0.72rem; font-weight:700;
+    text-transform:uppercase; letter-spacing:2px;
+    color:var(--rouge); margin-bottom:0.5rem;
+  }
+  .article-title {
+    font-family:'Syne',sans-serif;
+    font-size:1.1rem; font-weight:800;
+    margin-bottom:1rem; color:var(--night);
+  }
+  .article-body {
+    font-size:0.9rem; color:var(--muted);
+    line-height:1.8;
+  }
+  .article-body p { margin-bottom:0.8rem; }
+  .article-body p:last-child { margin-bottom:0; }
+  .article-body ul {
+    list-style:none; margin:0.5rem 0 0.8rem 0;
+  }
+  .article-body ul li {
+    padding:0.3rem 0 0.3rem 1.2rem;
+    position:relative; font-size:0.88rem;
+  }
+  .article-body ul li::before {
+    content:'→';
+    position:absolute; left:0;
+    color:var(--rouge); font-weight:700;
+  }
+
+  .important-box {
+    background:rgba(204,10,43,0.05);
+    border:1.5px solid rgba(204,10,43,0.15);
+    border-radius:12px; padding:1rem 1.2rem;
+    margin:1rem 0; font-size:0.85rem;
+    color:var(--night); line-height:1.6;
+  }
+  .important-box strong { color:var(--rouge); }
+
+  .vert-box {
+    background:rgba(26,122,74,0.06);
+    border:1.5px solid rgba(26,122,74,0.15);
+    border-radius:12px; padding:1rem 1.2rem;
+    margin:1rem 0; font-size:0.85rem;
+    color:#1A7A4A; line-height:1.6;
+  }
+
+  .validation-card {
+    background:var(--night);
+    border-radius:20px; padding:2rem;
+    text-align:center; margin-top:2rem;
+  }
+  .validation-title {
+    font-family:'Syne',sans-serif;
+    font-size:1.1rem; font-weight:800;
+    color:var(--blanc); margin-bottom:0.5rem;
+  }
+  .validation-sub {
+    font-size:0.85rem; color:rgba(255,255,255,0.45);
+    line-height:1.6; margin-bottom:1.5rem;
+  }
+  .btn-accepter {
+    background:var(--rouge); color:white;
+    border:none; padding:0.9rem 2.5rem;
+    border-radius:50px;
+    font-family:'DM Sans',sans-serif;
+    font-size:0.95rem; font-weight:700;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .btn-accepter:hover { background:#A00822; transform:translateY(-1px); }
+
+  .sommaire {
+    background:var(--blanc);
+    border-radius:16px; padding:1.5rem;
+    border:1px solid var(--border);
+    margin-bottom:2rem;
+  }
+  .sommaire-title {
+    font-family:'Syne',sans-serif;
+    font-size:0.88rem; font-weight:800;
+    margin-bottom:1rem; color:var(--night);
+  }
+  .sommaire ul { list-style:none; }
+  .sommaire ul li { margin-bottom:0.4rem; }
+  .sommaire ul li a {
+    font-size:0.85rem; color:var(--rouge);
+    text-decoration:none; transition:opacity 0.2s;
+  }
+  .sommaire ul li a:hover { opacity:0.7; }
+  .sommaire ul li span { color:var(--muted); margin-right:0.4rem; font-size:0.78rem; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <svg width="24" height="24" viewBox="0 0 28 28" style="border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.15);flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="c"><circle cx="14" cy="14" r="14"/></clipPath></defs><g clip-path="url(#c)"><circle cx="14" cy="14" r="14" fill="white"/><g stroke="#F0A500" stroke-width="1.3" stroke-linecap="round"><line x1="14" y1="17" x2="2.2" y2="14.9"/><line x1="14" y1="17" x2="3.4" y2="11.4"/><line x1="14" y1="17" x2="5.7" y2="8.4"/><line x1="14" y1="17" x2="8.5" y2="6.3"/><line x1="14" y1="17" x2="12.1" y2="5.2"/><line x1="14" y1="17" x2="15.9" y2="5.2"/><line x1="14" y1="17" x2="19.5" y2="6.3"/><line x1="14" y1="17" x2="22.3" y2="8.4"/><line x1="14" y1="17" x2="24.6" y2="11.4"/><line x1="14" y1="17" x2="25.8" y2="14.9"/></g><rect x="0" y="17" width="28" height="11" fill="#1E7FC2"/><path d="M7,17.5 Q14,15.5 21,17.5 L20.5,18.5 Q14,16.8 7.5,18.5 Z" fill="#CE1126"/><path d="M3,19.5 Q7,18.5 11,19.5 Q14,20.5 17,19.5 Q21,18.5 25,19.5" fill="none" stroke="white" stroke-width="0.6" opacity="0.8"/><path d="M3,21.5 Q7,20.5 11,21.5 Q14,22.5 17,21.5 Q21,20.5 25,21.5" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/><path d="M3,23.5 Q7,22.5 11,23.5 Q14,24.5 17,23.5 Q21,22.5 25,23.5" fill="none" stroke="white" stroke-width="0.4" opacity="0.4"/></g></svg>
+    API<span>JOB</span>
+  </div>
+  <a href="apijob-v4.html" class="nav-back">← Accueil</a>
+</nav>
+
+<div class="page">
+
+  <div class="cgu-header">
+    <div class="cgu-title">Conditions Générales<br>d'Utilisation <span>API JOB</span></div>
+    <div class="cgu-date">Version 1.0 — En vigueur à compter du lancement de la plateforme</div>
+    <p class="cgu-intro">En vous inscrivant sur API JOB, vous acceptez les présentes conditions. Prenez le temps de les lire — elles définissent les règles du jeu pour tout le monde.</p>
+  </div>
+
+  <!-- SOMMAIRE -->
+  <div class="sommaire">
+    <div class="sommaire-title">📋 Sommaire</div>
+    <ul>
+      <li><span>Art. 1</span><a href="#art1">Objet de la plateforme</a></li>
+      <li><span>Art. 2</span><a href="#art2">Nature du service</a></li>
+      <li><span>Art. 3</span><a href="#art3">Inscription et statut des utilisateurs</a></li>
+      <li><span>Art. 4</span><a href="#art4">Fonctionnement de la mise en relation</a></li>
+      <li><span>Art. 5</span><a href="#art5">Responsabilité des utilisateurs</a></li>
+      <li><span>Art. 6</span><a href="#art6">Obligations légales et sociales</a></li>
+      <li><span>Art. 7</span><a href="#art7">Système de jetons</a></li>
+      <li><span>Art. 8</span><a href="#art8">Responsabilité de la plateforme</a></li>
+      <li><span>Art. 9</span><a href="#art9">Comportement des utilisateurs</a></li>
+      <li><span>Art. 10</span><a href="#art10">Données personnelles</a></li>
+      <li><span>Art. 11</span><a href="#art11">Modification des CGU</a></li>
+      <li><span>Art. 12</span><a href="#art12">Droit applicable</a></li>
+    </ul>
+  </div>
+
+  <!-- ART 1 -->
+  <div class="cgu-card" id="art1">
+    <div class="article-num">Article 1</div>
+    <div class="article-title">Objet de la plateforme</div>
+    <div class="article-body">
+      <p>Les présentes Conditions Générales d'Utilisation (CGU) ont pour objet de définir les modalités d'accès et d'utilisation de la plateforme APIJOB, service de mise en relation entre particuliers et prestataires de services à Tahiti et Moorea, Polynésie française.</p>
+    </div>
+  </div>
+
+  <!-- ART 2 -->
+  <div class="cgu-card" id="art2">
+    <div class="article-num">Article 2</div>
+    <div class="article-title">Nature du service</div>
+    <div class="article-body">
+      <p>APIJOB est une plateforme de mise en relation uniquement. À ce titre, APIJOB :</p>
+      <ul>
+        <li>ne fournit aucune prestation de service</li>
+        <li>n'est pas l'employeur des utilisateurs</li>
+        <li>n'intervient pas dans la réalisation des missions</li>
+        <li>ne garantit pas l'exécution des prestations</li>
+        <li>ne fixe pas les prix des services</li>
+        <li>n'intervient pas dans les modalités de paiement entre utilisateurs</li>
+      </ul>
+      <div class="vert-box">✅ Les utilisateurs agissent de manière totalement indépendante. APIJOB est un intermédiaire technique, comparable à un tableau d'affichage numérique.</div>
+    </div>
+  </div>
+
+  <!-- ART 3 -->
+  <div class="cgu-card" id="art3">
+    <div class="article-num">Article 3</div>
+    <div class="article-title">Inscription et statut des utilisateurs</div>
+    <div class="article-body">
+      <p>L'inscription est ouverte à toute personne physique majeure. L'utilisateur s'engage à fournir des informations exactes et à jour.</p>
+      <p>Lors de l'inscription, l'utilisateur doit déclarer son statut :</p>
+      <ul>
+        <li><strong>👤 Client de la plateforme</strong> — pour la recherche d'un service</li>
+        <li><strong>💼 Prestataire déclaré</strong> — personne exerçant une activité déclarée auprès des organismes compétents</li>
+      </ul>
+      <div class="important-box">
+        <strong>⚠️ Engagement obligatoire :</strong> En s'inscrivant, chaque prestataire de service déclare expressément être responsable de ses obligations légales et sociales, notamment vis-à-vis de la <strong>Caisse de Prévoyance Sociale (CPS)</strong> de Polynésie française.
+      </div>
+    </div>
+  </div>
+
+  <!-- ART 4 -->
+  <div class="cgu-card" id="art4">
+    <div class="article-num">Article 4</div>
+    <div class="article-title">Fonctionnement de la mise en relation</div>
+    <div class="article-body">
+      <p>Les clients publient des annonces décrivant leurs besoins. Les prestataires peuvent y répondre en utilisant des jetons.</p>
+      <p>Une fois la mise en relation effectuée, les utilisateurs échangent librement et définissent entre eux :</p>
+      <ul>
+        <li>les conditions de la mission</li>
+        <li>le prix de la prestation</li>
+        <li>les modalités de paiement</li>
+        <li>les délais d'exécution</li>
+      </ul>
+      <div class="important-box">
+        <strong>⚠️ Important :</strong> Tout partage de coordonnées personnelles (email, numéro de téléphone) dans les annonces ou messages avant acceptation d'une proposition est <strong>strictement interdit</strong> et peut entraîner la suspension du compte.
+      </div>
+      <p>Les prestations doivent être réalisées dans le respect de la réglementation en vigueur en Polynésie française.</p>
+    </div>
+  </div>
+
+  <!-- ART 5 -->
+  <div class="cgu-card" id="art5">
+    <div class="article-num">Article 5</div>
+    <div class="article-title">Responsabilité des utilisateurs</div>
+    <div class="article-body">
+      <p>Chaque utilisateur est seul responsable :</p>
+      <ul>
+        <li>des informations qu'il publie sur la plateforme</li>
+        <li>des prestations réalisées ou commandées</li>
+        <li>des accords conclus avec d'autres utilisateurs</li>
+        <li>des paiements effectués hors plateforme</li>
+      </ul>
+      <p>Les utilisateurs s'engagent à respecter la législation en vigueur, notamment en matière sociale, fiscale et commerciale.</p>
+    </div>
+  </div>
+
+  <!-- ART 6 -->
+  <div class="cgu-card" id="art6">
+    <div class="article-num">Article 6</div>
+    <div class="article-title">Obligations légales et sociales</div>
+    <div class="article-body">
+      <p>Les prestataires sont seuls responsables de leurs obligations déclaratives et sociales. Ils s'engagent à respecter les règles applicables, notamment :</p>
+      <ul>
+        <li>la déclaration de leur activité auprès des organismes compétents</li>
+        <li>le respect des obligations vis-à-vis de la CPS de Polynésie française</li>
+        <li>la déclaration de leurs revenus aux services fiscaux</li>
+        <li>le respect du droit du travail local</li>
+      </ul>
+      <div class="important-box">
+        <strong>⚠️ APIJOB ne peut être tenu responsable</strong> en cas de non-respect de ces obligations par les utilisateurs.
+      </div>
+    </div>
+  </div>
+
+  <!-- ART 7 -->
+  <div class="cgu-card" id="art7">
+    <div class="article-num">Article 7</div>
+    <div class="article-title">Système de jetons</div>
+    <div class="article-body">
+      <p>L'accès aux annonces des clients se fait via l'achat de jetons par les prestataires. Les jetons sont :</p>
+      <ul>
+        <li>personnels et non cessibles à un tiers</li>
+        <li>non remboursables une fois achetés</li>
+        <li>sans date d'expiration</li>
+        <li>débités uniquement lorsque le client accepte la proposition du prestataire</li>
+      </ul>
+      <div class="vert-box">✅ Un jeton non utilisé reste disponible indéfiniment sur le compte du prestataire.</div>
+      <p>APIJOB se réserve le droit de modifier le prix des jetons. Les jetons achetés avant toute modification restent valables au tarif d'achat.</p>
+    </div>
+  </div>
+
+  <!-- ART 8 -->
+  <div class="cgu-card" id="art8">
+    <div class="article-num">Article 8</div>
+    <div class="article-title">Responsabilité de la plateforme</div>
+    <div class="article-body">
+      <p>APIJOB agit en tant qu'intermédiaire technique. À ce titre, APIJOB ne peut être tenu responsable :</p>
+      <ul>
+        <li>des litiges survenant entre utilisateurs</li>
+        <li>de la qualité des prestations réalisées</li>
+        <li>des dommages résultant d'une mission</li>
+        <li>du non-paiement entre utilisateurs</li>
+        <li>de l'exactitude des informations fournies par les utilisateurs</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ART 9 -->
+  <div class="cgu-card" id="art9">
+    <div class="article-num">Article 9</div>
+    <div class="article-title">Comportement des utilisateurs</div>
+    <div class="article-body">
+      <p>Les utilisateurs s'engagent à :</p>
+      <ul>
+        <li>adopter un comportement respectueux envers les autres utilisateurs</li>
+        <li>ne pas publier de contenu illégal, frauduleux ou trompeur</li>
+        <li>ne pas utiliser la plateforme à des fins illicites</li>
+        <li>ne pas tenter de contourner le système de jetons</li>
+        <li>ne pas partager leurs coordonnées avant acceptation d'une proposition</li>
+      </ul>
+      <div class="important-box">
+        <strong>⚠️ Sanctions :</strong> APIJOB se réserve le droit de suspendre ou supprimer définitivement tout compte en cas de non-respect des présentes CGU, sans préavis ni remboursement des jetons restants.
+      </div>
+      <p>En cas d'abandon de mission par un client après acceptation d'une proposition, sans motif valable :</p>
+      <ul>
+        <li>le jeton du prestataire est restitué</li>
+        <li>un avertissement est envoyé au client</li>
+        <li>en cas de récidive, le compte du client est suspendu définitivement</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ART 10 -->
+  <div class="cgu-card" id="art10">
+    <div class="article-num">Article 10</div>
+    <div class="article-title">Données personnelles</div>
+    <div class="article-body">
+      <p>Les données collectées sont utilisées uniquement dans le cadre du fonctionnement de la plateforme APIJOB. Elles ne sont pas vendues à des tiers.</p>
+      <p>Conformément à la réglementation applicable, l'utilisateur dispose des droits suivants :</p>
+      <ul>
+        <li>droit d'accès à ses données</li>
+        <li>droit de modification</li>
+        <li>droit de suppression de son compte et de ses données</li>
+      </ul>
+      <p>Pour exercer ces droits, l'utilisateur peut contacter APIJOB via la page de contact de la plateforme.</p>
+    </div>
+  </div>
+
+  <!-- ART 11 -->
+  <div class="cgu-card" id="art11">
+    <div class="article-num">Article 11</div>
+    <div class="article-title">Modification des CGU</div>
+    <div class="article-body">
+      <p>APIJOB se réserve le droit de modifier les présentes CGU à tout moment. Les utilisateurs seront informés de toute modification par notification sur la plateforme ou par email.</p>
+      <p>La poursuite de l'utilisation de la plateforme après notification vaut acceptation des nouvelles conditions.</p>
+    </div>
+  </div>
+
+  <!-- ART 12 -->
+  <div class="cgu-card" id="art12">
+    <div class="article-num">Article 12</div>
+    <div class="article-title">Droit applicable</div>
+    <div class="article-body">
+      <p>Les présentes CGU sont soumises au droit applicable en Polynésie française. Tout litige relatif à leur interprétation ou exécution sera soumis aux juridictions compétentes de Polynésie française.</p>
+    </div>
+  </div>
+
+  <!-- VALIDATION -->
+  <div class="validation-card">
+    <div class="validation-title">✅ Validation des CGU</div>
+    <div class="validation-sub">En s'inscrivant sur APIJOB, l'utilisateur reconnaît avoir lu, compris et accepté l'intégralité des présentes Conditions Générales d'Utilisation.</div>
+    <button class="btn-accepter" onclick="window.location='apijob-auth.html'">J'accepte et je m'inscris →</button>
+  </div>
+
+</div>
+
+</body>
+</html>

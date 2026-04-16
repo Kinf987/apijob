@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API JOB — Bienvenue !</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rouge: #CC0A2B;
+    --rouge-dark: #A00822;
+    --or: #F0A500;
+    --night: #1A0008;
+    --blanc: #FFFFFF;
+    --gris: #F7F3F0;
+    --gris2: #EDE8E3;
+    --muted: rgba(26,0,8,0.45);
+    --border: rgba(204,10,43,0.1);
+    --vert: #1A7A4A;
+    --vert-light: rgba(26,122,74,0.08);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'DM Sans',sans-serif;
+    background:var(--gris); color:var(--night);
+    min-height:100vh; display:flex; flex-direction:column;
+  }
+
+  nav {
+    background:var(--blanc); border-bottom:2px solid var(--rouge);
+    padding:1rem 5%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .nav-logo {
+    font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:800;
+    color:var(--rouge); letter-spacing:-0.5px;
+    display:flex; align-items:center; gap:0.25rem; cursor:default;
+  }
+  .nav-logo span { color:var(--or); }
+
+  main {
+    flex:1; display:flex; align-items:center; justify-content:center;
+    padding:2rem 1.5rem;
+  }
+
+  .page { width:100%; max-width:480px; }
+
+  /* HERO */
+  .hero {
+    text-align:center; margin-bottom:1.5rem;
+    animation:fadeUp 0.5s ease both;
+  }
+  .hero-icon {
+    font-size:4rem; margin-bottom:1rem;
+    display:block; animation:pop 0.5s ease 0.1s both;
+  }
+  .hero-title {
+    font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:800;
+    letter-spacing:-0.5px; margin-bottom:0.5rem;
+  }
+  .hero-title span { color:var(--rouge); }
+  .hero-sub {
+    font-size:0.92rem; color:var(--muted); line-height:1.6;
+  }
+
+  /* STEPS */
+  .steps {
+    background:var(--blanc); border-radius:24px;
+    border:1.5px solid var(--border);
+    overflow:hidden; margin-bottom:1.2rem;
+    animation:fadeUp 0.5s ease 0.15s both;
+  }
+  .step-row {
+    display:flex; align-items:center; gap:1rem;
+    padding:1.1rem 1.4rem;
+    border-bottom:1px solid rgba(204,10,43,0.06);
+    cursor:pointer; transition:background 0.15s;
+    text-decoration:none; color:inherit;
+  }
+  .step-row:last-child { border-bottom:none; }
+  .step-row:hover { background:var(--gris); }
+
+  .step-num {
+    width:34px; height:34px; border-radius:50%;
+    background:rgba(204,10,43,0.08); color:var(--rouge);
+    font-family:'Syne',sans-serif; font-size:0.85rem; font-weight:800;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .step-num.done {
+    background:var(--vert-light); color:var(--vert);
+  }
+
+  .step-icon-wrap {
+    width:40px; height:40px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.2rem; flex-shrink:0;
+  }
+  .bg-rouge { background:rgba(204,10,43,0.08); }
+  .bg-bleu { background:rgba(0,107,143,0.08); }
+  .bg-or { background:rgba(240,165,0,0.12); }
+  .bg-vert { background:var(--vert-light); }
+
+  .step-text { flex:1; }
+  .step-label { font-size:0.9rem; font-weight:600; }
+  .step-desc { font-size:0.75rem; color:var(--muted); margin-top:0.1rem; }
+
+  .step-arrow { font-size:0.85rem; color:var(--muted); flex-shrink:0; }
+
+  /* PROGRESSION */
+  .progress-card {
+    background:var(--blanc); border-radius:20px;
+    border:1.5px solid var(--border); padding:1.2rem 1.4rem;
+    margin-bottom:1.2rem;
+    animation:fadeUp 0.5s ease 0.2s both;
+  }
+  .progress-header {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:0.7rem;
+  }
+  .progress-label { font-size:0.82rem; font-weight:600; }
+  .progress-pct { font-size:0.82rem; font-weight:700; color:var(--rouge); }
+  .progress-bar {
+    height:6px; background:var(--gris2); border-radius:50px; overflow:hidden;
+  }
+  .progress-fill {
+    height:100%; background:var(--rouge); border-radius:50px;
+    transition:width 0.5s ease;
+  }
+
+  /* CTA */
+  .btn-start {
+    width:100%; padding:1rem;
+    background:var(--rouge); color:white; border:none;
+    border-radius:14px; font-family:'DM Sans',sans-serif;
+    font-size:1rem; font-weight:700; cursor:pointer;
+    transition:all 0.2s; text-decoration:none;
+    display:flex; align-items:center; justify-content:center; gap:0.5rem;
+    animation:fadeUp 0.5s ease 0.25s both;
+  }
+  .btn-start:hover { background:var(--rouge-dark); transform:translateY(-1px); box-shadow:0 6px 20px rgba(204,10,43,0.3); }
+
+  .skip-link {
+    text-align:center; margin-top:1rem;
+    font-size:0.78rem; color:var(--muted);
+    animation:fadeUp 0.5s ease 0.3s both;
+  }
+  .skip-link a { color:var(--muted); text-decoration:underline; }
+
+  /* VERSION PRESTATAIRE */
+  .view { display:none; }
+  .view.active { display:block; }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(16px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  @keyframes pop {
+    0% { transform:scale(0.5); opacity:0; }
+    80% { transform:scale(1.1); }
+    100% { transform:scale(1); opacity:1; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">API<span>JOB</span></div>
+</nav>
+
+<main>
+  <div class="page">
+
+    <!-- VUE PRESTATAIRE -->
+    <div class="view active" id="view-presta">
+
+      <div class="hero">
+        <span class="hero-icon">🌺</span>
+        <div class="hero-title">Ia ora na, <span>Teiva</span> !</div>
+        <p class="hero-sub">Votre compte prestataire est créé. Complétez votre profil pour commencer à recevoir des missions.</p>
+      </div>
+
+      <div class="progress-card">
+        <div class="progress-header">
+          <div class="progress-label">Profil complété</div>
+          <div class="progress-pct">0%</div>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="steps">
+        <a href="apijob-profil-edit.html" class="step-row">
+          <div class="step-icon-wrap bg-rouge">👤</div>
+          <div class="step-text">
+            <div class="step-label">Compléter mon profil</div>
+            <div class="step-desc">Photo, description, services proposés, zone</div>
+          </div>
+          <div class="step-arrow">›</div>
+        </a>
+        <a href="apijob-annonces.html" class="step-row">
+          <div class="step-icon-wrap bg-bleu">🔍</div>
+          <div class="step-text">
+            <div class="step-label">Parcourir les annonces</div>
+            <div class="step-desc">Trouvez des missions qui correspondent à vos compétences</div>
+          </div>
+          <div class="step-arrow">›</div>
+        </a>
+        <a href="apijob-jetons.html" class="step-row">
+          <div class="step-icon-wrap bg-or">🪙</div>
+          <div class="step-text">
+            <div class="step-label">Acheter des jetons</div>
+            <div class="step-desc">À partir de 900 XPF — débités uniquement si accepté</div>
+          </div>
+          <div class="step-arrow">›</div>
+        </a>
+        <a href="apijob-profil-public.html" class="step-row">
+          <div class="step-icon-wrap bg-vert">👁️</div>
+          <div class="step-text">
+            <div class="step-label">Voir mon profil public</div>
+            <div class="step-desc">Tel que les clients le verront</div>
+          </div>
+          <div class="step-arrow">›</div>
+        </a>
+      </div>
+
+      <a href="apijob-dashboard.html" class="btn-start">Aller au tableau de bord →</a>
+      <div class="skip-link"><a href="apijob-annonces.html">Parcourir les annonces directement</a></div>
+
+    </div>
+
+    <!-- VUE CLIENT -->
+    <div class="view" id="view-client">
+
+      <div class="hero">
+        <span class="hero-icon">👋</span>
+        <div class="hero-title">Bienvenue, <span>Marie</span> !</div>
+        <p class="hero-sub">Votre compte est prêt. Publiez votre première annonce et recevez des propositions de prestataires vérifiés.</p>
+      </div>
+
+      <div class="steps">
+        <a href="apijob-annonce.html" class="step-row">
+          <div class="step-icon-wrap bg-rouge">📢</div>
+          <div class="step-text">
+            <div class="step-label">Publier une annonce</div>
+            <div class="step-desc">Décrivez votre besoin et recevez des propositions</div>
+          </div>
+          <div class="step-arrow">›</div>
+        </a>
+        <a href="apijob-pro.html" class="step-row">
+          <div class="step-icon-wrap bg-bleu">🔍</div>
+          <div class="step-text">
+            <div class="step-label">Chercher un prestataire</div>
+            <div class="step-desc">Parcourez l'annuaire des pros vérifiés</div>
+          </div>
+          <div class="step-arrow">›</div>
+        </a>
+        <a href="apijob-parametres.html" class="step-row">
+          <div class="step-icon-wrap bg-vert">⚙️</div>
+          <div class="step-text">
+            <div class="step-label">Configurer mon compte</div>
+            <div class="step-desc">Notifications, sécurité, confidentialité</div>
+          </div>
+          <div class="step-arrow">›</div>
+        </a>
+      </div>
+
+      <a href="apijob-annonce.html" class="btn-start">📢 Publier ma première annonce →</a>
+      <div class="skip-link"><a href="apijob-dashboard.html">Aller au tableau de bord</a></div>
+
+    </div>
+
+  </div>
+</main>
+
+<script>
+  // Détecte le rôle depuis l'URL param ou localStorage
+  // Ex: apijob-bienvenue.html?role=client
+  const params = new URLSearchParams(window.location.search);
+  const role = params.get('role') || 'presta';
+  if (role === 'client') {
+    document.getElementById('view-presta').classList.remove('active');
+    document.getElementById('view-client').classList.add('active');
+  }
+</script>
+
+</body>
+</html>

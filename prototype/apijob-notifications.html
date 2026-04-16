@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API JOB — Notifications</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rouge: #CC0A2B;
+    --rouge-dark: #A00822;
+    --or: #F0A500;
+    --night: #1A0008;
+    --blanc: #FFFFFF;
+    --gris: #F7F3F0;
+    --gris2: #EDE8E3;
+    --muted: rgba(26,0,8,0.45);
+    --border: rgba(204,10,43,0.1);
+    --vert: #1A7A4A;
+    --vert-light: rgba(26,122,74,0.08);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--gris); color:var(--night); min-height:100vh; }
+
+  nav {
+    position:sticky; top:0; z-index:100;
+    background:var(--blanc); border-bottom:2px solid var(--rouge);
+    padding:0.9rem 5%;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .nav-logo {
+    font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800;
+    color:var(--rouge); letter-spacing:-0.5px;
+    display:flex; align-items:center; gap:0.25rem; text-decoration:none;
+  }
+  .nav-logo span { color:var(--or); }
+  .nav-right { display:flex; align-items:center; gap:1rem; }
+  .nav-back { font-size:0.88rem; color:var(--muted); text-decoration:none; transition:color 0.2s; }
+  .nav-back:hover { color:var(--rouge); }
+  .btn-tout-lu {
+    font-size:0.82rem; color:var(--rouge); background:none;
+    border:none; cursor:pointer; font-family:'DM Sans',sans-serif;
+    font-weight:600; text-decoration:underline;
+  }
+
+  .page { max-width:680px; margin:0 auto; padding:2rem 5%; }
+
+  .page-header {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;
+  }
+  .page-title {
+    font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800;
+    letter-spacing:-0.5px;
+    display:flex; align-items:center; gap:0.6rem;
+  }
+  .notif-count {
+    background:var(--rouge); color:white;
+    font-size:0.75rem; font-weight:700;
+    padding:0.15rem 0.6rem; border-radius:50px;
+  }
+
+  /* FILTRES */
+  .filtres {
+    display:flex; gap:0.5rem; margin-bottom:1.5rem; flex-wrap:wrap;
+  }
+  .filtre-btn {
+    padding:0.45rem 1rem; border-radius:50px;
+    border:1.5px solid var(--border);
+    background:var(--blanc); color:var(--muted);
+    font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .filtre-btn:hover { border-color:var(--rouge); color:var(--rouge); }
+  .filtre-btn.active { background:var(--rouge); color:white; border-color:var(--rouge); }
+
+  /* GROUPE */
+  .notif-groupe { margin-bottom:1.5rem; }
+  .notif-groupe-label {
+    font-size:0.72rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:2px; color:var(--muted); margin-bottom:0.8rem;
+    padding-left:0.2rem;
+  }
+
+  /* NOTIF CARD */
+  .notif-card {
+    background:var(--blanc); border-radius:16px;
+    border:1.5px solid var(--border);
+    padding:1rem 1.2rem;
+    display:flex; align-items:flex-start; gap:1rem;
+    margin-bottom:0.6rem; transition:all 0.2s; cursor:pointer;
+    position:relative;
+  }
+  .notif-card:hover { border-color:var(--rouge); transform:translateX(3px); }
+  .notif-card.unread { background:rgba(204,10,43,0.03); border-color:rgba(204,10,43,0.2); }
+  .notif-card.unread::before {
+    content:''; position:absolute; left:-1px; top:50%;
+    transform:translateY(-50%);
+    width:4px; height:60%; background:var(--rouge);
+    border-radius:0 4px 4px 0;
+  }
+
+  .notif-icon-wrap {
+    width:42px; height:42px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.1rem; flex-shrink:0;
+  }
+  .icon-mission { background:var(--vert-light); }
+  .icon-jeton { background:rgba(240,165,0,0.12); }
+  .icon-avis { background:rgba(240,165,0,0.12); }
+  .icon-systeme { background:rgba(204,10,43,0.07); }
+  .icon-message { background:rgba(0,107,143,0.08); }
+
+  .notif-content { flex:1; min-width:0; }
+  .notif-title { font-size:0.88rem; font-weight:600; margin-bottom:0.2rem; line-height:1.4; }
+  .notif-card.unread .notif-title { font-weight:700; color:var(--night); }
+  .notif-desc { font-size:0.78rem; color:var(--muted); line-height:1.5; margin-bottom:0.3rem; }
+  .notif-time { font-size:0.7rem; color:rgba(26,0,8,0.3); }
+
+  .notif-actions { display:flex; gap:0.5rem; margin-top:0.6rem; }
+  .btn-notif {
+    padding:0.4rem 0.9rem; border-radius:50px;
+    font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:600;
+    cursor:pointer; transition:all 0.2s; border:none;
+  }
+  .btn-notif-primary { background:var(--rouge); color:white; }
+  .btn-notif-primary:hover { background:var(--rouge-dark); }
+  .btn-notif-secondary {
+    background:transparent; color:var(--muted);
+    border:1.5px solid var(--border);
+  }
+  .btn-notif-secondary:hover { border-color:var(--muted); color:var(--night); }
+
+  .unread-dot {
+    width:8px; height:8px; border-radius:50%;
+    background:var(--rouge); flex-shrink:0; margin-top:6px;
+  }
+
+  /* EMPTY */
+  .empty-state {
+    text-align:center; padding:4rem 2rem; display:none;
+  }
+  .empty-icon { font-size:3rem; margin-bottom:1rem; }
+  .empty-title { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:800; margin-bottom:0.5rem; }
+  .empty-sub { font-size:0.85rem; color:var(--muted); }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  .notif-card { animation:fadeUp 0.3s ease both; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo" style="cursor:default;">API<span>JOB</span></div>
+  <div class="nav-right">
+    <a href="apijob-dashboard.html" class="nav-back">← Tableau de bord</a>
+    <button class="btn-tout-lu" onclick="toutMarquerLu()">Tout marquer lu</button>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="page-header">
+    <div class="page-title">
+      🔔 Notifications
+      <span class="notif-count" id="notif-count">4</span>
+    </div>
+  </div>
+
+  <div class="filtres">
+    <button class="filtre-btn active" onclick="filtrer(this,'tous')">Toutes</button>
+    <button class="filtre-btn" onclick="filtrer(this,'mission')">📋 Missions</button>
+    <button class="filtre-btn" onclick="filtrer(this,'message')">💬 Messages</button>
+    <button class="filtre-btn" onclick="filtrer(this,'jeton')">🪙 Jetons</button>
+    <button class="filtre-btn" onclick="filtrer(this,'avis')">⭐ Avis</button>
+  </div>
+
+  <!-- AUJOURD'HUI -->
+  <div class="notif-groupe">
+    <div class="notif-groupe-label">Aujourd'hui</div>
+
+    <div class="notif-card unread" data-type="mission">
+      <div class="notif-icon-wrap icon-mission">✅</div>
+      <div class="notif-content">
+        <div class="notif-title">Proposition acceptée — Marie-Hélène T.</div>
+        <div class="notif-desc">Votre proposition pour "Tonte et débroussaillage — Punaauia" a été acceptée. 1 jeton débité.</div>
+        <div class="notif-time">Il y a 32 minutes</div>
+        <div class="notif-actions">
+          <button class="btn-notif btn-notif-primary" onclick="window.location='apijob-messagerie.html'">Voir la conversation</button>
+        </div>
+      </div>
+      <div class="unread-dot"></div>
+    </div>
+
+    <div class="notif-card unread" data-type="message">
+      <div class="notif-icon-wrap icon-message">💬</div>
+      <div class="notif-content">
+        <div class="notif-title">Nouveau message — Marie-Hélène T.</div>
+        <div class="notif-desc">"Super, je confirme pour samedi matin ! À quelle heure vous arrivez ?"</div>
+        <div class="notif-time">Il y a 1 heure</div>
+        <div class="notif-actions">
+          <button class="btn-notif btn-notif-primary" onclick="window.location='apijob-messagerie.html'">Répondre</button>
+        </div>
+      </div>
+      <div class="unread-dot"></div>
+    </div>
+
+    <div class="notif-card unread" data-type="avis">
+      <div class="notif-icon-wrap icon-avis">⭐</div>
+      <div class="notif-content">
+        <div class="notif-title">Nouvel avis reçu — Poerava R.</div>
+        <div class="notif-desc">Poerava R. vous a laissé un avis 5 étoiles : "Travail impeccable, très sérieux..."</div>
+        <div class="notif-time">Il y a 3 heures</div>
+        <div class="notif-actions">
+          <button class="btn-notif btn-notif-primary" onclick="window.location='apijob-evaluation.html'">Voir et répondre</button>
+        </div>
+      </div>
+      <div class="unread-dot"></div>
+    </div>
+
+    <div class="notif-card unread" data-type="jeton">
+      <div class="notif-icon-wrap icon-jeton">🪙</div>
+      <div class="notif-content">
+        <div class="notif-title">Jeton restitué — Hina F.</div>
+        <div class="notif-desc">Le client Hina F. a annulé la mission après acceptation. Votre jeton a été restitué automatiquement.</div>
+        <div class="notif-time">Il y a 5 heures</div>
+      </div>
+      <div class="unread-dot"></div>
+    </div>
+
+  </div>
+
+  <!-- HIER -->
+  <div class="notif-groupe">
+    <div class="notif-groupe-label">Hier</div>
+
+    <div class="notif-card" data-type="mission">
+      <div class="notif-icon-wrap icon-mission">📋</div>
+      <div class="notif-content">
+        <div class="notif-title">Nouvelle annonce dans votre zone — Jardinage</div>
+        <div class="notif-desc">"Débroussaillage terrain 600m² — Paea" · Correspond à vos services.</div>
+        <div class="notif-time">Hier à 16:45</div>
+        <div class="notif-actions">
+          <button class="btn-notif btn-notif-primary" onclick="window.location='apijob-annonces.html'">Voir l'annonce</button>
+          <button class="btn-notif btn-notif-secondary">Ignorer</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="notif-card" data-type="mission">
+      <div class="notif-icon-wrap icon-mission">📋</div>
+      <div class="notif-content">
+        <div class="notif-title">Nouvelle annonce dans votre zone — Jardinage</div>
+        <div class="notif-desc">"Taille de haies urgente — Punaauia" · Correspond à vos services.</div>
+        <div class="notif-time">Hier à 09:12</div>
+        <div class="notif-actions">
+          <button class="btn-notif btn-notif-primary" onclick="window.location='apijob-annonces.html'">Voir l'annonce</button>
+          <button class="btn-notif btn-notif-secondary">Ignorer</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="notif-card" data-type="jeton">
+      <div class="notif-icon-wrap icon-jeton">🪙</div>
+      <div class="notif-content">
+        <div class="notif-title">Achat de jetons confirmé</div>
+        <div class="notif-desc">Votre achat de 9 jetons (Standard — 2 000 XPF) a été confirmé. Solde : 14 jetons.</div>
+        <div class="notif-time">Hier à 08:30</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CETTE SEMAINE -->
+  <div class="notif-groupe">
+    <div class="notif-groupe-label">Cette semaine</div>
+
+    <div class="notif-card" data-type="systeme">
+      <div class="notif-icon-wrap icon-systeme">🌺</div>
+      <div class="notif-content">
+        <div class="notif-title">Bienvenue sur API JOB !</div>
+        <div class="notif-desc">Votre compte a été créé avec succès. Complétez votre profil pour recevoir plus de missions.</div>
+        <div class="notif-time">Il y a 4 jours</div>
+        <div class="notif-actions">
+          <button class="btn-notif btn-notif-primary" onclick="window.location='apijob-profil-edit.html'">Compléter mon profil</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="empty-state" id="empty-state">
+    <div class="empty-icon">🔔</div>
+    <div class="empty-title">Aucune notification</div>
+    <div class="empty-sub">Vous n'avez pas encore de notifications dans cette catégorie.</div>
+  </div>
+
+</div>
+
+<script>
+  function filtrer(btn, type) {
+    document.querySelectorAll('.filtre-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cards = document.querySelectorAll('.notif-card');
+    let visible = 0;
+    cards.forEach(card => {
+      const show = type === 'tous' || card.dataset.type === type;
+      card.style.display = show ? 'flex' : 'none';
+      if (show) visible++;
+    });
+    document.getElementById('empty-state').style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  function toutMarquerLu() {
+    document.querySelectorAll('.notif-card.unread').forEach(card => {
+      card.classList.remove('unread');
+      const dot = card.querySelector('.unread-dot');
+      if (dot) dot.remove();
+    });
+    document.getElementById('notif-count').textContent = '0';
+    document.getElementById('notif-count').style.background = 'var(--muted)';
+  }
+</script>
+
+</body>
+</html>

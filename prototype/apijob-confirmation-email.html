@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API JOB — Confirmez votre email</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rouge: #CC0A2B;
+    --rouge-dark: #A00822;
+    --or: #F0A500;
+    --night: #1A0008;
+    --blanc: #FFFFFF;
+    --gris: #F7F3F0;
+    --gris2: #EDE8E3;
+    --muted: rgba(26,0,8,0.45);
+    --border: rgba(204,10,43,0.1);
+    --vert: #1A7A4A;
+    --vert-light: rgba(26,122,74,0.08);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'DM Sans',sans-serif;
+    background:var(--gris); color:var(--night);
+    min-height:100vh; display:flex; flex-direction:column;
+  }
+
+  nav {
+    background:var(--blanc); border-bottom:2px solid var(--rouge);
+    padding:1rem 5%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .nav-logo {
+    font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:800;
+    color:var(--rouge); letter-spacing:-0.5px;
+    display:flex; align-items:center; gap:0.25rem; cursor:default;
+  }
+  .nav-logo span { color:var(--or); }
+
+  main {
+    flex:1; display:flex; align-items:center; justify-content:center;
+    padding:2rem 1.5rem;
+  }
+
+  .page { width:100%; max-width:440px; text-align:center; }
+
+  .icon-wrap {
+    position:relative; display:inline-block;
+    margin-bottom:1.5rem;
+    animation:pop 0.5s ease 0.1s both;
+  }
+  .icon-main { font-size:4rem; display:block; }
+  .icon-badge {
+    position:absolute; bottom:-4px; right:-8px;
+    font-size:1.4rem;
+    animation:pop 0.4s ease 0.4s both;
+  }
+
+  h1 {
+    font-family:'Syne',sans-serif; font-size:1.7rem; font-weight:800;
+    letter-spacing:-0.5px; margin-bottom:0.6rem;
+    animation:fadeUp 0.4s ease 0.15s both;
+  }
+  h1 span { color:var(--rouge); }
+
+  .sub {
+    font-size:0.9rem; color:var(--muted); line-height:1.65;
+    margin-bottom:2rem;
+    animation:fadeUp 0.4s ease 0.2s both;
+  }
+  .sub strong { color:var(--night); font-weight:600; }
+
+  /* Email simulé */
+  .email-card {
+    background:var(--blanc); border-radius:20px;
+    border:1.5px solid var(--border);
+    padding:1.4rem; margin-bottom:1.5rem; text-align:left;
+    animation:fadeUp 0.4s ease 0.25s both;
+  }
+  .email-header {
+    display:flex; align-items:center; gap:0.75rem;
+    padding-bottom:0.9rem; border-bottom:1px solid var(--gris2);
+    margin-bottom:0.9rem;
+  }
+  .email-avatar {
+    width:36px; height:36px; border-radius:50%;
+    background:rgba(204,10,43,0.1);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1rem; flex-shrink:0;
+  }
+  .email-from { font-size:0.82rem; }
+  .email-from strong { display:block; font-weight:600; font-size:0.88rem; }
+  .email-from span { color:var(--muted); }
+
+  .email-subject {
+    font-size:0.88rem; font-weight:600; margin-bottom:0.5rem;
+  }
+  .email-body {
+    font-size:0.82rem; color:var(--muted); line-height:1.6; margin-bottom:1rem;
+  }
+
+  .btn-confirm {
+    width:100%; padding:0.75rem;
+    background:var(--rouge); color:white; border:none;
+    border-radius:12px; font-family:'DM Sans',sans-serif;
+    font-size:0.88rem; font-weight:700; cursor:pointer;
+    transition:all 0.2s;
+  }
+  .btn-confirm:hover { background:var(--rouge-dark); }
+
+  /* Actions */
+  .actions {
+    display:flex; flex-direction:column; gap:0.75rem;
+    animation:fadeUp 0.4s ease 0.3s both;
+  }
+
+  .btn-resend {
+    width:100%; padding:0.9rem;
+    background:var(--blanc); color:var(--night);
+    border:1.5px solid var(--gris2); border-radius:14px;
+    font-family:'DM Sans',sans-serif; font-size:0.9rem; font-weight:600;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .btn-resend:hover { border-color:var(--rouge); color:var(--rouge); }
+  .btn-resend:disabled { opacity:0.5; cursor:default; }
+
+  .help-text {
+    font-size:0.78rem; color:var(--muted); margin-top:1.2rem;
+    animation:fadeUp 0.4s ease 0.35s both;
+  }
+  .help-text a { color:var(--muted); text-decoration:underline; }
+
+  /* Toast */
+  .toast {
+    position:fixed; bottom:2rem; left:50%; transform:translateX(-50%) translateY(80px);
+    background:var(--night); color:white;
+    padding:0.7rem 1.3rem; border-radius:50px;
+    font-size:0.85rem; font-weight:500;
+    transition:transform 0.3s ease, opacity 0.3s ease;
+    opacity:0; pointer-events:none; white-space:nowrap;
+    z-index:999;
+  }
+  .toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(14px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  @keyframes pop {
+    0% { transform:scale(0.5); opacity:0; }
+    80% { transform:scale(1.1); }
+    100% { transform:scale(1); opacity:1; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">API<span>JOB</span></div>
+</nav>
+
+<main>
+  <div class="page">
+
+    <div class="icon-wrap">
+      <span class="icon-main">📬</span>
+      <span class="icon-badge">✉️</span>
+    </div>
+
+    <h1>Vérifiez votre <span>boite mail</span></h1>
+    <p class="sub">
+      On a envoyé un lien de confirmation à<br>
+      <strong id="email-display">teiva.m@gmail.com</strong><br>
+      Cliquez dessus pour activer votre compte.
+    </p>
+
+    <!-- Email simulé pour le prototype -->
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-avatar">📮</div>
+        <div class="email-from">
+          <strong>APIJOB</strong>
+          <span>noreply@apijob.pf</span>
+        </div>
+      </div>
+      <div class="email-subject">Confirmez votre adresse email</div>
+      <div class="email-body">
+        Bonjour,<br><br>
+        Merci de vous être inscrit sur APIJOB. Cliquez sur le bouton ci-dessous pour activer votre compte.
+        Ce lien est valable 24 heures.
+      </div>
+      <button class="btn-confirm" onclick="confirmer()">✅ Confirmer mon adresse email</button>
+    </div>
+
+    <div class="actions">
+      <button class="btn-resend" id="btn-resend" onclick="renvoyer()">
+        Renvoyer l'email
+      </button>
+    </div>
+
+    <p class="help-text">
+      Vous ne trouvez pas l'email ? Vérifiez vos spams.<br>
+      <a href="apijob-contact.html">Contacter le support</a>
+    </p>
+
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const role = params.get('role') || 'presta';
+
+  // Simule l'email affiché (prototype)
+  const emailsDemo = {
+    presta: 'teiva.m@gmail.com',
+    client: 'marie.f@gmail.com'
+  };
+  document.getElementById('email-display').textContent = emailsDemo[role] || 'votre@email.com';
+
+  function confirmer() {
+    // Simule la confirmation et redirige vers bienvenue
+    location.href = 'apijob-bienvenue.html?role=' + role;
+  }
+
+  let cooldown = false;
+  function renvoyer() {
+    if (cooldown) return;
+    cooldown = true;
+    const btn = document.getElementById('btn-resend');
+    btn.disabled = true;
+    toastMsg('Email renvoyé !');
+    let sec = 30;
+    btn.textContent = `Renvoyer (${sec}s)`;
+    const interval = setInterval(() => {
+      sec--;
+      if (sec <= 0) {
+        clearInterval(interval);
+        btn.disabled = false;
+        btn.textContent = 'Renvoyer l\'email';
+        cooldown = false;
+      } else {
+        btn.textContent = `Renvoyer (${sec}s)`;
+      }
+    }, 1000);
+  }
+
+  function toastMsg(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="refresh" content="0;url=apijob-pro.html">
+<title>API JOB — Nos Professionnels</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rouge: #CC0A2B;
+    --rouge-dark: #A00822;
+    --or: #F0A500;
+    --night: #1A0008;
+    --blanc: #FFFFFF;
+    --gris: #F7F3F0;
+    --gris2: #EDE8E3;
+    --muted: rgba(26,0,8,0.45);
+    --border: rgba(204,10,43,0.1);
+    --vert: #1A7A4A;
+    --vert-light: rgba(26,122,74,0.08);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--gris);
+    color: var(--night);
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--blanc);
+    border-bottom: 2px solid var(--rouge);
+    padding: 0.9rem 5%;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem;
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem; font-weight: 800;
+    color: var(--rouge); letter-spacing: -0.5px;
+    display: flex; align-items: center; gap: 0.25rem;
+    cursor: default;
+  }
+  .nav-logo span { color: var(--or); }
+  .nav-right { display: flex; align-items: center; gap: 1rem; }
+  .nav-link {
+    font-size: 0.88rem; color: var(--muted);
+    text-decoration: none; transition: color 0.2s;
+    font-weight: 500;
+  }
+  .nav-link:hover { color: var(--rouge); }
+  .btn-nav {
+    padding: 0.5rem 1.2rem; border-radius: 50px;
+    background: var(--rouge); color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem; font-weight: 600;
+    border: none; cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .btn-nav:hover { background: var(--rouge-dark); }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, var(--night) 0%, #3A0018 100%);
+    padding: 3.5rem 5% 3rem;
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(240,165,0,0.15);
+    border: 1px solid rgba(240,165,0,0.3);
+    color: var(--or);
+    padding: 0.35rem 1rem; border-radius: 50px;
+    font-size: 0.78rem; font-weight: 600;
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.03em;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 800;
+    color: white;
+    letter-spacing: -0.5px;
+    margin-bottom: 0.8rem;
+  }
+  .hero h1 span { color: var(--or); }
+  .hero-sub {
+    color: rgba(255,255,255,0.6);
+    font-size: 1rem;
+    max-width: 520px; margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* PAGE */
+  .page {
+    max-width: 1020px;
+    margin: 0 auto;
+    padding: 2rem 5%;
+  }
+
+  /* FILTRES */
+  .filtres-wrap {
+    background: var(--blanc);
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    padding: 1.2rem 1.4rem;
+    margin-bottom: 1.5rem;
+    display: flex; flex-wrap: wrap; gap: 0.8rem;
+    align-items: center;
+  }
+  .search-wrap {
+    position: relative; flex: 1; min-width: 200px;
+  }
+  .search-icon {
+    position: absolute; left: 1rem; top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.95rem; pointer-events: none;
+    color: var(--muted);
+  }
+  .search-input {
+    width: 100%; padding: 0.75rem 1rem 0.75rem 2.6rem;
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; color: var(--night);
+    background: var(--gris); outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .search-input:focus {
+    border-color: var(--rouge);
+    box-shadow: 0 0 0 3px rgba(204,10,43,0.08);
+    background: var(--blanc);
+  }
+  .search-input::placeholder { color: rgba(26,0,8,0.3); }
+
+  .filtre-select {
+    padding: 0.75rem 1.2rem;
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem; color: var(--night);
+    background: var(--gris); outline: none;
+    cursor: pointer; transition: border-color 0.2s;
+    appearance: none;
+    padding-right: 2.2rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%231A0008' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+  }
+  .filtre-select:focus { border-color: var(--rouge); }
+
+  .filtres-tags {
+    display: flex; gap: 0.5rem; flex-wrap: wrap;
+    width: 100%;
+  }
+  .filtre-btn {
+    padding: 0.45rem 1rem; border-radius: 50px;
+    border: 1.5px solid var(--border);
+    background: var(--gris); color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 0.3rem;
+    white-space: nowrap;
+  }
+  .filtre-btn:hover { border-color: var(--rouge); color: var(--rouge); background: white; }
+  .filtre-btn.active {
+    background: var(--rouge); color: white;
+    border-color: var(--rouge);
+  }
+
+  /* RÉSULTATS */
+  .results-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.2rem; flex-wrap: wrap; gap: 0.5rem;
+  }
+  .results-count {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem; font-weight: 700;
+  }
+  .results-count span { color: var(--rouge); }
+  .results-sort {
+    font-size: 0.82rem; color: var(--muted);
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+
+  /* GRILLE PROS */
+  .pros-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.2rem;
+    margin-bottom: 3rem;
+  }
+
+  .pro-card {
+    background: var(--blanc);
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    padding: 1.5rem;
+    transition: all 0.2s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    display: flex; flex-direction: column; gap: 1rem;
+  }
+  .pro-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 3px; background: transparent;
+    transition: background 0.2s;
+  }
+  .pro-card:hover {
+    border-color: var(--rouge);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(204,10,43,0.1);
+  }
+  .pro-card:hover::before { background: linear-gradient(90deg, var(--rouge), var(--or)); }
+
+  .pro-card-top {
+    display: flex; align-items: flex-start; gap: 1rem;
+  }
+  .pro-avatar {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--rouge), #E8305A);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem; font-weight: 800;
+    color: white; flex-shrink: 0;
+    position: relative;
+  }
+  .pro-avatar.online::after {
+    content: '';
+    position: absolute; bottom: 2px; right: 2px;
+    width: 12px; height: 12px;
+    background: #22C55E; border-radius: 50%;
+    border: 2px solid white;
+  }
+
+  .pro-info { flex: 1; min-width: 0; }
+  .pro-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem; font-weight: 800;
+    margin-bottom: 0.25rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .pro-badges {
+    display: flex; gap: 0.3rem; flex-wrap: wrap;
+    margin-bottom: 0.3rem;
+  }
+  .badge-pro {
+    font-size: 0.65rem; font-weight: 700;
+    padding: 0.15rem 0.55rem; border-radius: 50px;
+    background: linear-gradient(135deg, var(--or), #FFB800);
+    color: var(--night); letter-spacing: 0.03em;
+    display: flex; align-items: center; gap: 0.2rem;
+  }
+  .badge-verifie {
+    font-size: 0.65rem; font-weight: 700;
+    padding: 0.15rem 0.55rem; border-radius: 50px;
+    background: var(--vert-light); color: var(--vert);
+  }
+  .pro-zone {
+    font-size: 0.78rem; color: var(--muted);
+    display: flex; align-items: center; gap: 0.3rem;
+  }
+
+  .pro-rating {
+    display: flex; align-items: center; gap: 0.3rem;
+    margin-left: auto; flex-shrink: 0;
+  }
+  .stars { color: var(--or); font-size: 0.85rem; letter-spacing: -1px; }
+  .rating-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem; font-weight: 700;
+  }
+  .rating-count { font-size: 0.72rem; color: var(--muted); }
+
+  .pro-desc {
+    font-size: 0.83rem; color: var(--muted);
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .pro-services {
+    display: flex; gap: 0.4rem; flex-wrap: wrap;
+  }
+  .service-tag {
+    padding: 0.3rem 0.75rem; border-radius: 50px;
+    background: var(--gris); color: var(--night);
+    font-size: 0.75rem; font-weight: 500;
+    display: flex; align-items: center; gap: 0.25rem;
+  }
+
+  .pro-card-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--border);
+  }
+  .pro-dispo {
+    font-size: 0.78rem; color: var(--vert); font-weight: 600;
+    display: flex; align-items: center; gap: 0.3rem;
+  }
+  .pro-dispo.indispo { color: var(--muted); }
+  .btn-voir {
+    padding: 0.5rem 1.2rem; border-radius: 50px;
+    background: var(--rouge); color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem; font-weight: 600;
+    border: none; cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s;
+    display: inline-block;
+  }
+  .btn-voir:hover { background: var(--rouge-dark); }
+
+  /* PAGINATION */
+  .pagination {
+    display: flex; justify-content: center; gap: 0.5rem;
+    margin-bottom: 3rem;
+  }
+  .page-btn {
+    width: 38px; height: 38px; border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: var(--blanc); color: var(--night);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .page-btn:hover { border-color: var(--rouge); color: var(--rouge); }
+  .page-btn.active { background: var(--rouge); color: white; border-color: var(--rouge); }
+
+  /* SECTION DEVENIR PRO */
+  .section-pro {
+    background: linear-gradient(135deg, var(--night) 0%, #3A0018 100%);
+    border-radius: 28px;
+    padding: 3rem 2.5rem;
+    margin-bottom: 3rem;
+    display: flex; gap: 3rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .section-pro-left { flex: 1; min-width: 260px; }
+  .pro-label {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(240,165,0,0.15);
+    border: 1px solid rgba(240,165,0,0.3);
+    color: var(--or);
+    padding: 0.35rem 1rem; border-radius: 50px;
+    font-size: 0.76rem; font-weight: 700;
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.04em;
+  }
+  .section-pro h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
+    font-weight: 800; color: white;
+    letter-spacing: -0.5px;
+    margin-bottom: 0.8rem;
+    line-height: 1.2;
+  }
+  .section-pro h2 span { color: var(--or); }
+  .section-pro p {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.92rem; line-height: 1.65;
+    margin-bottom: 1.5rem;
+  }
+  .pro-avantages {
+    display: flex; flex-direction: column; gap: 0.65rem;
+    margin-bottom: 2rem;
+  }
+  .avantage {
+    display: flex; align-items: center; gap: 0.8rem;
+    color: rgba(255,255,255,0.85); font-size: 0.88rem;
+  }
+  .avantage-icon {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: rgba(240,165,0,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; flex-shrink: 0;
+  }
+  .btn-devenirpro {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.9rem 2rem; border-radius: 50px;
+    background: var(--or); color: var(--night);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem; font-weight: 800;
+    border: none; cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    letter-spacing: -0.2px;
+  }
+  .btn-devenirpro:hover {
+    background: #FFB800;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(240,165,0,0.35);
+  }
+
+  .section-pro-right { flex-shrink: 0; }
+  .prix-card {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 1.8rem 2rem;
+    text-align: center; min-width: 200px;
+  }
+  .prix-label {
+    font-size: 0.78rem; color: rgba(255,255,255,0.5);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 1rem;
+  }
+  .prix-amount {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem; font-weight: 800;
+    color: var(--or); margin-bottom: 0.2rem;
+  }
+  .prix-unit {
+    font-size: 0.78rem; color: rgba(255,255,255,0.45);
+    margin-bottom: 1.2rem;
+  }
+  .prix-features {
+    display: flex; flex-direction: column; gap: 0.5rem;
+    text-align: left;
+  }
+  .prix-feat {
+    font-size: 0.82rem; color: rgba(255,255,255,0.7);
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .prix-feat::before { content: '✓'; color: var(--or); font-weight: 700; }
+
+  /* FOOTER */
+  footer {
+    background: var(--night); color: rgba(255,255,255,0.4);
+    text-align: center; padding: 2rem 5%;
+    font-size: 0.8rem;
+  }
+  footer a { color: rgba(255,255,255,0.4); text-decoration: none; }
+  footer a:hover { color: var(--or); }
+
+  @media (max-width: 600px) {
+    .section-pro { padding: 2rem 1.5rem; }
+    .pros-grid { grid-template-columns: 1fr; }
+    .section-pro-right { width: 100%; }
+    .prix-card { min-width: unset; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">API<span>JOB</span></div>
+  <div class="nav-right">
+    <a href="apijob-annonces.html" class="nav-link">Annonces</a>
+    <a href="apijob-v4.html" class="nav-link">Accueil</a>
+    <a href="apijob-dashboard.html" class="btn-nav">Mon espace</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">⭐ Professionnels vérifiés</div>
+  <h1>Trouvez le bon <span>professionnel</span></h1>
+  <p class="hero-sub">Des prestataires qualifiés à Tahiti et Moorea, disponibles pour tous vos besoins du quotidien.</p>
+</div>
+
+<!-- PAGE -->
+<div class="page">
+
+  <!-- FILTRES -->
+  <div class="filtres-wrap">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" placeholder="Rechercher un professionnel..." id="searchInput" oninput="filterPros()">
+    </div>
+    <select class="filtre-select" id="zoneSelect" onchange="filterPros()">
+      <option value="">Toutes les zones</option>
+      <option value="Tahiti">Tahiti</option>
+      <option value="Moorea">Moorea</option>
+    </select>
+    <select class="filtre-select" id="catSelect" onchange="filterPros()">
+      <option value="">Toutes catégories</option>
+      <option value="Jardinage">🌿 Jardinage</option>
+      <option value="Ménage">🏠 Ménage</option>
+      <option value="Plomberie">🔧 Plomberie</option>
+      <option value="Électricité">⚡ Électricité</option>
+      <option value="Bricolage">🛠️ Bricolage</option>
+      <option value="Déménagement">📦 Déménagement</option>
+      <option value="Baby-sitting">👶 Baby-sitting</option>
+      <option value="Gardiennage">🏡 Gardiennage</option>
+      <option value="Animaux">🐾 Animaux</option>
+      <option value="Peinture">🎨 Peinture</option>
+      <option value="Transports">🚗 Transports</option>
+      <option value="Mécanique">🔩 Mécanique</option>
+      <option value="Aide à la personne">🤝 Aide à la personne</option>
+      <option value="Informatique">💻 Informatique</option>
+      <option value="Cours particuliers">🎓 Cours particuliers</option>
+      <option value="Démarches & administratif">📋 Démarches & administratif</option>
+      <option value="Enseignement">📚 Enseignement</option>
+      <option value="Aménagement & déco">🛋️ Aménagement & déco</option>
+      <option value="Événementiel">🎉 Événementiel</option>
+      <option value="Bureautique & administratif">💼 Bureautique & administratif</option>
+      <option value="Bien-être">🧘 Bien-être</option>
+      <option value="Autre">✨ Autre</option>
+    </select>
+
+    <div class="filtres-tags" id="filtreTags">
+      <button class="filtre-btn active" onclick="filterDispo('tous', this)">Tous</button>
+      <button class="filtre-btn" onclick="filterDispo('dispo', this)">Disponibles</button>
+      <button class="filtre-btn" onclick="filterDispo('top', this)">⭐ Mieux notés</button>
+    </div>
+  </div>
+
+  <!-- RÉSULTATS -->
+  <div class="results-header">
+    <div class="results-count"><span id="countNum">8</span> professionnels trouvés</div>
+    <div class="results-sort">Trier par : <strong>Note</strong></div>
+  </div>
+
+  <!-- GRILLE -->
+  <div class="pros-grid" id="prosGrid">
+
+    <!-- PRO 1 -->
+    <div class="pro-card" data-zone="Tahiti" data-cats="Jardinage,Bricolage" data-dispo="true" data-note="4.9" onclick="location.href='apijob-profil-public.html'">
+      <div class="pro-card-top">
+        <div class="pro-avatar online" style="background:linear-gradient(135deg,#CC0A2B,#E8305A)">TM</div>
+        <div class="pro-info">
+          <div class="pro-name">Teiva M.</div>
+          <div class="pro-badges">
+            <span class="badge-pro">⭐ PRO</span>
+            <span class="badge-verifie">✓ Vérifié</span>
+          </div>
+          <div class="pro-zone">📍 Tahiti — Papeete</div>
+        </div>
+        <div class="pro-rating">
+          <div>
+            <div class="stars">★★★★★</div>
+            <div style="text-align:right">
+              <span class="rating-val">4.9</span>
+              <span class="rating-count">(47)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="pro-desc">Jardinage, entretien d'espaces verts et petits travaux de bricolage. Disponible rapidement sur Papeete et alentours.</p>
+      <div class="pro-services">
+        <span class="service-tag">🌿 Jardinage</span>
+        <span class="service-tag">🛠️ Bricolage</span>
+      </div>
+      <div class="pro-card-footer">
+        <span class="pro-dispo">● Disponible</span>
+        <a href="apijob-profil-public.html" class="btn-voir" onclick="event.stopPropagation()">Voir le profil</a>
+      </div>
+    </div>
+
+    <!-- PRO 2 -->
+    <div class="pro-card" data-zone="Tahiti" data-cats="Ménage,Baby-sitting" data-dispo="true" data-note="4.8" onclick="location.href='apijob-profil-public.html'">
+      <div class="pro-card-top">
+        <div class="pro-avatar online" style="background:linear-gradient(135deg,#7C3AED,#A855F7)">HR</div>
+        <div class="pro-info">
+          <div class="pro-name">Hina R.</div>
+          <div class="pro-badges">
+            <span class="badge-pro">⭐ PRO</span>
+            <span class="badge-verifie">✓ Vérifié</span>
+          </div>
+          <div class="pro-zone">📍 Tahiti — Faaa</div>
+        </div>
+        <div class="pro-rating">
+          <div>
+            <div class="stars">★★★★★</div>
+            <div style="text-align:right">
+              <span class="rating-val">4.8</span>
+              <span class="rating-count">(33)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="pro-desc">Ménage, repassage et garde d'enfants. Sérieuse et ponctuelle, référence disponibles sur demande.</p>
+      <div class="pro-services">
+        <span class="service-tag">🏠 Ménage</span>
+        <span class="service-tag">👶 Baby-sitting</span>
+      </div>
+      <div class="pro-card-footer">
+        <span class="pro-dispo">● Disponible</span>
+        <a href="apijob-profil-public.html" class="btn-voir" onclick="event.stopPropagation()">Voir le profil</a>
+      </div>
+    </div>
+
+    <!-- PRO 3 -->
+    <div class="pro-card" data-zone="Moorea" data-cats="Plomberie,Électricité" data-dispo="true" data-note="4.7" onclick="location.href='apijob-profil-public.html'">
+      <div class="pro-card-top">
+        <div class="pro-avatar online" style="background:linear-gradient(135deg,#006B8F,#00A8C6)">MT</div>
+        <div class="pro-info">
+          <div class="pro-name">Māui T.</div>
+          <div class="pro-badges">
+            <span class="badge-pro">⭐ PRO</span>
+            <span class="badge-verifie">✓ Vérifié</span>
+          </div>
+          <div class="pro-zone">📍 Moorea — Maharepa</div>
+        </div>
+        <div class="pro-rating">
+          <div>
+            <div class="stars">★★★★★</div>
+            <div style="text-align:right">
+              <span class="rating-val">4.7</span>
+              <span class="rating-count">(28)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="pro-desc">Plomberie et électricité générale. Intervenant agréé, devis gratuit, travaux garantis.</p>
+      <div class="pro-services">
+        <span class="service-tag">🔧 Plomberie</span>
+        <span class="service-tag">⚡ Électricité</span>
+      </div>
+      <div class="pro-card-footer">
+        <span class="pro-dispo">● Disponible</span>
+        <a href="apijob-profil-public.html" class="btn-voir" onclick="event.stopPropagation()">Voir le profil</a>
+      </div>
+    </div>
+
+    <!-- PRO 4 -->
+    <div class="pro-card" data-zone="Tahiti" data-cats="Peinture,Bricolage" data-dispo="false" data-note="4.6" onclick="location.href='apijob-profil-public.html'">
+      <div class="pro-card-top">
+        <div class="pro-avatar" style="background:linear-gradient(135deg,#D97706,#F59E0B)">RP</div>
+        <div class="pro-info">
+          <div class="pro-name">Reva P.</div>
+          <div class="pro-badges">
+            <span class="badge-pro">⭐ PRO</span>
+            <span class="badge-verifie">✓ Vérifié</span>
+          </div>
+          <div class="pro-zone">📍 Tahiti — Pirae</div>
+        </div>
+        <div class="pro-rating">
+          <div>
+            <div class="stars">★★★★★</div>
+            <div style="text-align:right">
+              <span class="rating-val">4.6</span>
+              <span class="rating-count">(19)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="pro-desc">Peinture intérieure et extérieure, ravalement de façade. Plus de 10 ans d'expérience en Polynésie.</p>
+      <div class="pro-services">
+        <span class="service-tag">🎨 Peinture</span>
+        <span class="service-tag">🛠️ Bricolage</span>
+      </div>
+      <div class="pro-card-footer">
+        <span class="pro-dispo indispo">● Indisponible</span>
+        <a href="apijob-profil-public.html" class="btn-voir" onclick="event.stopPropagation()">Voir le profil</a>
+      </div>
+    </div>
+
+    <!-- PRO 5 -->
+    <div class="pro-card" data-zone="Moorea" data-cats="Animaux,Gardiennage" data-dispo="true" data-note="4.8" onclick="location.href='apijob-profil-public.html'">
+      <div class="pro-card-top">
+        <div class="pro-avatar online" style="background:linear-gradient(135deg,#1A7A4A,#2EA86A)">VH</div>
+        <div class="pro-info">
+          <div class="pro-name">Vahine H.</div>
+          <div class="pro-badges">
+            <span class="badge-pro">⭐ PRO</span>
+            <span class="badge-verifie">✓ Vérifié</span>
+          </div>
+          <div class="pro-zone">📍 Moorea — Temae</div>
+        </div>
+        <div class="pro-rating">
+          <div>
+            <div class="stars">★★★★★</div>
+            <div style="text-align:right">
+              <span class="rating-val">4.8</span>
+              <span class="rating-count">(41)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="pro-desc">Garde d'animaux et gardiennage de domicile. Amoureux des animaux, habituation rapide garantie.</p>
+      <div class="pro-services">
+        <span class="service-tag">🐾 Animaux</span>
+        <span class="service-tag">🏡 Gardiennage</span>
+      </div>
+      <div class="pro-card-footer">
+        <span class="pro-dispo">● Disponible</span>
+        <a href="apijob-profil-public.html" class="btn-voir" onclick="event.stopPropagation()">Voir le profil</a>
+      </div>
+    </div>
+
+    <!-- PRO 6 -->
+    <div class="pro-card" data-zone="Tahiti" data-cats="Informatique,Cours particuliers" data-dispo="true" data-note="4.9" onclick="location.href='apijob-profil-public.html'">
+      <div class="pro-card-top">
+        <div class="pro-avatar online" style="background:linear-gradient(135deg,#1D4ED8,#3B82F6)">AM</div>
+        <div class="pro-info">
+          <div class="pro-name">Ariitea M.</div>
+          <div class="pro-badges">
+            <span class="badge-pro">⭐ PRO</span>
+            <span class="badge-verifie">✓ Vérifié</span>
+          </div>
+          <div class="pro-zone">📍 Tahiti — Arue</div>
+        </div>
+        <div class="pro-rating">
+          <div>
+            <div class="stars">★★★★★</div>
+            <div style="text-align:right">
+              <span class="rating-val">4.9</span>
+              <span class="rating-count">(22)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="pro-desc">Dépannage informatique à domicile et cours particuliers (maths, informatique). Interviens sur Arue, Mahina, Pirae.</p>
+      <div class="pro-services">
+        <span class="service-tag">💻 Informatique</span>
+        <span class="service-tag">🎓 Cours</span>
+      </div>
+      <div class="pro-card-footer">
+        <span class="pro-dispo">● Disponible</span>
+        <a href="apijob-profil-public.html" class="btn-voir" onclick="event.stopPropagation()">Voir le profil</a>
+      </div>
+    </div>
+
+    <!-- PRO 7 -->
+    <div class="pro-card" data-zone="Tahiti" data-cats="Mécanique,Transports" data-dispo="true" data-note="4.5" onclick="location.href='apijob-profil-public.html'">
+      <div class="pro-card-top">
+        <div class="pro-avatar online" style="background:linear-gradient(135deg,#374151,#6B7280)">TF</div>
+        <div class="pro-info">
+          <div class="pro-name">Teva F.</div>
+          <div class="pro-badges">
+            <span class="badge-verifie">✓ Vérifié</span>
+          </div>
+          <div class="pro-zone">📍 Tahiti — Taravao</div>
+        </div>
+        <div class="pro-rating">
+          <div>
+            <div class="stars">★★★★☆</div>
+            <div style="text-align:right">
+              <span class="rating-val">4.5</span>
+              <span class="rating-count">(14)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="pro-desc">Mécanique auto et moto à domicile, petits transports et livraisons sur la presqu'île.</p>
+      <div class="pro-services">
+        <span class="service-tag">🔩 Mécanique</span>
+        <span class="service-tag">🚗 Transports</span>
+      </div>
+      <div class="pro-card-footer">
+        <span class="pro-dispo">● Disponible</span>
+        <a href="apijob-profil-public.html" class="btn-voir" onclick="event.stopPropagation()">Voir le profil</a>
+      </div>
+    </div>
+
+    <!-- PRO 8 -->
+    <div class="pro-card" data-zone="Moorea" data-cats="Aide à la personne,Ménage" data-dispo="false" data-note="4.7" onclick="location.href='apijob-profil-public.html'">
+      <div class="pro-card-top">
+        <div class="pro-avatar" style="background:linear-gradient(135deg,#9D174D,#EC4899)">MN</div>
+        <div class="pro-info">
+          <div class="pro-name">Moana N.</div>
+          <div class="pro-badges">
+            <span class="badge-pro">⭐ PRO</span>
+            <span class="badge-verifie">✓ Vérifié</span>
+          </div>
+          <div class="pro-zone">📍 Moorea — Papetoai</div>
+        </div>
+        <div class="pro-rating">
+          <div>
+            <div class="stars">★★★★★</div>
+            <div style="text-align:right">
+              <span class="rating-val">4.7</span>
+              <span class="rating-count">(31)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="pro-desc">Aide à la personne, accompagnement et ménage. Douce et patiente, expérience auprès des seniors.</p>
+      <div class="pro-services">
+        <span class="service-tag">🤝 Aide à la personne</span>
+        <span class="service-tag">🏠 Ménage</span>
+      </div>
+      <div class="pro-card-footer">
+        <span class="pro-dispo indispo">● Indisponible</span>
+        <a href="apijob-profil-public.html" class="btn-voir" onclick="event.stopPropagation()">Voir le profil</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PAGINATION -->
+  <div class="pagination">
+    <button class="page-btn active">1</button>
+    <button class="page-btn">2</button>
+    <button class="page-btn">3</button>
+    <button class="page-btn">›</button>
+  </div>
+
+  <!-- SECTION DEVENIR PRO -->
+  <div class="section-pro">
+    <div class="section-pro-left">
+      <div class="pro-label">✦ OFFRE PRO</div>
+      <h2>Vous êtes prestataire ?<br>Passez <span>Pro</span> et décrochez plus de missions.</h2>
+      <p>Le badge PRO vous donne une visibilité prioritaire sur cet annuaire et auprès des clients qui recherchent directement un professionnel. Soyez vu en premier, soyez choisi.</p>
+      <div class="pro-avantages">
+        <div class="avantage"><div class="avantage-icon">👁️</div>Profil mis en avant dans les résultats</div>
+        <div class="avantage"><div class="avantage-icon">⭐</div>Badge PRO visible sur toutes vos annonces</div>
+        <div class="avantage"><div class="avantage-icon">∞</div>Jetons illimités — répondez sans compter</div>
+        <div class="avantage"><div class="avantage-icon">📸</div>Jusqu'à 5 photos sur votre profil public</div>
+        <div class="avantage"><div class="avantage-icon">📊</div>Statistiques de vos vues et contacts</div>
+      </div>
+      <a href="apijob-jetons.html" class="btn-devenirpro">Passer Pro — 5 900 XPF/mois →</a>
+    </div>
+    <div class="section-pro-right">
+      <div class="prix-card">
+        <div class="prix-label">Abonnement Pro</div>
+        <div class="prix-amount">5 900</div>
+        <div class="prix-unit">XPF / mois · sans engagement</div>
+        <div class="prix-features">
+          <div class="prix-feat">Jetons illimités</div>
+          <div class="prix-feat">Badge PRO affiché</div>
+          <div class="prix-feat">Priorité dans l'annuaire</div>
+          <div class="prix-feat">5 photos sur le profil</div>
+          <div class="prix-feat">Statistiques incluses</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2025 API JOB — Tahiti & Moorea &nbsp;|&nbsp;
+    <a href="apijob-mentions.html">Mentions légales</a> &nbsp;|&nbsp;
+    <a href="apijob-cgu.html">CGU</a> &nbsp;|&nbsp;
+    <a href="apijob-contact.html">Contact</a>
+  </p>
+</footer>
+
+<script>
+let currentDispo = 'tous';
+
+function filterDispo(mode, btn) {
+  currentDispo = mode;
+  document.querySelectorAll('.filtres-tags .filtre-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterPros();
+}
+
+function filterPros() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const zone = document.getElementById('zoneSelect').value;
+  const cat = document.getElementById('catSelect').value;
+  const cards = document.querySelectorAll('.pro-card');
+  let count = 0;
+
+  cards.forEach(card => {
+    const cardZone = card.dataset.zone || '';
+    const cardCats = card.dataset.cats || '';
+    const cardDispo = card.dataset.dispo === 'true';
+    const cardNote = parseFloat(card.dataset.note || '0');
+    const cardName = card.querySelector('.pro-name').textContent.toLowerCase();
+    const cardDesc = card.querySelector('.pro-desc').textContent.toLowerCase();
+
+    let show = true;
+    if (search && !cardName.includes(search) && !cardDesc.includes(search) && !cardCats.toLowerCase().includes(search)) show = false;
+    if (zone && cardZone !== zone) show = false;
+    if (cat && !cardCats.includes(cat)) show = false;
+    if (currentDispo === 'dispo' && !cardDispo) show = false;
+    if (currentDispo === 'top' && cardNote < 4.7) show = false;
+
+    card.style.display = show ? '' : 'none';
+    if (show) count++;
+  });
+
+  document.getElementById('countNum').textContent = count;
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API JOB — Publier une annonce</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rouge: #CC0A2B;
+    --rouge-dark: #A00822;
+    --or: #F0A500;
+    --night: #1A0008;
+    --blanc: #FFFFFF;
+    --gris: #F7F3F0;
+    --muted: rgba(26,0,8,0.45);
+    --border: rgba(204,10,43,0.12);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--gris);
+    color: var(--night);
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--blanc);
+    border-bottom: 2px solid var(--rouge);
+    padding: 0.9rem 5%;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem; font-weight: 800;
+    color: var(--rouge); letter-spacing: -0.5px;
+    display: flex; align-items: center; gap: 0.25rem;
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--or); }
+  .nav-back {
+    font-size: 0.88rem; color: var(--muted);
+    text-decoration: none; transition: color 0.2s;
+    display: flex; align-items: center; gap: 0.3rem;
+  }
+  .nav-back:hover { color: var(--rouge); }
+
+  /* LAYOUT */
+  .page {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 2.5rem 5%;
+  }
+
+  /* STEPS */
+  .steps-bar {
+    display: flex; align-items: center;
+    gap: 0; margin-bottom: 2.5rem;
+  }
+  .step-dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem; font-weight: 800;
+    flex-shrink: 0; transition: all 0.3s;
+    border: 2px solid var(--border);
+    background: var(--blanc); color: var(--muted);
+  }
+  .step-dot.active { background: var(--rouge); color: white; border-color: var(--rouge); }
+  .step-dot.done { background: var(--rouge); color: white; border-color: var(--rouge); }
+  .step-line {
+    flex: 1; height: 2px;
+    background: var(--border); transition: background 0.3s;
+  }
+  .step-line.done { background: var(--rouge); }
+
+  /* CARD */
+  .form-card {
+    background: var(--blanc);
+    border-radius: 24px;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 20px rgba(204,10,43,0.06);
+  }
+
+  .step-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem; font-weight: 800;
+    letter-spacing: -0.5px; margin-bottom: 0.4rem;
+  }
+  .step-sub {
+    font-size: 0.88rem; color: var(--muted);
+    margin-bottom: 1.8rem; line-height: 1.5;
+  }
+
+  /* PANELS */
+  .step-panel { display: none; }
+  .step-panel.active { display: block; animation: fadeUp 0.3s ease both; }
+
+  /* CATEGORIES */
+  .cat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.8rem; margin-bottom: 1.5rem;
+  }
+  .cat-card {
+    border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 1rem 0.8rem;
+    text-align: center; cursor: pointer;
+    transition: all 0.2s; background: var(--blanc);
+  }
+  .cat-card:hover { border-color: var(--rouge); transform: translateY(-2px); }
+  .cat-card.selected {
+    border-color: var(--rouge);
+    background: rgba(204,10,43,0.04);
+    box-shadow: 0 4px 12px rgba(204,10,43,0.1);
+  }
+  .cat-emoji { font-size: 1.8rem; margin-bottom: 0.4rem; }
+  .cat-name { font-size: 0.78rem; font-weight: 600; color: var(--night); line-height: 1.3; }
+
+  /* FORM */
+  .form-group { margin-bottom: 1.3rem; }
+  .form-label {
+    display: block; font-size: 0.82rem; font-weight: 600;
+    color: var(--night); margin-bottom: 0.5rem;
+  }
+  .form-label span { color: var(--rouge); }
+  .form-input, .form-select, .form-textarea {
+    width: 100%; padding: 0.85rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.92rem; color: var(--night);
+    background: var(--blanc);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--rouge);
+    box-shadow: 0 0 0 3px rgba(204,10,43,0.08);
+  }
+  .form-input::placeholder, .form-textarea::placeholder { color: rgba(26,0,8,0.3); }
+  .form-textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
+  .form-select { cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23CC0A2B' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 1rem center;
+    padding-right: 2.5rem;
+  }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+
+  /* URGENCE */
+  .urgence-options {
+    display: flex; gap: 0.7rem; flex-wrap: wrap;
+  }
+  .urgence-btn {
+    padding: 0.55rem 1.1rem; border-radius: 50px;
+    border: 1.5px solid var(--border);
+    background: var(--blanc); color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .urgence-btn:hover { border-color: var(--rouge); color: var(--rouge); }
+  .urgence-btn.selected {
+    background: var(--rouge); color: white;
+    border-color: var(--rouge);
+  }
+
+  /* RECAP */
+  .recap-block {
+    background: var(--gris);
+    border-radius: 16px; padding: 1.4rem;
+    margin-bottom: 1.5rem;
+  }
+  .recap-row {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(204,10,43,0.08);
+    font-size: 0.88rem; gap: 1rem;
+  }
+  .recap-row:last-child { border-bottom: none; }
+  .recap-key { color: var(--muted); flex-shrink: 0; }
+  .recap-val { font-weight: 600; text-align: right; }
+
+  .info-box {
+    background: rgba(204,10,43,0.05);
+    border: 1px solid rgba(204,10,43,0.12);
+    border-radius: 12px; padding: 1rem 1.2rem;
+    font-size: 0.82rem; color: var(--muted);
+    line-height: 1.6; margin-bottom: 1.5rem;
+    display: flex; gap: 0.7rem; align-items: flex-start;
+  }
+  .info-box .icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+
+  /* NAVIGATION BTNS */
+  .form-nav {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 1.5rem; gap: 1rem;
+  }
+  .btn-next {
+    background: var(--rouge); color: white;
+    border: none; padding: 0.9rem 2rem;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .btn-next:hover { background: var(--rouge-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(204,10,43,0.3); }
+  .btn-next:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-back {
+    background: transparent; color: var(--muted);
+    border: 1.5px solid var(--border);
+    padding: 0.9rem 1.5rem;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-back:hover { border-color: var(--muted); color: var(--night); }
+
+  /* SUCCESS */
+  .success-state {
+    text-align: center; padding: 1rem 0;
+  }
+  .success-icon { font-size: 4rem; margin-bottom: 1rem; animation: bounce 0.6s ease both; }
+  .success-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem; font-weight: 800;
+    margin-bottom: 0.5rem;
+  }
+  .success-sub { font-size: 0.9rem; color: var(--muted); line-height: 1.6; margin-bottom: 2rem; }
+  .success-btns { display: flex; flex-direction: column; gap: 0.7rem; }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(12px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes bounce {
+    0% { transform: scale(0.5); opacity: 0; }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @media (max-width: 500px) {
+    .cat-grid { grid-template-columns: repeat(2,1fr); }
+    .form-row { grid-template-columns: 1fr; }
+    .form-card { padding: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <svg width="24" height="24" viewBox="0 0 28 28" style="border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.15);flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="c"><circle cx="14" cy="14" r="14"/></clipPath></defs><g clip-path="url(#c)"><circle cx="14" cy="14" r="14" fill="white"/><g stroke="#F0A500" stroke-width="1.3" stroke-linecap="round"><line x1="14" y1="17" x2="2.2" y2="14.9"/><line x1="14" y1="17" x2="3.4" y2="11.4"/><line x1="14" y1="17" x2="5.7" y2="8.4"/><line x1="14" y1="17" x2="8.5" y2="6.3"/><line x1="14" y1="17" x2="12.1" y2="5.2"/><line x1="14" y1="17" x2="15.9" y2="5.2"/><line x1="14" y1="17" x2="19.5" y2="6.3"/><line x1="14" y1="17" x2="22.3" y2="8.4"/><line x1="14" y1="17" x2="24.6" y2="11.4"/><line x1="14" y1="17" x2="25.8" y2="14.9"/></g><rect x="0" y="17" width="28" height="11" fill="#1E7FC2"/><path d="M7,17.5 Q14,15.5 21,17.5 L20.5,18.5 Q14,16.8 7.5,18.5 Z" fill="#CE1126"/><path d="M3,19.5 Q7,18.5 11,19.5 Q14,20.5 17,19.5 Q21,18.5 25,19.5" fill="none" stroke="white" stroke-width="0.6" opacity="0.8"/><path d="M3,21.5 Q7,20.5 11,21.5 Q14,22.5 17,21.5 Q21,20.5 25,21.5" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/><path d="M3,23.5 Q7,22.5 11,23.5 Q14,24.5 17,23.5 Q21,22.5 25,23.5" fill="none" stroke="white" stroke-width="0.4" opacity="0.4"/></g></svg>
+    API<span>JOB</span>
+  </div>
+  <a href="apijob-dashboard.html" class="nav-back">← Retour au tableau de bord</a>
+</nav>
+
+<div class="page">
+
+  <!-- BARRE ÉTAPES -->
+  <div class="steps-bar">
+    <div class="step-dot active" id="dot-1">1</div>
+    <div class="step-line" id="line-1"></div>
+    <div class="step-dot" id="dot-2">2</div>
+    <div class="step-line" id="line-2"></div>
+    <div class="step-dot" id="dot-3">3</div>
+    <div class="step-line" id="line-3"></div>
+    <div class="step-dot" id="dot-4">4</div>
+  </div>
+
+  <div class="form-card">
+
+    <!-- ÉTAPE 1 — CATÉGORIE -->
+    <div class="step-panel active" id="step-1">
+      <div class="step-title">Quel service cherchez-vous ? 🔍</div>
+      <div class="step-sub">Choisissez une catégorie pour votre annonce.</div>
+
+      <div class="cat-grid">
+        <div class="cat-card" onclick="selectCat(this, 'Jardinage')">
+          <div class="cat-emoji">🌿</div>
+          <div class="cat-name">Jardinage</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Ménage')">
+          <div class="cat-emoji">🏠</div>
+          <div class="cat-name">Ménage</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Plomberie')">
+          <div class="cat-emoji">🔧</div>
+          <div class="cat-name">Plomberie</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Électricité')">
+          <div class="cat-emoji">⚡</div>
+          <div class="cat-name">Électricité</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Bricolage')">
+          <div class="cat-emoji">🛠️</div>
+          <div class="cat-name">Bricolage</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Déménagement')">
+          <div class="cat-emoji">📦</div>
+          <div class="cat-name">Déménagement</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Baby-sitting')">
+          <div class="cat-emoji">👶</div>
+          <div class="cat-name">Baby-sitting</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Gardiennage')">
+          <div class="cat-emoji">🏡</div>
+          <div class="cat-name">Gardiennage</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Animaux')">
+          <div class="cat-emoji">🐾</div>
+          <div class="cat-name">Animaux</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Peinture')">
+          <div class="cat-emoji">🎨</div>
+          <div class="cat-name">Peinture</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Transports')">
+          <div class="cat-emoji">🚗</div>
+          <div class="cat-name">Transports</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Mécanique')">
+          <div class="cat-emoji">🔩</div>
+          <div class="cat-name">Mécanique</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Aide à la personne')">
+          <div class="cat-emoji">🤝</div>
+          <div class="cat-name">Aide à la personne</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Informatique')">
+          <div class="cat-emoji">💻</div>
+          <div class="cat-name">Informatique</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Cours particuliers')">
+          <div class="cat-emoji">🎓</div>
+          <div class="cat-name">Cours particuliers</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Démarches & administratif')">
+          <div class="cat-emoji">📋</div>
+          <div class="cat-name">Démarches & administratif</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Enseignement')">
+          <div class="cat-emoji">📚</div>
+          <div class="cat-name">Enseignement</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Aménagement & déco')">
+          <div class="cat-emoji">🛋️</div>
+          <div class="cat-name">Aménagement & déco</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Événementiel')">
+          <div class="cat-emoji">🎉</div>
+          <div class="cat-name">Événementiel</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Bureautique & administratif')">
+          <div class="cat-emoji">💼</div>
+          <div class="cat-name">Bureautique & administratif</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Bien-être')">
+          <div class="cat-emoji">🧘</div>
+          <div class="cat-name">Bien-être</div>
+        </div>
+        <div class="cat-card" onclick="selectCat(this, 'Autre')">
+          <div class="cat-emoji">✨</div>
+          <div class="cat-name">Autre</div>
+        </div>
+      </div>
+
+      <div class="form-nav">
+        <div></div>
+        <button class="btn-next" id="btn-next-1" onclick="goStep(2)" disabled>
+          Continuer →
+        </button>
+      </div>
+    </div>
+
+    <!-- ÉTAPE 2 — DESCRIPTION -->
+    <div class="step-panel" id="step-2">
+      <div class="step-title">Décrivez votre besoin ✍️</div>
+      <div class="step-sub">Plus c'est précis, meilleures seront les propositions que vous recevrez.</div>
+
+      <div class="form-group">
+        <label class="form-label">Titre de l'annonce <span>*</span></label>
+        <input type="text" class="form-input" id="input-titre" placeholder="Ex : Tonte et débroussaillage jardin 400m²" maxlength="80" oninput="if(contientCoordonnees(this.value)){this.style.borderColor='var(--rouge)'}else{this.style.borderColor=''}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description détaillée <span>*</span></label>
+        <textarea class="form-textarea" id="input-desc" placeholder="Décrivez votre besoin en détail : taille du jardin, matériel fourni ou non, accès, contraintes particulières..." oninput="checkDesc()"></textarea>
+        <div id="alert-coordonnees" style="display:none; margin-top:0.5rem; background:rgba(204,10,43,0.06); border:1px solid rgba(204,10,43,0.2); border-radius:10px; padding:0.6rem 0.9rem; font-size:0.78rem; color:var(--rouge); font-weight:500;">
+          🚫 Votre description contient un numéro de téléphone ou une adresse email — merci de les retirer.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Budget indicatif <span style="color:var(--muted);font-weight:400;">(optionnel)</span></label>
+        <div style="display:flex; align-items:center; gap:0.6rem;">
+          <input type="number" class="form-input" id="input-budget" placeholder="Ex : 5000" min="0" style="flex:1;">
+          <span style="font-size:0.88rem; color:var(--muted); white-space:nowrap;">XPF</span>
+        </div>
+        <div style="font-size:0.78rem; color:var(--muted); margin-top:0.4rem;">Indiquez le montant maximum que vous êtes prêt à payer pour cette mission.</div>
+      </div>
+
+      <div style="background:rgba(204,10,43,0.05); border:1.5px solid rgba(204,10,43,0.2); border-radius:12px; padding:1rem 1.2rem; margin-bottom:1rem; display:flex; gap:0.7rem; align-items:flex-start;">
+        <span style="font-size:1.1rem; flex-shrink:0;">⚠️</span>
+        <div style="font-size:0.8rem; color:var(--rouge); line-height:1.6;">
+          <strong>Important :</strong> Tout partage d'email ou de numéro de téléphone dans la description est strictement interdit et entraîne un bannissement potentiel de la plateforme. Les coordonnées sont échangées uniquement après acceptation d'une proposition.
+        </div>
+      </div>
+
+      <div class="form-nav">
+        <button class="btn-back" onclick="goStep(1)">← Retour</button>
+        <button class="btn-next" onclick="validerDesc()">Continuer →</button>
+      </div>
+    </div>
+
+    <!-- ÉTAPE 3 — LIEU & DATE -->
+    <div class="step-panel" id="step-3">
+      <div class="step-title">Où et quand ? 📍</div>
+      <div class="step-sub">Indiquez votre localisation et vos disponibilités.</div>
+
+      <div class="form-group">
+        <label class="form-label">Île <span>*</span></label>
+        <select class="form-select" id="input-ile" onchange="updateCommunes()">
+          <option value="">Choisir une île</option>
+          <option value="Tahiti">🌺 Tahiti</option>
+          <option value="Moorea">🏝️ Moorea</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Commune <span>*</span></label>
+        <select class="form-select" id="input-commune">
+          <option value="">Choisir une île d'abord</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Quand avez-vous besoin du service ? <span>*</span></label>
+        <div class="urgence-options">
+          <button class="urgence-btn" onclick="selectUrgence(this, 'Dès que possible')">⚡ Dès que possible</button>
+          <button class="urgence-btn" onclick="selectUrgence(this, 'Cette semaine')">📅 Cette semaine</button>
+          <button class="urgence-btn" onclick="selectUrgence(this, 'Ce weekend')">🌴 Ce weekend</button>
+          <button class="urgence-btn" onclick="selectUrgence(this, 'Date précise')">🗓️ Date précise</button>
+        </div>
+      </div>
+
+      <div class="form-group" id="date-input" style="display:none;">
+        <label class="form-label">Date souhaitée</label>
+        <input type="date" class="form-input" id="input-date">
+      </div>
+
+      <div class="form-nav">
+        <button class="btn-back" onclick="goStep(2)">← Retour</button>
+        <button class="btn-next" onclick="goStep(4)">Continuer →</button>
+      </div>
+    </div>
+
+    <!-- ÉTAPE 4 — RÉCAP -->
+    <div class="step-panel" id="step-4">
+      <div class="step-title">Vérifiez votre annonce ✅</div>
+      <div class="step-sub">Relisez avant de publier — votre annonce sera visible par tous les prestataires.</div>
+
+      <div class="recap-block">
+        <div class="recap-row">
+          <span class="recap-key">Catégorie</span>
+          <span class="recap-val" id="recap-cat">—</span>
+        </div>
+        <div class="recap-row">
+          <span class="recap-key">Titre</span>
+          <span class="recap-val" id="recap-titre">—</span>
+        </div>
+        <div class="recap-row">
+          <span class="recap-key">Description</span>
+          <span class="recap-val" id="recap-desc" style="max-width:260px;">—</span>
+        </div>
+        <div class="recap-row">
+          <span class="recap-key">Localisation</span>
+          <span class="recap-val" id="recap-lieu">—</span>
+        </div>
+        <div class="recap-row">
+          <span class="recap-key">Disponibilité</span>
+          <span class="recap-val" id="recap-date">—</span>
+        </div>
+        <div class="recap-row" id="recap-budget-row" style="display:none;">
+          <span class="recap-key">Budget max</span>
+          <span class="recap-val" id="recap-budget">—</span>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <span class="icon">ℹ️</span>
+        <span>Votre annonce sera visible par tous les prestataires disponibles à Tahiti & Moorea. Vous recevrez une notification dès qu'une proposition vous sera envoyée.</span>
+      </div>
+
+      <div class="form-nav">
+        <button class="btn-back" onclick="goStep(3)">← Modifier</button>
+        <button class="btn-next" onclick="publier()">🌺 Publier l'annonce</button>
+      </div>
+    </div>
+
+    <!-- SUCCÈS -->
+    <div class="step-panel" id="step-success">
+      <div class="success-state">
+        <div class="success-icon">🎉</div>
+        <div class="success-title">Annonce publiée !</div>
+        <div class="success-sub">Votre annonce est en ligne. Les prestataires disponibles vont bientôt vous envoyer leurs propositions. Vous serez notifié à chaque nouvelle proposition.</div>
+        <div class="success-btns">
+          <button class="btn-next" style="justify-content:center;" onclick="window.location='apijob-dashboard.html'">Retour au tableau de bord</button>
+          <button class="btn-back" onclick="reset()">Publier une autre annonce</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+  // Vérifier que l'utilisateur est connecté ET est un client
+  (async () => {
+    const user = await getCurrentUser();
+    if (!user) { window.location.href = 'apijob-auth.html'; return; }
+    if (user.role === 'prestataire') {
+      alert('Cette page est réservée aux clients.');
+      window.location.href = 'apijob-dashboard.html';
+    }
+  })();
+
+  let selectedCat = '';
+  let selectedUrgence = '';
+
+  const communes = {
+    Tahiti: [
+      'Papeete', "Faa'a", 'Punaauia', 'Paea', 'Papara',
+      'Pirae', 'Arue', 'Mahina', 'Hitiaa O Te Ra',
+      'Taiarapu-Est', 'Taiarapu-Ouest', 'Teva I Uta'
+    ],
+    Moorea: [
+      'Afareaitu', 'Haapiti', 'Maharepa', 'Papetoai',
+      'Paopao', 'Teavaro'
+    ]
+  };
+
+  function updateCommunes() {
+    const ile = document.getElementById('input-ile').value;
+    const select = document.getElementById('input-commune');
+    select.innerHTML = '<option value="">Choisir une commune</option>';
+    if (ile && communes[ile]) {
+      communes[ile].forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c; opt.textContent = c;
+        select.appendChild(opt);
+      });
+    }
+  }
+
+  function selectCat(card, name) {
+    document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedCat = name;
+    document.getElementById('btn-next-1').disabled = false;
+  }
+
+  function selectUrgence(btn, val) {
+    document.querySelectorAll('.urgence-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedUrgence = val;
+    document.getElementById('date-input').style.display = val === 'Date précise' ? 'block' : 'none';
+  }
+
+  function contientCoordonnees(texte) {
+    if (/@[\w.-]+\.[a-z]{2,}/i.test(texte)) return true;
+    if (/\+689[\s.\-]?\d/i.test(texte)) return true;
+    if (/\b[89]\d[\s.\-]?\d{2}[\s.\-]?\d{2}[\s.\-]?\d{2}\b/.test(texte)) return true;
+    if (/\+\d{1,3}[\s.\-]?\(?\d{1,4}\)?[\s.\-]?\d{2,}/.test(texte)) return true;
+    if (/\b\d{8,}\b/.test(texte)) return true;
+    return false;
+  }
+
+  function checkDesc() {
+    const txt = document.getElementById('input-desc').value;
+    const hasContact = contientCoordonnees(txt);
+    document.getElementById('alert-coordonnees').style.display = hasContact ? 'block' : 'none';
+    document.getElementById('input-desc').style.borderColor = hasContact ? 'var(--rouge)' : '';
+  }
+
+  function validerDesc() {
+    const txt = document.getElementById('input-desc').value;
+    if (contientCoordonnees(txt)) {
+      document.getElementById('alert-coordonnees').style.display = 'block';
+      document.getElementById('input-desc').style.borderColor = 'var(--rouge)';
+      document.getElementById('input-desc').focus();
+      return;
+    }
+    goStep(3);
+  }
+
+  function goStep(n) {
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('step-' + n).classList.add('active');
+    updateSteps(n);
+    if (n === 4) fillRecap();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateSteps(current) {
+    for (let i = 1; i <= 4; i++) {
+      const dot = document.getElementById('dot-' + i);
+      dot.classList.remove('active', 'done');
+      if (i < current) dot.classList.add('done'), dot.textContent = '✓';
+      else if (i === current) dot.classList.add('active'), dot.textContent = i;
+      else dot.textContent = i;
+      if (i < 4) {
+        const line = document.getElementById('line-' + i);
+        line.classList.toggle('done', i < current);
+      }
+    }
+  }
+
+  function fillRecap() {
+    document.getElementById('recap-cat').textContent = selectedCat || '—';
+    document.getElementById('recap-titre').textContent = document.getElementById('input-titre').value || '—';
+    const desc = document.getElementById('input-desc').value;
+    document.getElementById('recap-desc').textContent = desc.length > 80 ? desc.substring(0,80)+'...' : (desc || '—');
+    const ile = document.getElementById('input-ile').value;
+    const commune = document.getElementById('input-commune').value;
+    document.getElementById('recap-lieu').textContent = commune && ile ? commune + ', ' + ile : (ile || '—');
+    const date = document.getElementById('input-date').value;
+    document.getElementById('recap-date').textContent = selectedUrgence === 'Date précise' && date ? date : (selectedUrgence || '—');
+    const budget = document.getElementById('input-budget').value;
+    const budgetRow = document.getElementById('recap-budget-row');
+    if (budget) {
+      document.getElementById('recap-budget').textContent = parseInt(budget).toLocaleString('fr-FR') + ' XPF';
+      budgetRow.style.display = 'flex';
+    } else {
+      budgetRow.style.display = 'none';
+    }
+  }
+
+  async function publier() {
+    const desc  = document.getElementById('input-desc').value;
+    const titre = document.getElementById('input-titre').value;
+    if (contientCoordonnees(desc) || contientCoordonnees(titre)) {
+      goStep(2);
+      document.getElementById('alert-coordonnees').style.display = 'block';
+      document.getElementById('input-desc').style.borderColor = 'var(--rouge)';
+      return;
+    }
+
+    // Récupérer l'utilisateur connecté (requis)
+    let user;
+    try { user = await getCurrentUser(); } catch(e) {}
+    if (!user) { window.location.href = 'apijob-auth.html'; return; }
+    if (user.role !== 'client') {
+      alert('Seuls les clients peuvent publier des annonces.');
+      return;
+    }
+
+    const btn = document.querySelector('#step-4 .btn-next:last-child');
+    const texteOriginal = btn ? btn.textContent : '🌺 Publier l\'annonce';
+    if (btn) { btn.disabled = true; btn.textContent = 'Publication...'; }
+
+    try {
+      const ile     = document.getElementById('input-ile').value;
+      const commune = document.getElementById('input-commune').value;
+      const urgence = selectedUrgence || 'flexible';
+      const budget  = document.getElementById('input-budget').value;
+      const dateEl  = document.getElementById('input-date').value;
+
+      const { data, error } = await db.from('annonces').insert({
+        client_id:     user.id,
+        titre:         titre.trim(),
+        description:   desc.trim(),
+        categorie:     selectedCat,
+        ile:           ile,
+        commune:       commune || null,
+        urgence:       urgence,
+        date_souhaitee: (urgence === 'Date précise' && dateEl) ? dateEl : null,
+        budget:        budget ? parseInt(budget) : null,
+        statut:        'active'
+      }).select().single();
+
+      if (error) { throw error; }
+
+      // Notification au client
+      await createNotification(user.id, 'annonce_publiee', '✅ Annonce publiée !',
+        `Votre annonce "${titre}" est en ligne. Les prestataires vont bientôt vous contacter.`);
+
+      // Afficher le succès
+      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('step-success').classList.add('active');
+      document.querySelectorAll('.steps-bar .step-dot').forEach(d => { d.classList.remove('active'); d.classList.add('done'); d.textContent = '✓'; });
+      document.querySelectorAll('.step-line').forEach(l => l.classList.add('done'));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    } catch (e) {
+      console.error(e);
+      alert('Erreur lors de la publication : ' + (e.message || 'Réessayez.'));
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = texteOriginal; }
+    }
+  }
+
+  function reset() {
+    selectedCat = ''; selectedUrgence = '';
+    document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('.urgence-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('input-titre').value = '';
+    document.getElementById('input-desc').value = '';
+    document.getElementById('input-ile').value = '';
+    document.getElementById('input-commune').value = '';
+    document.getElementById('input-budget').value = '';
+    document.getElementById('btn-next-1').disabled = true;
+    goStep(1);
+  }
+</script>
+
+</body>
+</html>

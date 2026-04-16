@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API JOB — Mentions légales</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rouge: #CC0A2B;
+    --or: #F0A500;
+    --night: #1A0008;
+    --blanc: #FFFFFF;
+    --gris: #F7F3F0;
+    --muted: rgba(26,0,8,0.55);
+    --border: rgba(204,10,43,0.1);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--gris); color:var(--night); }
+
+  nav {
+    position:sticky; top:0; z-index:100;
+    background:var(--blanc); border-bottom:2px solid var(--rouge);
+    padding:0.9rem 5%;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .nav-logo {
+    font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800;
+    color:var(--rouge); letter-spacing:-0.5px;
+    display:flex; align-items:center; gap:0.25rem; text-decoration:none;
+  }
+  .nav-logo span { color:var(--or); }
+  .nav-back { font-size:0.88rem; color:var(--muted); text-decoration:none; transition:color 0.2s; }
+  .nav-back:hover { color:var(--rouge); }
+
+  .page { max-width:760px; margin:0 auto; padding:3rem 5%; }
+
+  .page-header {
+    background:var(--blanc); border-radius:20px;
+    border:1px solid var(--border); padding:2rem;
+    text-align:center; margin-bottom:2rem;
+  }
+  .page-title {
+    font-family:'Syne',sans-serif;
+    font-size:clamp(1.6rem,3vw,2.2rem); font-weight:800;
+    letter-spacing:-1px; margin-bottom:0.5rem;
+  }
+  .page-title span { color:var(--rouge); }
+  .page-date { font-size:0.82rem; color:var(--muted); }
+
+  .ml-card {
+    background:var(--blanc); border-radius:20px;
+    border:1px solid var(--border); padding:2rem;
+    margin-bottom:1.2rem;
+  }
+  .ml-section-title {
+    font-family:'Syne',sans-serif; font-size:1rem; font-weight:800;
+    color:var(--rouge); margin-bottom:1.2rem;
+    padding-bottom:0.6rem; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:0.5rem;
+  }
+  .ml-row {
+    display:flex; gap:1rem; margin-bottom:0.8rem;
+    font-size:0.88rem; align-items:flex-start;
+    flex-wrap:wrap;
+  }
+  .ml-row:last-child { margin-bottom:0; }
+  .ml-key { color:var(--muted); min-width:160px; flex-shrink:0; font-weight:500; }
+  .ml-val { color:var(--night); flex:1; line-height:1.6; }
+  .ml-val a { color:var(--rouge); text-decoration:none; }
+  .ml-val a:hover { text-decoration:underline; }
+
+  .ml-text {
+    font-size:0.88rem; color:var(--muted);
+    line-height:1.8;
+  }
+  .ml-text p { margin-bottom:0.8rem; }
+  .ml-text p:last-child { margin-bottom:0; }
+  .ml-text ul { list-style:none; margin:0.5rem 0; }
+  .ml-text ul li { padding:0.25rem 0 0.25rem 1.2rem; position:relative; }
+  .ml-text ul li::before { content:'→'; position:absolute; left:0; color:var(--rouge); font-weight:700; }
+
+  .links-footer {
+    text-align:center; margin-top:2rem;
+    display:flex; gap:1.5rem; justify-content:center; flex-wrap:wrap;
+  }
+  .links-footer a {
+    font-size:0.85rem; color:var(--rouge);
+    text-decoration:none; font-weight:600;
+  }
+  .links-footer a:hover { text-decoration:underline; }
+
+  @media (max-width:500px) {
+    .ml-row { flex-direction:column; gap:0.2rem; }
+    .ml-key { min-width:auto; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <svg width="24" height="24" viewBox="0 0 28 28" style="border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.15);flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="c"><circle cx="14" cy="14" r="14"/></clipPath></defs><g clip-path="url(#c)"><circle cx="14" cy="14" r="14" fill="white"/><g stroke="#F0A500" stroke-width="1.3" stroke-linecap="round"><line x1="14" y1="17" x2="2.2" y2="14.9"/><line x1="14" y1="17" x2="3.4" y2="11.4"/><line x1="14" y1="17" x2="5.7" y2="8.4"/><line x1="14" y1="17" x2="8.5" y2="6.3"/><line x1="14" y1="17" x2="12.1" y2="5.2"/><line x1="14" y1="17" x2="15.9" y2="5.2"/><line x1="14" y1="17" x2="19.5" y2="6.3"/><line x1="14" y1="17" x2="22.3" y2="8.4"/><line x1="14" y1="17" x2="24.6" y2="11.4"/><line x1="14" y1="17" x2="25.8" y2="14.9"/></g><rect x="0" y="17" width="28" height="11" fill="#1E7FC2"/><path d="M7,17.5 Q14,15.5 21,17.5 L20.5,18.5 Q14,16.8 7.5,18.5 Z" fill="#CE1126"/><path d="M3,19.5 Q7,18.5 11,19.5 Q14,20.5 17,19.5 Q21,18.5 25,19.5" fill="none" stroke="white" stroke-width="0.6" opacity="0.8"/><path d="M3,21.5 Q7,20.5 11,21.5 Q14,22.5 17,21.5 Q21,20.5 25,21.5" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/><path d="M3,23.5 Q7,22.5 11,23.5 Q14,24.5 17,23.5 Q21,22.5 25,23.5" fill="none" stroke="white" stroke-width="0.4" opacity="0.4"/></g></svg>
+    API<span>JOB</span>
+  </div>
+  <a href="apijob-v4.html" class="nav-back">← Accueil</a>
+</nav>
+
+<div class="page">
+
+  <div class="page-header">
+    <div class="page-title">Mentions <span>légales</span></div>
+    <div class="page-date">Dernière mise à jour : au lancement de la plateforme</div>
+  </div>
+
+  <!-- ÉDITEUR -->
+  <div class="ml-card">
+    <div class="ml-section-title">🏢 Éditeur de la plateforme</div>
+    <div class="ml-row">
+      <div class="ml-key">Nom de la plateforme</div>
+      <div class="ml-val">API JOB</div>
+    </div>
+    <div class="ml-row">
+      <div class="ml-key">Forme juridique</div>
+      <div class="ml-val">À définir lors de l'immatriculation</div>
+    </div>
+    <div class="ml-row">
+      <div class="ml-key">Siège social</div>
+      <div class="ml-val">Tahiti, Polynésie française</div>
+    </div>
+    <div class="ml-row">
+      <div class="ml-key">Email de contact</div>
+      <div class="ml-val"><a href="mailto:contact@apijob.pf">contact@apijob.pf</a></div>
+    </div>
+    <div class="ml-row">
+      <div class="ml-key">Directeur de publication</div>
+      <div class="ml-val">Le représentant légal d'API JOB</div>
+    </div>
+  </div>
+
+  <!-- HÉBERGEMENT -->
+  <div class="ml-card">
+    <div class="ml-section-title">🌐 Hébergement</div>
+    <div class="ml-row">
+      <div class="ml-key">Hébergeur</div>
+      <div class="ml-val">À définir (Netlify / Vercel)</div>
+    </div>
+    <div class="ml-row">
+      <div class="ml-key">Serveurs</div>
+      <div class="ml-val">Infrastructure cloud internationale</div>
+    </div>
+  </div>
+
+  <!-- ACTIVITÉ -->
+  <div class="ml-card">
+    <div class="ml-section-title">⚖️ Activité de la plateforme</div>
+    <div class="ml-text">
+      <p>API JOB est une plateforme de mise en relation entre particuliers et prestataires de services, opérant exclusivement à Tahiti et Moorea, Polynésie française.</p>
+      <p>API JOB agit en qualité d'intermédiaire technique uniquement. À ce titre :</p>
+      <ul>
+        <li>API JOB n'est pas employeur des prestataires</li>
+        <li>API JOB ne fournit aucune prestation de service directe</li>
+        <li>API JOB n'intervient pas dans les transactions entre utilisateurs</li>
+        <li>API JOB ne garantit pas la qualité des prestations réalisées</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- PROPRIÉTÉ INTELLECTUELLE -->
+  <div class="ml-card">
+    <div class="ml-section-title">🎨 Propriété intellectuelle</div>
+    <div class="ml-text">
+      <p>L'ensemble des éléments constitutifs de la plateforme API JOB — logo, nom, design, textes, structure — est la propriété exclusive d'API JOB et est protégé par les lois applicables en Polynésie française.</p>
+      <p>Toute reproduction, représentation ou diffusion, en tout ou partie, sans autorisation écrite préalable est strictement interdite.</p>
+    </div>
+  </div>
+
+  <!-- DONNÉES PERSONNELLES -->
+  <div class="ml-card">
+    <div class="ml-section-title">🔒 Données personnelles</div>
+    <div class="ml-text">
+      <p>Les données personnelles collectées sur API JOB sont utilisées uniquement dans le cadre du fonctionnement de la plateforme. Elles ne sont pas vendues à des tiers.</p>
+      <p>Conformément à la réglementation applicable, chaque utilisateur dispose d'un droit d'accès, de modification et de suppression de ses données personnelles.</p>
+      <p>Pour exercer ces droits ou pour toute question relative à vos données : <a href="mailto:contact@apijob.pf">contact@apijob.pf</a></p>
+    </div>
+  </div>
+
+  <!-- COOKIES -->
+  <div class="ml-card">
+    <div class="ml-section-title">🍪 Cookies</div>
+    <div class="ml-text">
+      <p>API JOB utilise des cookies techniques nécessaires au fonctionnement de la plateforme (authentification, session utilisateur). Ces cookies ne collectent pas de données à des fins publicitaires.</p>
+      <p>En utilisant la plateforme, vous acceptez l'utilisation de ces cookies techniques.</p>
+    </div>
+  </div>
+
+  <!-- RESPONSABILITÉ -->
+  <div class="ml-card">
+    <div class="ml-section-title">⚠️ Limitation de responsabilité</div>
+    <div class="ml-text">
+      <p>API JOB s'efforce de maintenir la plateforme accessible en permanence mais ne peut garantir une disponibilité continue. API JOB ne peut être tenu responsable des dommages directs ou indirects résultant de l'utilisation ou de l'impossibilité d'utiliser la plateforme.</p>
+      <p>API JOB ne peut être tenu responsable des litiges survenant entre utilisateurs, de la qualité des prestations réalisées ou du non-paiement entre utilisateurs.</p>
+    </div>
+  </div>
+
+  <!-- DROIT APPLICABLE -->
+  <div class="ml-card">
+    <div class="ml-section-title">🌺 Droit applicable</div>
+    <div class="ml-text">
+      <p>Les présentes mentions légales sont soumises au droit applicable en Polynésie française. Tout litige relatif à leur interprétation sera soumis aux juridictions compétentes de Polynésie française.</p>
+    </div>
+  </div>
+
+  <div class="links-footer">
+    <a href="apijob-cgu.html">Conditions Générales d'Utilisation</a>
+    <a href="apijob-v4.html">Retour à l'accueil</a>
+    <a href="apijob-contact.html">Nous contacter</a>
+  </div>
+
+</div>
+
+</body>
+</html>

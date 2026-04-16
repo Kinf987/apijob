@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API JOB — Profil client</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rouge: #CC0A2B;
+    --rouge-dark: #A00822;
+    --or: #F0A500;
+    --night: #1A0008;
+    --blanc: #FFFFFF;
+    --gris: #F7F3F0;
+    --gris2: #EDE8E3;
+    --muted: rgba(26,0,8,0.45);
+    --border: rgba(204,10,43,0.1);
+    --vert: #1A7A4A;
+    --vert-light: rgba(26,122,74,0.08);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--gris); color:var(--night); min-height:100vh; }
+
+  /* NAV */
+  nav {
+    position:sticky; top:0; z-index:100;
+    background:var(--blanc); border-bottom:2px solid var(--rouge);
+    padding:0.9rem 5%;
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  }
+  .nav-logo {
+    font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800;
+    color:var(--rouge); letter-spacing:-0.5px;
+    display:flex; align-items:center; gap:0.25rem; cursor:default;
+  }
+  .nav-logo span { color:var(--or); }
+  .nav-back { font-size:0.88rem; color:var(--muted); text-decoration:none; transition:color 0.2s; }
+  .nav-back:hover { color:var(--rouge); }
+
+  /* PAGE */
+  .page { max-width:640px; margin:0 auto; padding:2rem 5%; }
+
+  /* HERO CLIENT */
+  .hero-card {
+    background:var(--blanc); border-radius:24px;
+    border:1.5px solid var(--border);
+    padding:2rem; margin-bottom:1.2rem;
+    text-align:center;
+  }
+  .client-avatar {
+    width:80px; height:80px; border-radius:50%;
+    background:linear-gradient(135deg,#006B8F,#00A8C6);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800;
+    color:white; margin:0 auto 1rem;
+    border:3px solid rgba(255,255,255,0.8);
+    box-shadow:0 4px 16px rgba(0,107,143,0.25);
+  }
+  .client-name {
+    font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:800;
+    letter-spacing:-0.3px; margin-bottom:0.3rem;
+  }
+  .client-since { font-size:0.82rem; color:var(--muted); margin-bottom:1rem; }
+
+  .client-badges { display:flex; justify-content:center; gap:0.5rem; margin-bottom:1.4rem; }
+  .badge {
+    font-size:0.72rem; font-weight:700;
+    padding:0.3rem 0.8rem; border-radius:50px;
+    display:flex; align-items:center; gap:0.3rem;
+  }
+  .badge-membre { background:var(--gris2); color:var(--muted); }
+  .badge-actif { background:rgba(26,122,74,0.1); color:var(--vert); }
+
+  /* STATS */
+  .stats-grid {
+    display:grid; grid-template-columns:repeat(3,1fr);
+    gap:0.8rem; margin-bottom:1.2rem;
+  }
+  .stat {
+    background:var(--gris); border-radius:14px; padding:1rem 0.6rem;
+    text-align:center;
+  }
+  .stat-num {
+    font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:800;
+    color:var(--rouge); line-height:1;
+  }
+  .stat-label { font-size:0.72rem; color:var(--muted); margin-top:0.3rem; line-height:1.3; }
+
+  /* CARD */
+  .card {
+    background:var(--blanc); border-radius:20px;
+    border:1.5px solid var(--border); padding:1.5rem;
+    margin-bottom:1.2rem;
+  }
+  .card-title {
+    font-family:'Syne',sans-serif; font-size:0.78rem; font-weight:700;
+    text-transform:uppercase; letter-spacing:0.08em;
+    color:var(--muted); margin-bottom:1rem;
+  }
+
+  /* ANNONCES */
+  .annonce-item {
+    display:flex; align-items:center; gap:1rem;
+    padding:0.9rem 0; border-bottom:1px solid var(--border);
+  }
+  .annonce-item:last-child { border-bottom:none; padding-bottom:0; }
+  .annonce-emoji {
+    font-size:1.4rem; width:40px; height:40px;
+    background:var(--gris); border-radius:10px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .annonce-info { flex:1; min-width:0; }
+  .annonce-title {
+    font-size:0.88rem; font-weight:600;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .annonce-meta { font-size:0.75rem; color:var(--muted); margin-top:0.1rem; }
+  .annonce-statut {
+    font-size:0.7rem; font-weight:700;
+    padding:0.2rem 0.6rem; border-radius:50px; flex-shrink:0;
+  }
+  .statut-ouvert { background:rgba(240,165,0,0.15); color:#B07800; }
+  .statut-termine { background:var(--vert-light); color:var(--vert); }
+
+  /* AVIS DONNÉS */
+  .avis-item {
+    padding:0.9rem 0; border-bottom:1px solid var(--border);
+  }
+  .avis-item:last-child { border-bottom:none; padding-bottom:0; }
+  .avis-top {
+    display:flex; align-items:center; gap:0.6rem; margin-bottom:0.4rem;
+  }
+  .avis-presta {
+    font-size:0.82rem; font-weight:600; flex:1;
+  }
+  .avis-stars { color:var(--or); font-size:0.82rem; }
+  .avis-date { font-size:0.72rem; color:var(--muted); }
+  .avis-text { font-size:0.82rem; color:var(--muted); line-height:1.5; font-style:italic; }
+
+  /* COMPORTEMENT */
+  .comportement-list { display:flex; flex-direction:column; gap:0.7rem; }
+  .comportement-item {
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  }
+  .comportement-label { font-size:0.85rem; color:var(--night); }
+  .comportement-bar-wrap {
+    flex:1; height:6px; background:var(--gris2);
+    border-radius:50px; overflow:hidden;
+  }
+  .comportement-bar { height:100%; border-radius:50px; background:var(--vert); }
+  .comportement-val { font-size:0.78rem; font-weight:700; color:var(--vert); flex-shrink:0; }
+
+  /* SIGNALER */
+  .signaler {
+    text-align:center; margin-top:0.5rem;
+    font-size:0.76rem; color:var(--muted);
+  }
+  .signaler a { color:var(--muted); text-decoration:none; }
+  .signaler a:hover { color:var(--rouge); }
+
+  @media (max-width:480px) {
+    .stats-grid { grid-template-columns:repeat(3,1fr); gap:0.5rem; }
+    .stat-num { font-size:1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">API<span>JOB</span></div>
+  <a href="apijob-annonce-detail.html" class="nav-back">← Retour à l'annonce</a>
+</nav>
+
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero-card">
+    <div class="client-avatar">MF</div>
+    <div class="client-name">Marie F.</div>
+    <div class="client-since">Membre depuis mars 2025 · Tahiti</div>
+    <div class="client-badges">
+      <span class="badge badge-membre">👤 Client</span>
+      <span class="badge badge-actif">● Actif récemment</span>
+    </div>
+    <div class="stats-grid">
+      <div class="stat">
+        <div class="stat-num">7</div>
+        <div class="stat-label">Annonces publiées</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Missions terminées</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">4.6★</div>
+        <div class="stat-label">Note donnée (moy.)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPORTEMENT -->
+  <div class="card">
+    <div class="card-title">Fiabilité client</div>
+    <div class="comportement-list">
+      <div class="comportement-item">
+        <div class="comportement-label">Taux d'acceptation</div>
+        <div class="comportement-bar-wrap">
+          <div class="comportement-bar" style="width:86%"></div>
+        </div>
+        <div class="comportement-val">86%</div>
+      </div>
+      <div class="comportement-item">
+        <div class="comportement-label">Missions menées à terme</div>
+        <div class="comportement-bar-wrap">
+          <div class="comportement-bar" style="width:100%"></div>
+        </div>
+        <div class="comportement-val">100%</div>
+      </div>
+      <div class="comportement-item">
+        <div class="comportement-label">Réactivité aux messages</div>
+        <div class="comportement-bar-wrap">
+          <div class="comportement-bar" style="width:70%;background:var(--or)"></div>
+        </div>
+        <div class="comportement-val" style="color:var(--or)">70%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANNONCES EN COURS -->
+  <div class="card">
+    <div class="card-title">Annonces récentes</div>
+    <div class="annonce-item">
+      <div class="annonce-emoji">🌿</div>
+      <div class="annonce-info">
+        <div class="annonce-title">Tonte et débroussaillage urgent</div>
+        <div class="annonce-meta">📍 Punaauia · Il y a 2h</div>
+      </div>
+      <span class="annonce-statut statut-ouvert">Ouverte</span>
+    </div>
+    <div class="annonce-item">
+      <div class="annonce-emoji">🔧</div>
+      <div class="annonce-info">
+        <div class="annonce-title">Réparation fuite évier</div>
+        <div class="annonce-meta">📍 Punaauia · Il y a 3 sem.</div>
+      </div>
+      <span class="annonce-statut statut-termine">Terminée</span>
+    </div>
+    <div class="annonce-item">
+      <div class="annonce-emoji">🏠</div>
+      <div class="annonce-info">
+        <div class="annonce-title">Ménage appartement — vendredi matin</div>
+        <div class="annonce-meta">📍 Pirae · Il y a 1 mois</div>
+      </div>
+      <span class="annonce-statut statut-termine">Terminée</span>
+    </div>
+  </div>
+
+  <!-- AVIS LAISSÉS -->
+  <div class="card">
+    <div class="card-title">Avis laissés par ce client</div>
+
+    <div class="avis-item">
+      <div class="avis-top">
+        <div class="avis-presta">Pour Teiva M. — Jardinage</div>
+        <span class="avis-stars">★★★★★</span>
+        <span class="avis-date">Il y a 3 sem.</span>
+      </div>
+      <div class="avis-text">"Travail rapide et soigné, je recommande vraiment."</div>
+    </div>
+
+    <div class="avis-item">
+      <div class="avis-top">
+        <div class="avis-presta">Pour Māui T. — Plomberie</div>
+        <span class="avis-stars">★★★★☆</span>
+        <span class="avis-date">Il y a 1 mois</span>
+      </div>
+      <div class="avis-text">"Intervention rapide, problème réglé en moins d'une heure."</div>
+    </div>
+
+    <div class="avis-item">
+      <div class="avis-top">
+        <div class="avis-presta">Pour Hina R. — Ménage</div>
+        <span class="avis-stars">★★★★★</span>
+        <span class="avis-date">Il y a 1 mois</span>
+      </div>
+      <div class="avis-text">"Ponctuelle et efficace, appartement impeccable."</div>
+    </div>
+  </div>
+
+  <div class="signaler">
+    <a href="#">⚑ Signaler ce profil</a>
+  </div>
+
+</div>
+
+</body>
+</html>
