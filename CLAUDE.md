@@ -1,0 +1,87 @@
+# PROJET : API JOB — Ajout du backend
+
+Tu travailles sur API JOB, une marketplace de services pour Tahiti et Moorea (Polynésie française).
+
+## RÈGLE ABSOLUE
+Ne touche JAMAIS au HTML/CSS existant.
+Ne modifie aucun design, aucune couleur, aucune animation.
+Tu connectes uniquement un backend aux pages existantes.
+
+## Ce qui existe déjà (ne pas toucher)
+29 pages HTML complètes dans ce dossier :
+apijob-v4.html (homepage), apijob-auth.html, apijob-dashboard.html,
+apijob-annonce.html, apijob-annonces.html, apijob-annonce-detail.html,
+apijob-proposition.html, apijob-messagerie.html, apijob-missions.html,
+apijob-evaluation.html, apijob-jetons.html, apijob-devenir-pro.html,
+apijob-pros.html, apijob-pro.html, apijob-profil-edit.html,
+apijob-profil-public.html, apijob-profil-client.html,
+apijob-notifications.html, apijob-parametres.html,
+apijob-bienvenue.html, apijob-confirmation-email.html,
+apijob-motdepasse.html, apijob-admin.html, apijob-admin-login.html,
+apijob-cgu.html, apijob-mentions.html, apijob-confidentialite.html,
+apijob-contact.html, apijob-404.html
+
+## Stack technique
+- Supabase (auth + base de données PostgreSQL)
+- JavaScript vanilla
+- Supabase JS client (CDN, pas de build)
+- Hébergement : Netlify (apijob.netlify.app)
+- Repo GitHub : github.com/Kinf987/apijob
+- Push toujours via GitHub Desktop (pas depuis le terminal)
+
+## Modèle économique
+- Clients : accès gratuit, aucun paiement
+- Prestataires : système de jetons (tokens)
+  - Inscription : 3 jetons offerts
+  - Pack Petit : 3 jetons
+  - Pack Moyen : 9 jetons (~25% réduction)
+  - Pack Pro : illimité + visibilité annuaire
+- Débit du jeton : uniquement quand le client ACCEPTE une proposition
+- Paiement : Stripe (carte) + virement + cash relais
+- Jetons non remboursables
+
+## Tables Supabase (déjà créées)
+- profiles (id, email, role, prenom, nom, photo, localisation, bio, tokens, is_pro, created_at)
+- annonces (id, client_id, titre, description, categorie, localisation, statut, created_at)
+- propositions (id, annonce_id, prestataire_id, message, tarif, disponibilite, statut, created_at)
+- missions (id, annonce_id, proposition_id, client_id, prestataire_id, statut, created_at)
+- messages (id, mission_id, sender_id, contenu, created_at)
+- evaluations (id, mission_id, auteur_id, cible_id, note_globale, note_ponctualite, note_qualite, note_communication, note_prix, commentaire, created_at)
+- transactions_jetons (id, user_id, type, quantite, mission_id, created_at)
+- notifications (id, user_id, type, titre, message, lu, created_at)
+
+## Règles métier
+- Profils prestataires non-Pro : visibles UNIQUEMENT par les clients ayant reçu leur proposition
+- Seuls les Pro apparaissent dans l'annuaire (apijob-pros.html)
+- Partage de coordonnées avant acceptation = avertissement puis bannissement
+- Admin credentials : à changer avant mise en ligne
+- Déclaration CPS cochée à l'inscription
+
+## Pages déjà connectées au backend
+- apijob-auth.html — inscription + connexion + emailRedirectTo bienvenue
+- apijob-annonce.html — publication d'annonce en base
+- apijob-annonces.html — liste dynamique + filtres + envoi de propositions
+- apijob-dashboard.html — stats réelles, vrai prénom, déconnexion
+- apijob-confirmation-email.html — vrai email, renvoi Supabase
+- apijob-bienvenue.html — token après confirmation, vrai prénom, rôle réel
+
+## Pages restantes à connecter (par priorité)
+1. apijob-profil-edit.html — édition profil
+2. apijob-messagerie.html — messagerie temps réel
+3. apijob-missions.html — suivi des missions
+4. apijob-notifications.html — centre de notifications
+5. apijob-evaluation.html — système d'avis
+6. apijob-jetons.html — achat de jetons (Stripe)
+7. apijob-pros.html — annuaire des Pro
+
+## Supabase
+- Project ID : douncwfmczjpnwcpfsah
+- Project URL : https://douncwfmczjpnwcpfsah.supabase.co
+- Dashboard : https://supabase.com/dashboard/project/douncwfmczjpnwcpfsah
+- Clés dans : sauvegarde-terminal/cles-supabase.md (exclu GitHub)
+
+## Règles de travail
+- Ne jamais toucher au HTML/CSS
+- Tester en fenêtre privée (Cmd+Maj+N) pour éviter les sessions bloquées
+- Demander confirmation avant toute action irréversible
+- Dire ce qui est fait, ce qui fonctionne, ce qui reste à faire

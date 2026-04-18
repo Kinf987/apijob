@@ -1,4 +1,11 @@
 node_modules/
 .DS_Store
+**/.DS_Store
 .env
 *.log
+*.rtf
+sauvegarde-terminal/
+index.html
+package.json
+package-lock.json
+.netlify/
