@@ -5,8 +5,8 @@
 // ÉTAPE 2 : Allez dans Settings > API et copiez vos clés
 // ÉTAPE 3 : Remplacez les valeurs ci-dessous
 
-const SUPABASE_URL  = 'https://VOTRE_PROJECT_ID.supabase.co';
-const SUPABASE_ANON_KEY = 'VOTRE_ANON_KEY_ICI';
+const SUPABASE_URL  = 'https://douncwfmczjpnwcpfsah.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdW5jd2ZtY3pqcG53Y3Bmc2FoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0OTYyOTgsImV4cCI6MjA5MjA3MjI5OH0.UGOwjNd1oGD563dkOnTXQiAYNQr3dSb4lJjXB0OR97o';
 
 // Client Supabase (nécessite le CDN chargé avant ce fichier)
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
