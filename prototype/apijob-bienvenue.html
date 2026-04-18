@@ -274,15 +274,49 @@
   </div>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script>
-  // Détecte le rôle depuis l'URL param ou localStorage
-  // Ex: apijob-bienvenue.html?role=client
-  const params = new URLSearchParams(window.location.search);
-  const role = params.get('role') || 'presta';
-  if (role === 'client') {
-    document.getElementById('view-presta').classList.remove('active');
-    document.getElementById('view-client').classList.add('active');
+  async function init() {
+    // Supabase gère automatiquement le token dans le hash de l'URL après confirmation email
+    const { data: { session } } = await db.auth.getSession();
+
+    if (!session) {
+      // Pas de session — attendre 1 seconde que Supabase traite le hash
+      await new Promise(r => setTimeout(r, 1000));
+      const { data: { session: s2 } } = await db.auth.getSession();
+      if (!s2) { window.location.href = 'apijob-auth.html'; return; }
+    }
+
+    const { data: { session: sess } } = await db.auth.getSession();
+    const { data: profile } = await db
+      .from('profiles')
+      .select('prenom, role')
+      .eq('id', sess.user.id)
+      .single();
+
+    if (!profile) { window.location.href = 'apijob-auth.html'; return; }
+
+    const prenom = profile.prenom || 'vous';
+    const role   = profile.role; // 'client' ou 'prestataire'
+
+    // Affiche le bon prénom
+    document.querySelectorAll('.hero-title span').forEach(el => el.textContent = prenom);
+
+    // Affiche la bonne vue
+    if (role === 'client') {
+      document.getElementById('view-presta').classList.remove('active');
+      document.getElementById('view-client').classList.add('active');
+    } else {
+      document.getElementById('view-presta').classList.add('active');
+      document.getElementById('view-client').classList.remove('active');
+    }
+
+    // Nettoie l'email en attente
+    sessionStorage.removeItem('pending_email');
   }
+
+  init();
 </script>
 
 </body>

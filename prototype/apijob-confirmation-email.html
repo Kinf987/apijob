@@ -176,24 +176,6 @@
       Cliquez dessus pour activer votre compte.
     </p>
 
-    <!-- Email simulé pour le prototype -->
-    <div class="email-card">
-      <div class="email-header">
-        <div class="email-avatar">📮</div>
-        <div class="email-from">
-          <strong>APIJOB</strong>
-          <span>noreply@apijob.pf</span>
-        </div>
-      </div>
-      <div class="email-subject">Confirmez votre adresse email</div>
-      <div class="email-body">
-        Bonjour,<br><br>
-        Merci de vous être inscrit sur APIJOB. Cliquez sur le bouton ci-dessous pour activer votre compte.
-        Ce lien est valable 24 heures.
-      </div>
-      <button class="btn-confirm" onclick="confirmer()">✅ Confirmer mon adresse email</button>
-    </div>
-
     <div class="actions">
       <button class="btn-resend" id="btn-resend" onclick="renvoyer()">
         Renvoyer l'email
@@ -210,29 +192,28 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script>
   const params = new URLSearchParams(window.location.search);
   const role = params.get('role') || 'presta';
 
-  // Simule l'email affiché (prototype)
-  const emailsDemo = {
-    presta: 'teiva.m@gmail.com',
-    client: 'marie.f@gmail.com'
-  };
-  document.getElementById('email-display').textContent = emailsDemo[role] || 'votre@email.com';
+  // Affiche le vrai email stocké lors de l'inscription
+  const pendingEmail = sessionStorage.getItem('pending_email') || 'votre@email.com';
+  document.getElementById('email-display').textContent = pendingEmail;
 
-  function confirmer() {
-    // Simule la confirmation et redirige vers bienvenue
-    location.href = 'apijob-bienvenue.html?role=' + role;
-  }
-
+  // Supabase envoie le vrai email — ce bouton n'est plus nécessaire
+  // mais on le garde visible pour renvoi
   let cooldown = false;
-  function renvoyer() {
+  async function renvoyer() {
     if (cooldown) return;
     cooldown = true;
     const btn = document.getElementById('btn-resend');
     btn.disabled = true;
-    toastMsg('Email renvoyé !');
+
+    const { error } = await db.auth.resend({ type: 'signup', email: pendingEmail });
+    toastMsg(error ? 'Erreur, réessayez.' : 'Email renvoyé !');
+
     let sec = 30;
     btn.textContent = `Renvoyer (${sec}s)`;
     const interval = setInterval(() => {
@@ -240,7 +221,7 @@
       if (sec <= 0) {
         clearInterval(interval);
         btn.disabled = false;
-        btn.textContent = 'Renvoyer l\'email';
+        btn.textContent = "Renvoyer l'email";
         cooldown = false;
       } else {
         btn.textContent = `Renvoyer (${sec}s)`;

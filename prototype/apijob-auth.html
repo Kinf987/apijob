@@ -533,6 +533,7 @@
 
       // Redirection vers confirmation email
       const param = role === 'client' ? 'client' : 'presta';
+      sessionStorage.setItem('pending_email', email);
       window.location.href = `apijob-confirmation-email.html?role=${param}`;
 
     } catch (e) {
