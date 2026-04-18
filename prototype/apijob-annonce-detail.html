@@ -447,7 +447,10 @@
   </div>
 </div>
 
+<script src="supabase-config.js"></script>
 <script>
+  let currentUser, annonceId, annonce;
+
   function contientCoordonnees(texte) {
     if (/@[\w.-]+\.[a-z]{2,}/i.test(texte)) return true;
     if (/\+689[\s.\-]?\d/i.test(texte)) return true;
@@ -457,12 +460,11 @@
     return false;
   }
 
-  // Compteur caractères accroche
   document.getElementById('accroche').addEventListener('input', function() {
     document.getElementById('charCount').textContent = this.value.length + ' / 200';
   });
 
-  function envoyer() {
+  async function envoyer() {
     const dispo = document.getElementById('dispo').value;
     const tarif = document.getElementById('tarif').value.trim();
     const exp = document.getElementById('experience').value;
@@ -492,12 +494,222 @@
       return;
     }
 
+    if (!annonceId || !currentUser) {
+      document.getElementById('modalConfirm').classList.add('open');
+      return;
+    }
+
+    if (!currentUser) { window.location.href = 'apijob-auth.html'; return; }
+
+    // Anti-doublon
+    const { data: existing } = await db.from('propositions')
+      .select('id').eq('annonce_id', annonceId).eq('prestataire_id', currentUser.id).maybeSingle();
+    if (existing) {
+      alert('Vous avez déjà envoyé une proposition pour cette annonce.');
+      return;
+    }
+
+    const btn = document.querySelector('.btn-proposer');
+    if (btn) { btn.disabled = true; btn.textContent = 'Envoi en cours...'; }
+
+    const messageText = exp ? `[Expérience : ${exp}]\n${accroche}` : accroche;
+
+    const { error } = await db.from('propositions').insert({
+      annonce_id: annonceId,
+      prestataire_id: currentUser.id,
+      message: messageText,
+      tarif: parseInt(tarif) || null,
+      disponibilite: dispo,
+      statut: 'en_attente'
+    });
+
+    if (error) {
+      console.error('Erreur envoi proposition :', error);
+      if (btn) { btn.disabled = false; btn.textContent = 'Envoyer ma proposition'; }
+      alert('Erreur lors de l\'envoi. Veuillez réessayer.');
+      return;
+    }
+
+    // Notifier le client
+    if (annonce?.client_id) {
+      const nomPresta = `${currentUser.prenom || ''} ${currentUser.nom || ''}`.trim() || 'Un prestataire';
+      await createNotification(annonce.client_id, 'proposition_recue',
+        'Nouvelle proposition',
+        `${nomPresta} a répondu à votre annonce "${annonce.titre || ''}".`
+      );
+    }
+
+    if (btn) { btn.disabled = true; btn.innerHTML = '✅ Proposition envoyée'; }
     document.getElementById('modalConfirm').classList.add('open');
   }
 
   document.getElementById('modalConfirm').addEventListener('click', function(e) {
     if (e.target === this) this.classList.remove('open');
   });
+
+  async function init() {
+    currentUser = await requireAuth();
+    if (!currentUser) return;
+
+    // Badge jetons
+    const tokens = currentUser.tokens || 0;
+    const tokenBadge = document.querySelector('.jetons-badge');
+    if (tokenBadge) {
+      const textNodes = [...tokenBadge.childNodes].filter(n => n.nodeType === 3);
+      if (textNodes.length > 0) textNodes[textNodes.length - 1].textContent = ` ${tokens} jeton${tokens !== 1 ? 's' : ''}`;
+    }
+
+    // Jeton-info texte
+    const remaining = tokens - 1;
+    const jetonInfoSpan = document.querySelector('.jeton-info span');
+    if (jetonInfoSpan) {
+      jetonInfoSpan.innerHTML = `1 jeton sera débité si le client accepte votre proposition. Il vous restera <strong>${remaining} jeton${remaining !== 1 ? 's' : ''}</strong>.`;
+    }
+
+    // Lire l'ID depuis l'URL
+    const params = new URLSearchParams(window.location.search);
+    annonceId = params.get('annonce');
+    if (!annonceId) return;
+
+    // Charger annonce + profil client
+    const { data: a, error } = await db.from('annonces')
+      .select('*, client:profiles!client_id(id, prenom, nom, photo, created_at)')
+      .eq('id', annonceId)
+      .single();
+
+    if (error || !a) return;
+    annonce = a;
+
+    // Comptages en parallèle + vérif doublon
+    const [{ count: nbAnnonces }, { count: nbProps }, { data: existingProp }] = await Promise.all([
+      db.from('annonces').select('id', { count: 'exact', head: true }).eq('client_id', a.client_id),
+      db.from('propositions').select('id', { count: 'exact', head: true }).eq('annonce_id', annonceId),
+      db.from('propositions').select('id').eq('annonce_id', annonceId).eq('prestataire_id', currentUser.id).maybeSingle()
+    ]);
+
+    // --- Carte "Publié par" ---
+    const client = a.client;
+    const initiales = ((client.prenom?.[0] || '') + (client.nom?.[0] || '')).toUpperCase() || '?';
+    const nomAbrege = `${client.prenom || ''} ${client.nom ? client.nom[0] + '.' : ''}`.trim();
+    const mois = new Date(client.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+
+    const cards = document.querySelectorAll('.card');
+    const publishCard = cards[0];
+    if (publishCard) {
+      const av = publishCard.querySelector('.client-avatar');
+      if (av) {
+        if (client.photo) { av.style.backgroundImage = `url(${client.photo})`; av.style.backgroundSize = 'cover'; av.textContent = ''; }
+        else { av.textContent = initiales; }
+      }
+      const nameDiv = publishCard.querySelector('[style*="font-weight:800"]');
+      if (nameDiv) nameDiv.textContent = nomAbrege;
+      const sinceDiv = publishCard.querySelector('[style*="0.76rem"]');
+      if (sinceDiv) sinceDiv.textContent = `Membre depuis ${mois} · ${nbAnnonces || 0} annonce${nbAnnonces !== 1 ? 's' : ''} publiée${nbAnnonces !== 1 ? 's' : ''}`;
+      const link = publishCard.closest('a');
+      if (link) link.href = `apijob-profil-public.html?id=${client.id}`;
+    }
+
+    // --- Carte annonce ---
+    const annonceCard = cards[1];
+    if (annonceCard) {
+      const emojiEl = annonceCard.querySelector('.annonce-emoji-big');
+      if (emojiEl) emojiEl.textContent = catEmoji(a.categorie);
+
+      const badgesEl = annonceCard.querySelector('.annonce-badges');
+      if (badgesEl) {
+        badgesEl.innerHTML = '';
+        if (a.urgence) badgesEl.innerHTML += `<span class="badge badge-urgent">⚡ Urgent</span>`;
+        if (a.categorie) badgesEl.innerHTML += `<span class="badge badge-cat">${catEmoji(a.categorie)} ${a.categorie}</span>`;
+        if (nbProps > 0) badgesEl.innerHTML += `<span class="badge badge-props">${nbProps} proposition${nbProps !== 1 ? 's' : ''}</span>`;
+      }
+
+      const titleEl = annonceCard.querySelector('.annonce-title-big');
+      if (titleEl) titleEl.textContent = a.titre;
+
+      const metasEl = annonceCard.querySelector('.annonce-metas');
+      if (metasEl) {
+        metasEl.innerHTML = `
+          <span class="annonce-meta">📍 ${a.localisation || 'Tahiti'}</span>
+          <span class="annonce-meta">🕐 Publiée le ${formatDate(a.created_at)}</span>
+        `;
+      }
+
+      const descEl = annonceCard.querySelector('.annonce-desc');
+      if (descEl) descEl.textContent = a.description || '';
+
+      const budgetBlock = annonceCard.querySelector('.budget-block');
+      if (budgetBlock) {
+        if (a.budget) {
+          const budgetAmountEl = budgetBlock.querySelector('.budget-amount');
+          if (budgetAmountEl) budgetAmountEl.textContent = parseInt(a.budget).toLocaleString('fr-FR');
+        } else {
+          budgetBlock.style.display = 'none';
+        }
+      }
+    }
+
+    // --- Texte du modal ---
+    const modalSub = document.querySelector('#modalConfirm .modal-sub');
+    if (modalSub) {
+      modalSub.innerHTML = `<strong>${client.prenom || 'Le client'}</strong> a été notifié·e. Si il/elle accepte votre proposition, 1 jeton sera débité et vous pourrez échanger directement en messagerie.`;
+    }
+
+    // Si le client est l'auteur de l'annonce → masquer le formulaire, afficher les props
+    if (currentUser.role === 'client' && currentUser.id === a.client_id) {
+      const formCard = document.querySelector('.form-card');
+      if (formCard) formCard.style.display = 'none';
+
+      const { data: props } = await db.from('propositions')
+        .select('*, prestataire:profiles!prestataire_id(id, prenom, nom, photo, is_pro, is_verified)')
+        .eq('annonce_id', annonceId)
+        .order('created_at', { ascending: false });
+
+      if (props && props.length > 0) {
+        const propsCard = document.createElement('div');
+        propsCard.className = 'card';
+        propsCard.innerHTML = `
+          <div class="section-label" style="margin-bottom:1rem;">Propositions reçues (${props.length})</div>
+          <div class="props-list">
+            ${props.map(p => {
+              const pr = p.prestataire || {};
+              const init = ((pr.prenom?.[0]||'')+(pr.nom?.[0]||'')).toUpperCase()||'?';
+              const nom = `${pr.prenom||''} ${pr.nom||''}`.trim();
+              return `
+                <div class="prop-item">
+                  <div class="prop-avatar">${init}</div>
+                  <div class="prop-body">
+                    <div class="prop-top">
+                      <span class="prop-name">${nom}</span>
+                      ${pr.is_verified ? '<span class="prop-badge-verifie">✅ Vérifié</span>' : ''}
+                      ${pr.is_pro ? '<span class="prop-badge-pro">⭐ Pro</span>' : ''}
+                    </div>
+                    <p class="prop-text">${p.message || ''}</p>
+                    <div class="prop-date">Tarif : ${p.tarif ? parseInt(p.tarif).toLocaleString('fr-FR') + ' XPF' : 'Non précisé'} · ${p.disponibilite || ''} · ${formatDate(p.created_at)}</div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+        const annonceCardEl = document.querySelectorAll('.card')[1];
+        if (annonceCardEl?.parentNode) annonceCardEl.parentNode.insertBefore(propsCard, annonceCardEl.nextSibling);
+      }
+      return;
+    }
+
+    // Si déjà proposé → désactiver le formulaire
+    if (existingProp) {
+      const btn = document.querySelector('.btn-proposer');
+      if (btn) {
+        btn.disabled = true;
+        btn.style.opacity = '0.6';
+        btn.style.cursor = 'not-allowed';
+        btn.innerHTML = '✅ Proposition déjà envoyée';
+      }
+    }
+  }
+
+  init();
 </script>
 
 </body>

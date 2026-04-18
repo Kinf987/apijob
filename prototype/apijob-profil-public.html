@@ -387,12 +387,192 @@
   </div>
 </div>
 
+<script src="supabase-config.js"></script>
 <script>
   function fermerModal(e) {
     if (e.target === document.getElementById('modal-contact')) {
       document.getElementById('modal-contact').classList.remove('open');
     }
   }
+
+  async function init() {
+    const params = new URLSearchParams(window.location.search);
+    const profileId = params.get('id');
+
+    // Utilisateur connecté (optionnel — page publique)
+    let currentUser = null;
+    const { data: { session } } = await db.auth.getSession();
+    if (session?.user) {
+      const { data } = await db.from('profiles').select('*').eq('id', session.user.id).single();
+      currentUser = data;
+    }
+
+    if (!profileId) return; // mode démo
+
+    // Charger le profil
+    const { data: profile, error } = await db.from('profiles').select('*').eq('id', profileId).single();
+    if (error || !profile) return;
+
+    const meta = profile.metadata || {};
+
+    // Charger les évaluations reçues + missions terminées en parallèle
+    const [{ data: evals }, { count: nbMissions }] = await Promise.all([
+      db.from('evaluations')
+        .select('*, auteur:profiles!auteur_id(prenom, nom), mission:missions!mission_id(annonce:annonces!annonce_id(titre, categorie))')
+        .eq('cible_id', profileId)
+        .order('created_at', { ascending: false }),
+      db.from('missions')
+        .select('id', { count: 'exact', head: true })
+        .eq('prestataire_id', profileId)
+        .eq('statut', 'terminee')
+    ]);
+
+    // --- Titre page ---
+    document.title = `API JOB — Profil de ${profile.prenom || ''} ${profile.nom || ''}`.trim();
+
+    // --- Avatar ---
+    const initiales = ((profile.prenom?.[0] || '') + (profile.nom?.[0] || '')).toUpperCase() || '?';
+    const avatarEl = document.querySelector('.profil-avatar');
+    if (avatarEl) {
+      if (profile.photo) {
+        avatarEl.style.backgroundImage = `url(${profile.photo})`;
+        avatarEl.style.backgroundSize = 'cover';
+        avatarEl.style.backgroundPosition = 'center';
+        avatarEl.textContent = '';
+      } else {
+        avatarEl.textContent = initiales;
+      }
+    }
+
+    // --- Nom ---
+    const nameEl = document.querySelector('.profil-name');
+    if (nameEl) nameEl.textContent = `${profile.prenom || ''} ${profile.nom || ''}`.trim();
+
+    // --- Badges ---
+    const badgesEl = document.querySelector('.profil-badges');
+    if (badgesEl) {
+      badgesEl.innerHTML = '';
+      if (profile.is_verified) badgesEl.innerHTML += `<span class="badge badge-verifie">✅ Profil vérifié</span>`;
+      if (profile.is_pro) badgesEl.innerHTML += `<span class="badge badge-pro">⭐ Pro</span>`;
+    }
+
+    // --- Étoiles & note moyenne ---
+    const avgNote = evals && evals.length > 0
+      ? evals.reduce((s, e) => s + (e.note_globale || 0), 0) / evals.length
+      : null;
+
+    const starsContainer = document.querySelector('.profil-stars');
+    if (avgNote !== null && starsContainer) {
+      const filled = Math.round(avgNote);
+      const starsStr = '★'.repeat(filled) + '☆'.repeat(5 - filled);
+      const starsEl = starsContainer.querySelector('.stars');
+      const ratingNumEl = starsContainer.querySelector('.rating-num');
+      const ratingCountEl = starsContainer.querySelector('.rating-count');
+      if (starsEl) starsEl.textContent = starsStr;
+      if (ratingNumEl) ratingNumEl.textContent = avgNote.toFixed(1);
+      if (ratingCountEl) ratingCountEl.textContent = `· ${evals.length} avis`;
+    } else if (starsContainer) {
+      starsContainer.style.display = 'none';
+    }
+
+    // --- Zone ---
+    const zoneEl = document.querySelector('.profil-zone');
+    if (zoneEl) {
+      const zones = meta.zones || [];
+      const zoneText = profile.localisation || (zones.length > 0 ? zones.slice(0, 3).join(', ') : '');
+      if (zoneText) zoneEl.innerHTML = `📍 ${zoneText}`;
+      else zoneEl.style.display = 'none';
+    }
+
+    // --- Stats ---
+    const statNums = document.querySelectorAll('.profil-stat-num');
+    if (statNums[0]) statNums[0].textContent = nbMissions || 0;
+
+    // --- Services ---
+    const servicesContainer = document.querySelector('.services-tags');
+    if (servicesContainer) {
+      const services = meta.services || [];
+      if (services.length > 0) {
+        servicesContainer.innerHTML = services.map(s => `<span class="service-tag">${s}</span>`).join('');
+      }
+    }
+
+    // --- Bio ---
+    const descEl = document.querySelector('.profil-desc');
+    if (descEl && profile.bio) {
+      descEl.innerHTML = profile.bio.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+    }
+
+    // --- Zones d'intervention ---
+    const zoneTagsEl = document.querySelector('.zone-tags');
+    if (zoneTagsEl) {
+      const zones = meta.zones || [];
+      if (zones.length > 0) zoneTagsEl.innerHTML = zones.map(z => `<span class="zone-tag">${z}</span>`).join('');
+    }
+
+    // --- Avis ---
+    const avisList = document.querySelector('.avis-list');
+    const avisCountSpan = document.querySelector('.section-card-title span');
+    if (avisCountSpan) avisCountSpan.textContent = `(${evals ? evals.length : 0})`;
+
+    if (avisList) {
+      if (!evals || evals.length === 0) {
+        avisList.innerHTML = '<p style="color:var(--muted);font-size:0.88rem;text-align:center;padding:1rem 0;">Aucun avis pour l\'instant.</p>';
+      } else {
+        const colorClasses = ['', 'vert', 'or'];
+        avisList.innerHTML = evals.slice(0, 10).map((ev, i) => {
+          const auteur = ev.auteur || {};
+          const initAut = ((auteur.prenom?.[0] || '') + (auteur.nom?.[0] || '')).toUpperCase() || '?';
+          const nomAut = `${auteur.prenom || ''} ${auteur.nom ? auteur.nom[0] + '.' : ''}`.trim();
+          const filled = Math.round(ev.note_globale || 0);
+          const stars = '★'.repeat(filled) + '☆'.repeat(5 - filled);
+          const missionTitle = ev.mission?.annonce?.titre || '';
+          const cat = ev.mission?.annonce?.categorie || '';
+          const serviceStr = missionTitle ? `${catEmoji(cat)} ${missionTitle}`.trim() : '';
+          const colorClass = colorClasses[i % 3];
+          return `
+            <div class="avis-item">
+              <div class="avis-top">
+                <div class="avis-auteur">
+                  <div class="avis-avatar${colorClass ? ' ' + colorClass : ''}">${initAut}</div>
+                  <div>
+                    <div class="avis-nom">${nomAut}</div>
+                    ${serviceStr ? `<div class="avis-service">${serviceStr}</div>` : ''}
+                  </div>
+                </div>
+                <div>
+                  <div class="avis-stars">${stars}</div>
+                  <div class="avis-date">${formatDate(ev.created_at)}</div>
+                </div>
+              </div>
+              ${ev.commentaire ? `<p class="avis-texte">${ev.commentaire}</p>` : ''}
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    // --- Modal & bouton contact ---
+    const nomProfil = `${profile.prenom || ''} ${profile.nom || ''}`.trim();
+    const sheetSub = document.querySelector('.sheet-sub');
+    if (sheetSub) {
+      sheetSub.innerHTML = `Pour contacter <strong>${nomProfil}</strong> directement, vous devez être connecté en tant que client APIJOB.<br>L'inscription est gratuite.`;
+    }
+
+    const btnContacter = document.querySelector('.btn-contacter');
+    if (btnContacter && currentUser) {
+      if (currentUser.role === 'client') {
+        // Client connecté → publier une annonce
+        btnContacter.onclick = () => window.location.href = 'apijob-annonce.html';
+        btnContacter.innerHTML = '📋 Publier une annonce';
+      } else {
+        // Prestataire connecté → masquer le bouton
+        btnContacter.style.display = 'none';
+      }
+    }
+  }
+
+  init();
 </script>
 
 </body>

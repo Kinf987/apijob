@@ -720,4 +720,184 @@
               <td><strong>900 XPF</strong></td>
               <td>🏪 Point relais</td>
               <td>Hier 08:30</td>
-              <td><span cla
+              <td><span class="badge badge-actif">✅ Confirmé</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script src="supabase-config.js"></script>
+<script>
+  // Protection sessionStorage (déjà vérifiée en haut du <head>)
+
+  function showPanel(name) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + name)?.classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('onclick')?.includes(`'${name}'`));
+    });
+    const titles = {
+      dashboard: '📊 Tableau de bord',
+      utilisateurs: '👥 Utilisateurs',
+      signalements: '⚠️ Signalements',
+      annonces: '📢 Annonces',
+      avis: '⭐ Avis',
+      revenus: '💰 Revenus & Jetons'
+    };
+    const el = document.getElementById('topbar-title');
+    if (el) el.textContent = titles[name] || name;
+  }
+
+  function logout() {
+    sessionStorage.removeItem('apijob_admin');
+    window.location.href = 'apijob-admin-login.html';
+  }
+
+  function initials(prenom, nom) {
+    return ((prenom?.[0] || '') + (nom?.[0] || '')).toUpperCase() || '?';
+  }
+
+  async function init() {
+    // Date du jour
+    const dateEl = document.querySelector('.topbar-date');
+    if (dateEl) dateEl.textContent = new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+    // Chargement des stats en parallèle
+    const [
+      { count: nbUsers },
+      { count: nbPros },
+      { count: nbMissions },
+      { count: nbAnnonces },
+      { data: latestUsers },
+      { data: latestAnnonces },
+      { data: latestTx }
+    ] = await Promise.all([
+      db.from('profiles').select('id', { count: 'exact', head: true }),
+      db.from('profiles').select('id', { count: 'exact', head: true }).eq('is_pro', true),
+      db.from('missions').select('id', { count: 'exact', head: true }).eq('statut', 'terminee'),
+      db.from('annonces').select('id', { count: 'exact', head: true }),
+      db.from('profiles').select('id, prenom, nom, email, role, is_pro, tokens, created_at').order('created_at', { ascending: false }).limit(10),
+      db.from('annonces').select('id, titre, categorie, localisation, statut, created_at, client:profiles!client_id(prenom, nom)').order('created_at', { ascending: false }).limit(10),
+      db.from('transactions_jetons').select('id, type, quantite, created_at, user:profiles!user_id(prenom, nom)').order('created_at', { ascending: false }).limit(10)
+    ]);
+
+    // Stats dashboard
+    const statNums = document.querySelectorAll('#panel-dashboard .stat-num');
+    if (statNums[0]) statNums[0].textContent = nbUsers || 0;
+    if (statNums[2]) statNums[2].textContent = nbMissions || 0;
+    if (statNums[4]) statNums[4].textContent = nbAnnonces || 0;
+    if (statNums[6]) statNums[6].textContent = nbPros || 0;
+
+    // Jetons vendus ce mois
+    const { data: txMois } = await db.from('transactions_jetons')
+      .select('quantite')
+      .eq('type', 'achat')
+      .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString());
+    const jetonsVendus = (txMois || []).reduce((s, t) => s + (t.quantite || 0), 0);
+    if (statNums[1]) statNums[1].textContent = jetonsVendus.toLocaleString('fr-FR');
+
+    // --- Tableau "Dernières inscriptions" (dashboard) ---
+    const dashTbody = document.querySelector('#panel-dashboard tbody');
+    if (dashTbody && latestUsers) {
+      dashTbody.innerHTML = latestUsers.slice(0, 5).map(u => {
+        const init = initials(u.prenom, u.nom);
+        const nom = `${u.prenom || ''} ${u.nom || ''}`.trim() || u.email;
+        const badge = u.is_pro
+          ? `<span class="badge badge-pro">⭐ Pro</span>`
+          : `<span class="badge badge-actif">✅ Actif</span>`;
+        const date = new Date(u.created_at).toLocaleString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+        return `
+          <tr>
+            <td><div class="user-cell"><div class="user-avatar-sm">${init}</div><div><div class="user-name">${nom}</div><div class="user-email">${u.email || ''}</div></div></div></td>
+            <td>${date}</td>
+            <td>${badge}</td>
+            <td><div class="action-btns"><button class="btn-action btn-voir" onclick="location.href='apijob-profil-public.html?id=${u.id}'">Voir</button></div></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // --- Panel utilisateurs ---
+    const userTbody = document.querySelector('#panel-utilisateurs tbody');
+    if (userTbody && latestUsers) {
+      userTbody.innerHTML = latestUsers.map(u => {
+        const init = initials(u.prenom, u.nom);
+        const nom = `${u.prenom || ''} ${u.nom || ''}`.trim() || u.email;
+        const roleStr = u.role === 'prestataire' ? 'Prestataire' : 'Client';
+        const badge = u.is_pro
+          ? `<span class="badge badge-pro">⭐ Pro</span>`
+          : `<span class="badge badge-actif">✅ Actif</span>`;
+        const date = new Date(u.created_at).toLocaleDateString('fr-FR');
+        return `
+          <tr>
+            <td><div class="user-cell"><div class="user-avatar-sm">${init}</div><div><div class="user-name">${nom}</div><div class="user-email">${u.email || ''} · ${roleStr}</div></div></div></td>
+            <td>${date}</td>
+            <td>—</td>
+            <td>${u.role === 'prestataire' ? (u.tokens || 0) + ' 🪙' : '—'}</td>
+            <td>${badge}</td>
+            <td><div class="action-btns"><button class="btn-action btn-voir" onclick="location.href='apijob-profil-public.html?id=${u.id}'">Voir</button><button class="btn-action btn-suspendre">Suspendre</button><button class="btn-action btn-bannir">Bannir</button></div></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // --- Panel annonces ---
+    const annonceTbody = document.querySelector('#panel-annonces tbody');
+    if (annonceTbody && latestAnnonces) {
+      annonceTbody.innerHTML = latestAnnonces.map(a => {
+        const client = a.client || {};
+        const nomClient = `${client.prenom || ''} ${client.nom?.[0] || ''}.`.trim();
+        const statut = a.statut === 'terminee'
+          ? `<span class="badge badge-actif" style="background:var(--vert-light);color:var(--vert);">Terminée</span>`
+          : `<span class="badge badge-actif">Active</span>`;
+        const date = new Date(a.created_at).toLocaleDateString('fr-FR');
+        return `
+          <tr>
+            <td><div style="font-weight:600;font-size:0.85rem;">${catEmoji(a.categorie)} ${a.titre || ''}</div><div style="font-size:0.72rem;color:var(--muted);">${a.localisation || 'Tahiti'}</div></td>
+            <td>${nomClient}</td>
+            <td>${date}</td>
+            <td>—</td>
+            <td>${statut}</td>
+            <td><div class="action-btns"><button class="btn-action btn-voir" onclick="location.href='apijob-annonce-detail.html?annonce=${a.id}'">Voir</button><button class="btn-action btn-supprimer">Supprimer</button></div></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // --- Panel revenus — transactions ---
+    const txTbody = document.querySelector('#panel-revenus tbody');
+    if (txTbody && latestTx) {
+      txTbody.innerHTML = latestTx.map(t => {
+        const user = t.user || {};
+        const nomU = `${user.prenom || ''} ${user.nom?.[0] || ''}.`.trim() || '—';
+        const initU = initials(user.prenom, user.nom);
+        const typeLabel = t.type === 'achat' ? 'Achat jetons' : t.type === 'achat_pro' ? 'Pack Pro' : t.type === 'debit_mission' ? 'Débit mission' : t.type;
+        const qty = (t.quantite || 0) > 0 ? `+${t.quantite} 🪙` : `${t.quantite} 🪙`;
+        const date = new Date(t.created_at).toLocaleString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+        return `
+          <tr>
+            <td><div class="user-cell"><div class="user-avatar-sm">${initU}</div><span>${nomU}</span></div></td>
+            <td>${typeLabel}</td>
+            <td><strong>${qty}</strong></td>
+            <td>—</td>
+            <td>${date}</td>
+            <td><span class="badge badge-actif">✅ Confirmé</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Nb Pro dans stats
+    if (statNums[6]) statNums[6].textContent = nbPros || 0;
+  }
+
+  init();
+</script>
+
+</body>
+</html>

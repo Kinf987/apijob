@@ -345,10 +345,176 @@
   </div>
 </div>
 
+<script src="supabase-config.js"></script>
 <script>
-  function accepter() {
+  let currentUser, propositionId, proposition;
+
+  async function accepter() {
+    if (!proposition || !currentUser) return;
+
+    const btn = document.querySelector('.btn-accepter');
+    if (btn) { btn.disabled = true; btn.textContent = 'Traitement...'; }
+
+    // Créer la mission
+    const { data: mission, error: mErr } = await db.from('missions').insert({
+      annonce_id: proposition.annonce_id,
+      proposition_id: propositionId,
+      client_id: currentUser.id,
+      prestataire_id: proposition.prestataire_id,
+      statut: 'en_cours'
+    }).select().single();
+
+    if (mErr) {
+      console.error('Erreur création mission :', mErr);
+      if (btn) { btn.disabled = false; btn.textContent = '✅ Accepter cette proposition'; }
+      return;
+    }
+
+    // Mettre à jour la proposition
+    await db.from('propositions').update({ statut: 'acceptee' }).eq('id', propositionId);
+
+    // Débiter 1 jeton au prestataire
+    const presta = proposition.prestataire || {};
+    const newTokens = Math.max(0, (presta.tokens || 0) - 1);
+    await Promise.all([
+      db.from('profiles').update({ tokens: newTokens }).eq('id', proposition.prestataire_id),
+      db.from('transactions_jetons').insert({
+        user_id: proposition.prestataire_id,
+        type: 'debit_mission',
+        quantite: -1,
+        mission_id: mission.id
+      })
+    ]);
+
+    // Notifier le prestataire
+    const nomClient = `${currentUser.prenom || ''} ${currentUser.nom || ''}`.trim() || 'Le client';
+    await createNotification(proposition.prestataire_id, 'proposition_acceptee',
+      'Proposition acceptée !',
+      `${nomClient} a accepté votre proposition. Échangez via la messagerie.`
+    );
+
+    // Lien messagerie → bonne mission
+    const btnMsg = document.querySelector('.btn-success');
+    if (btnMsg) btnMsg.onclick = () => window.location.href = `apijob-messagerie.html?mission=${mission.id}`;
+
     document.getElementById('success-accepter').classList.add('open');
   }
+
+  async function refuser() {
+    if (!proposition || !currentUser) { window.location.href = 'apijob-dashboard.html'; return; }
+
+    await db.from('propositions').update({ statut: 'refusee' }).eq('id', propositionId);
+
+    const nomClient = `${currentUser.prenom || ''} ${currentUser.nom || ''}`.trim() || 'Le client';
+    const titre = proposition.annonce?.titre || 'cette annonce';
+    await createNotification(proposition.prestataire_id, 'proposition_refusee',
+      'Proposition non retenue',
+      `${nomClient} n'a pas retenu votre proposition pour "${titre}".`
+    );
+
+    window.location.href = 'apijob-dashboard.html';
+  }
+
+  async function init() {
+    currentUser = await requireAuth();
+    if (!currentUser) return;
+
+    const params = new URLSearchParams(window.location.search);
+    propositionId = params.get('proposition');
+    if (!propositionId) return; // mode démo
+
+    const { data: prop, error } = await db.from('propositions')
+      .select('*, prestataire:profiles!prestataire_id(id, prenom, nom, photo, tokens, is_pro, is_verified), annonce:annonces!annonce_id(id, titre, categorie, localisation, created_at)')
+      .eq('id', propositionId)
+      .single();
+
+    if (error || !prop) return;
+    proposition = prop;
+
+    // Stats prestataire
+    const [{ count: nbMissions }, { data: evals }] = await Promise.all([
+      db.from('missions').select('id', { count: 'exact', head: true }).eq('prestataire_id', prop.prestataire_id).eq('statut', 'terminee'),
+      db.from('evaluations').select('note_globale').eq('cible_id', prop.prestataire_id)
+    ]);
+
+    const avgNote = evals && evals.length > 0
+      ? evals.reduce((s, e) => s + (e.note_globale || 0), 0) / evals.length
+      : null;
+
+    const presta = prop.prestataire || {};
+    const annonce = prop.annonce || {};
+    const initiales = ((presta.prenom?.[0] || '') + (presta.nom?.[0] || '')).toUpperCase() || '?';
+    const nomPresta = `${presta.prenom || ''} ${presta.nom || ''}`.trim();
+    const nomAbrege = `${presta.prenom || ''} ${presta.nom ? presta.nom[0] + '.' : ''}`.trim();
+
+    // --- Annonce concernée ---
+    const emojiEl = document.querySelector('.annonce-emoji');
+    if (emojiEl) emojiEl.textContent = catEmoji(annonce.categorie);
+    const titleEl = document.querySelector('.annonce-ref-title');
+    if (titleEl) titleEl.textContent = annonce.titre || '';
+    const metaEl = document.querySelector('.annonce-ref-meta');
+    if (metaEl) metaEl.textContent = `📍 ${annonce.localisation || 'Tahiti'} · ${formatDate(annonce.created_at)} · ${annonce.categorie || ''}`;
+
+    // --- Prestataire ---
+    const av = document.querySelector('.presta-avatar');
+    if (av) {
+      if (presta.photo) { av.style.backgroundImage = `url(${presta.photo})`; av.style.backgroundSize = 'cover'; av.textContent = ''; }
+      else av.textContent = initiales;
+    }
+    const nameEl = document.querySelector('.presta-name');
+    if (nameEl) nameEl.textContent = nomPresta;
+
+    const badgesEl = document.querySelector('.presta-badges');
+    if (badgesEl) {
+      badgesEl.innerHTML = '';
+      if (presta.is_verified) badgesEl.innerHTML += `<span class="badge badge-verifie">✅ Vérifié</span>`;
+      if (presta.is_pro) badgesEl.innerHTML += `<span class="badge badge-pro">⭐ Pro</span>`;
+    }
+
+    const starsEl = document.querySelector('.presta-stars');
+    if (starsEl) {
+      if (avgNote !== null) {
+        const f = Math.round(avgNote);
+        starsEl.innerHTML = `<span>${'★'.repeat(f) + '☆'.repeat(5 - f)}</span><strong>${avgNote.toFixed(1)}</strong><span>· ${evals.length} avis</span>`;
+      } else {
+        starsEl.innerHTML = `<span style="color:var(--muted)">Pas encore d'avis</span>`;
+      }
+    }
+
+    const statNums = document.querySelectorAll('.presta-stat-num');
+    if (statNums[0]) statNums[0].textContent = nbMissions || 0;
+
+    const lienProfil = document.querySelector('.btn-voir-profil');
+    if (lienProfil) lienProfil.href = `apijob-profil-public.html?id=${presta.id}`;
+
+    // --- Détails proposition ---
+    const propItems = document.querySelectorAll('.prop-item');
+    if (propItems[0]) propItems[0].querySelector('.prop-val').textContent = prop.disponibilite || '—';
+    if (propItems[1]) propItems[1].querySelector('.prop-val').textContent = prop.tarif ? parseInt(prop.tarif).toLocaleString('fr-FR') + ' XPF' : '—';
+
+    let msgText = prop.message || '';
+    let experience = '—';
+    const expMatch = msgText.match(/\[Expérience\s*:\s*([^\]]+)\]/);
+    if (expMatch) { experience = expMatch[1]; msgText = msgText.replace(expMatch[0], '').trim().replace(/^\n+/, ''); }
+    if (propItems[2]) propItems[2].querySelector('.prop-val').textContent = experience;
+    if (propItems[3]) propItems[3].querySelector('.prop-val').textContent = formatDate(prop.created_at);
+
+    const accroche = document.querySelector('.prop-accroche');
+    if (accroche && msgText) accroche.textContent = `"${msgText}"`;
+
+    // --- Modales ---
+    const refusModalSub = document.querySelector('#modal-refus .modal-sub');
+    if (refusModalSub) refusModalSub.textContent = `${nomAbrege} sera informé·e que sa proposition n'a pas été retenue. Aucun jeton ne sera débité.`;
+
+    const successSub = document.querySelector('#success-accepter .success-sub');
+    if (successSub) successSub.textContent = `Vous êtes maintenant en contact avec ${nomAbrege}. Échangez via la messagerie pour organiser la mission.`;
+
+    // Override le bouton "Refuser" dans la modale
+    const btnRefuserConfirm = document.querySelector('.btn-modal-confirm');
+    if (btnRefuserConfirm) btnRefuserConfirm.onclick = refuser;
+  }
+
+  init();
 </script>
 
 </body>

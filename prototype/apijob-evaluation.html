@@ -324,28 +324,34 @@
   </div>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script>
+  let currentUser = null;
+  let currentMission = null;
+  let cibleId = null;
   let noteGlobale = 0;
+  const notesC = { 'crit-1': 0, 'crit-2': 0, 'crit-3': 0, 'crit-4': 0 };
   const captions = ['','Décevant','Moyen','Correct','Très bien','Excellent !'];
 
+  // ── ÉTOILES ──
   function setNote(val) {
     noteGlobale = val;
-    const stars = document.querySelectorAll('#stars-main .star');
-    stars.forEach((s, i) => s.classList.toggle('active', i < val));
+    document.querySelectorAll('#stars-main .star').forEach((s, i) => s.classList.toggle('active', i < val));
     document.getElementById('stars-caption').textContent = captions[val];
     majBouton();
   }
 
   function setCritere(id, val) {
-    const stars = document.querySelectorAll('#' + id + ' .mini-star');
-    stars.forEach((s, i) => s.classList.toggle('active', i < val));
+    notesC[id] = val;
+    document.querySelectorAll('#' + id + ' .mini-star').forEach((s, i) => s.classList.toggle('active', i < val));
   }
 
+  // ── COMMENTAIRE ──
   function onComment() {
     const txt = document.getElementById('comment').value;
     document.getElementById('char-count').textContent = txt.length;
-    const hasContact = contientCoordonnees(txt);
-    document.getElementById('alert-contact').style.display = hasContact ? 'block' : 'none';
+    document.getElementById('alert-contact').style.display = contientCoordonnees(txt) ? 'block' : 'none';
     majBouton();
   }
 
@@ -356,9 +362,8 @@
     btn.disabled = !ok;
     btn.textContent = noteGlobale === 0
       ? 'Sélectionnez une note pour continuer'
-      : hasContact
-        ? 'Retirez les coordonnées du commentaire'
-        : 'Publier mon évaluation →';
+      : hasContact ? 'Retirez les coordonnées du commentaire'
+      : 'Publier mon évaluation →';
   }
 
   function contientCoordonnees(texte) {
@@ -370,10 +375,112 @@
     return false;
   }
 
-  function soumettre() {
-    document.getElementById('eval-form').style.display = 'none';
-    document.getElementById('eval-success').style.display = 'block';
+  // ── SOUMETTRE ──
+  async function soumettre() {
+    if (!currentMission || !cibleId || noteGlobale === 0) return;
+    const btn = document.getElementById('btn-valider');
+    btn.disabled = true;
+    btn.textContent = 'Publication…';
+
+    try {
+      const commentaire = document.getElementById('comment').value.trim();
+
+      // Insérer l'évaluation
+      const { error } = await db.from('evaluations').insert({
+        mission_id:         currentMission.id,
+        auteur_id:          currentUser.id,
+        cible_id:           cibleId,
+        note_globale:       noteGlobale,
+        note_ponctualite:   notesC['crit-1'] || null,
+        note_qualite:       notesC['crit-2'] || null,
+        note_communication: notesC['crit-3'] || null,
+        note_prix:          notesC['crit-4'] || null,
+        commentaire:        commentaire || null
+      });
+      if (error) throw error;
+
+      // Marquer la mission comme terminée
+      await db.from('missions').update({ statut: 'terminee' }).eq('id', currentMission.id);
+
+      // Notifier la cible
+      const cibleName = document.querySelector('.cible-name')?.textContent || 'vous';
+      await createNotification(
+        cibleId, 'avis_recu',
+        `Nouvel avis reçu — ${currentUser.prenom || ''} ${currentUser.nom || ''}`.trim(),
+        `${noteGlobale}★ — ${commentaire ? '"' + commentaire.slice(0, 80) + '"' : 'Aucun commentaire'}`,
+        `apijob-evaluation.html?mission=${currentMission.id}`
+      );
+
+      // Afficher le succès
+      document.getElementById('eval-form').style.display = 'none';
+      document.getElementById('eval-success').style.display = 'block';
+
+    } catch(e) {
+      console.error('Erreur évaluation:', e);
+      btn.disabled = false;
+      btn.textContent = 'Publier mon évaluation →';
+      alert('Erreur lors de la publication. Veuillez réessayer.');
+    }
   }
+
+  // ── INIT ──
+  (async () => {
+    currentUser = await requireAuth();
+    if (!currentUser) return;
+
+    const missionId = new URLSearchParams(location.search).get('mission');
+    if (!missionId) {
+      // Pas d'ID mission → afficher quand même le formulaire vide (démo)
+      return;
+    }
+
+    // Charger la mission
+    const { data: mission, error } = await db.from('missions')
+      .select('*, annonces(titre, categorie), client:profiles!client_id(prenom, nom), prestataire:profiles!prestataire_id(prenom, nom)')
+      .eq('id', missionId)
+      .single();
+
+    if (error || !mission) { console.error('Mission introuvable'); return; }
+    currentMission = mission;
+
+    // Vérifier si déjà évalué
+    const { data: existingEval } = await db.from('evaluations')
+      .select('id').eq('mission_id', missionId).eq('auteur_id', currentUser.id).maybeSingle();
+    if (existingEval) {
+      document.getElementById('eval-form').innerHTML = `
+        <div style="text-align:center;padding:2rem;">
+          <div style="font-size:2.5rem;margin-bottom:1rem;">✅</div>
+          <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:0.5rem;">Déjà évalué</div>
+          <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1.5rem;">Vous avez déjà laissé un avis pour cette mission.</div>
+          <button class="btn-submit" onclick="location.href='apijob-missions.html'">Retour aux missions →</button>
+        </div>`;
+      return;
+    }
+
+    // Déterminer la cible
+    const isClient = mission.client_id === currentUser.id;
+    const cible = isClient ? mission.prestataire : mission.client;
+    cibleId = isClient ? mission.prestataire_id : mission.client_id;
+
+    if (!cible) return;
+    const cibleNom   = `${cible.prenom || ''} ${cible.nom || ''}`.trim();
+    const cibleInit  = ((cible.prenom||'?')[0] + (cible.nom||'?')[0]).toUpperCase();
+    const cibleRole  = isClient ? 'Prestataire' : 'Client';
+    const ann        = mission.annonces;
+    const emoji      = ann ? catEmoji(ann.categorie) : '✨';
+    const missionLbl = ann ? ann.titre : 'Mission';
+
+    // Mettre à jour le HTML
+    document.querySelector('.mission-emoji').textContent = emoji;
+    document.querySelector('.mission-title').textContent = missionLbl;
+    document.querySelector('.cible-avatar').textContent  = cibleInit;
+    document.querySelector('.cible-name').textContent    = cibleNom;
+    document.querySelector('.cible-role').textContent    = `${cibleRole} · ${ann?.categorie || ''}`;
+    document.querySelector('.success-sub').textContent   =
+      `Votre évaluation a été publiée sur le profil de ${cibleNom}. Elle aide la communauté API JOB à faire les bons choix.`;
+    document.querySelector('#comment').placeholder =
+      `Décrivez votre expérience avec ${isClient ? 'ce prestataire' : 'ce client'}…`;
+  })();
 </script>
 
 </body>

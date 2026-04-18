@@ -275,44 +275,56 @@
   </div>
 </main>
 
+<script src="supabase-config.js"></script>
 <script>
-  function goStep(n) {
-    // Validation étape 1
-    if (n === 2) {
-      const email = document.getElementById('email-input').value.trim();
-      if (!email || !email.includes('@')) {
-        const inp = document.getElementById('email-input');
-        inp.style.borderColor = 'var(--rouge)';
-        inp.focus();
-        return;
-      }
-      document.getElementById('email-display').textContent = email;
-    }
-
+  function showStep(n) {
     document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
     document.getElementById('step-' + n).classList.add('active');
-
-    // Dots
     for (let i = 1; i <= 4; i++) {
       const dot = document.getElementById('dot-' + i);
       dot.className = 'step-dot';
       if (i < n) dot.classList.add('done');
       else if (i === n) dot.classList.add('current');
     }
+  }
 
+  async function goStep(n) {
+    if (n === 2) {
+      const email = document.getElementById('email-input').value.trim();
+      if (!email || !email.includes('@')) {
+        document.getElementById('email-input').style.borderColor = 'var(--rouge)';
+        document.getElementById('email-input').focus();
+        return;
+      }
+      document.getElementById('email-display').textContent = email;
+
+      const btn = document.querySelector('#step-1 .btn-submit');
+      if (btn) { btn.disabled = true; btn.textContent = 'Envoi en cours...'; }
+
+      const { error } = await db.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + window.location.pathname
+      });
+
+      if (btn) { btn.disabled = false; btn.textContent = 'Envoyer le code →'; }
+
+      if (error) {
+        alert('Erreur : ' + error.message);
+        return;
+      }
+    }
+
+    showStep(n);
     if (n === 2) setTimeout(() => document.getElementById('c1').focus(), 100);
   }
 
   function nextCode(input, nextId) {
     input.value = input.value.replace(/\D/g, '');
-    if (input.value.length === 1 && nextId) {
-      document.getElementById(nextId).focus();
-    }
+    if (input.value.length === 1 && nextId) document.getElementById(nextId).focus();
   }
 
   function checkCode() {
     const code = ['c1','c2','c3','c4'].map(id => document.getElementById(id).value).join('');
-    if (code.length === 4) setTimeout(() => goStep(3), 200);
+    if (code.length === 4) setTimeout(() => showStep(3), 200);
   }
 
   function togglePwd(id, btn) {
@@ -332,7 +344,7 @@
     document.getElementById(id).classList.toggle('ok', ok);
   }
 
-  function validerPwd() {
+  async function validerPwd() {
     const pwd1 = document.getElementById('pwd1').value;
     const pwd2 = document.getElementById('pwd2').value;
     if (pwd1.length < 8 || !/[A-Z]/.test(pwd1) || !/\d/.test(pwd1)) {
@@ -343,8 +355,25 @@
       document.getElementById('pwd2').style.borderColor = 'var(--rouge)';
       return;
     }
-    goStep(4);
+
+    const btn = document.querySelector('#step-3 .btn-submit');
+    if (btn) { btn.disabled = true; btn.textContent = 'Enregistrement...'; }
+
+    const { error } = await db.auth.updateUser({ password: pwd1 });
+
+    if (error) {
+      alert('Erreur : ' + error.message);
+      if (btn) { btn.disabled = false; btn.textContent = 'Enregistrer →'; }
+      return;
+    }
+    if (btn) btn.disabled = false;
+    showStep(4);
   }
+
+  // Détection du token de récupération (lien email cliqué)
+  db.auth.onAuthStateChange((event) => {
+    if (event === 'PASSWORD_RECOVERY') showStep(3);
+  });
 </script>
 
 </body>

@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="refresh" content="0;url=apijob-pro.html">
 <title>API JOB — Nos Professionnels</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -843,8 +842,11 @@
   </p>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script>
 let currentDispo = 'tous';
+let allPros = [];
 
 function filterDispo(mode, btn) {
   currentDispo = mode;
@@ -855,24 +857,22 @@ function filterDispo(mode, btn) {
 
 function filterPros() {
   const search = document.getElementById('searchInput').value.toLowerCase();
-  const zone = document.getElementById('zoneSelect').value;
-  const cat = document.getElementById('catSelect').value;
-  const cards = document.querySelectorAll('.pro-card');
+  const zone   = document.getElementById('zoneSelect').value;
+  const cat    = document.getElementById('catSelect').value;
+  const cards  = document.querySelectorAll('.pro-card');
   let count = 0;
 
   cards.forEach(card => {
     const cardZone = card.dataset.zone || '';
     const cardCats = card.dataset.cats || '';
-    const cardDispo = card.dataset.dispo === 'true';
     const cardNote = parseFloat(card.dataset.note || '0');
-    const cardName = card.querySelector('.pro-name').textContent.toLowerCase();
-    const cardDesc = card.querySelector('.pro-desc').textContent.toLowerCase();
+    const cardName = card.querySelector('.pro-name')?.textContent.toLowerCase() || '';
+    const cardDesc = card.querySelector('.pro-desc')?.textContent.toLowerCase() || '';
 
     let show = true;
     if (search && !cardName.includes(search) && !cardDesc.includes(search) && !cardCats.toLowerCase().includes(search)) show = false;
-    if (zone && cardZone !== zone) show = false;
-    if (cat && !cardCats.includes(cat)) show = false;
-    if (currentDispo === 'dispo' && !cardDispo) show = false;
+    if (zone && !cardZone.includes(zone)) show = false;
+    if (cat  && !cardCats.includes(cat))  show = false;
     if (currentDispo === 'top' && cardNote < 4.7) show = false;
 
     card.style.display = show ? '' : 'none';
@@ -881,6 +881,113 @@ function filterPros() {
 
   document.getElementById('countNum').textContent = count;
 }
+
+function escHTML(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+
+function buildProCard(profile, avgNote, nbAvis) {
+  const init  = ((profile.prenom||'?')[0] + (profile.nom||'?')[0]).toUpperCase();
+  const nom   = `${profile.prenom||''} ${profile.nom||''}`.trim();
+  const meta  = profile.metadata || {};
+  const zones = Array.isArray(meta.zones) ? meta.zones : (profile.localisation ? [profile.localisation] : []);
+  const zoneLabel = zones[0] || 'Polynésie';
+  const services  = Array.isArray(meta.services) ? meta.services.slice(0,3) : [];
+  const bio       = profile.bio || '';
+  const note      = avgNote ? avgNote.toFixed(1) : '—';
+  const stars     = avgNote ? '★'.repeat(Math.round(avgNote)) + '☆'.repeat(5 - Math.round(avgNote)) : '—';
+
+  // Zone Tahiti / Moorea pour les filtres
+  const isMoorea = zones.some(z => ['Afareaitu','Haapiti','Maharepa','Papetoai','Paopao','Teavaro'].includes(z));
+  const zoneData = isMoorea ? 'Moorea' : 'Tahiti';
+
+  const card = document.createElement('div');
+  card.className = 'pro-card';
+  card.dataset.zone = zoneData;
+  card.dataset.cats = services.join(',');
+  card.dataset.note = avgNote || 0;
+  card.onclick = () => { location.href = `apijob-profil-public.html?id=${profile.id}`; };
+  card.innerHTML = `
+    <div class="pro-card-top">
+      <div class="pro-avatar" style="background:linear-gradient(135deg,var(--rouge),#E8305A)">${init}</div>
+      <div class="pro-info">
+        <div class="pro-name">${escHTML(nom)}</div>
+        <div class="pro-badges">
+          <span class="badge-pro">⭐ PRO</span>
+          <span class="badge-verifie">✓ Vérifié</span>
+        </div>
+        <div class="pro-zone">📍 ${escHTML(zoneLabel)}</div>
+      </div>
+      ${avgNote ? `
+      <div class="pro-rating">
+        <div>
+          <div class="stars">${stars}</div>
+          <div style="text-align:right">
+            <span class="rating-val">${note}</span>
+            <span class="rating-count">(${nbAvis})</span>
+          </div>
+        </div>
+      </div>` : ''}
+    </div>
+    ${bio ? `<p class="pro-desc">${escHTML(bio)}</p>` : ''}
+    ${services.length ? `
+    <div class="pro-services">
+      ${services.map(s => `<span class="service-tag">${catEmoji(s)} ${escHTML(s)}</span>`).join('')}
+    </div>` : ''}
+    <div class="pro-card-footer">
+      <span class="pro-dispo">● Disponible</span>
+      <a href="apijob-profil-public.html?id=${profile.id}" class="btn-voir" onclick="event.stopPropagation()">Voir le profil</a>
+    </div>`;
+  return card;
+}
+
+(async () => {
+  // Pas de requireAuth ici : page publique
+  // Charger les profils Pro
+  const { data: pros } = await db.from('profiles')
+    .select('*')
+    .eq('is_pro', true)
+    .eq('role', 'prestataire')
+    .order('created_at', { ascending: false });
+
+  if (!pros?.length) {
+    document.getElementById('prosGrid').innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted);">
+        <div style="font-size:2.5rem;margin-bottom:1rem;">🔍</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;margin-bottom:0.5rem;">Aucun professionnel pour l'instant</div>
+        <div style="font-size:0.85rem;">Les prestataires Pro apparaîtront ici dès leur inscription.</div>
+      </div>`;
+    document.getElementById('countNum').textContent = '0';
+    return;
+  }
+
+  // Charger les évaluations en une seule requête
+  const proIds = pros.map(p => p.id);
+  const { data: evals } = await db.from('evaluations')
+    .select('cible_id, note_globale')
+    .in('cible_id', proIds);
+
+  // Calculer moyennes par profil
+  const notesMap = {};
+  (evals || []).forEach(e => {
+    if (!notesMap[e.cible_id]) notesMap[e.cible_id] = [];
+    notesMap[e.cible_id].push(e.note_globale);
+  });
+
+  const grid = document.getElementById('prosGrid');
+  grid.innerHTML = '';
+
+  // Trier par note décroissante
+  const prosWithNote = pros.map(p => {
+    const notes = notesMap[p.id] || [];
+    const avg   = notes.length ? notes.reduce((s,n) => s+n, 0) / notes.length : 0;
+    return { profile: p, avg, nbAvis: notes.length };
+  }).sort((a, b) => b.avg - a.avg);
+
+  prosWithNote.forEach(({ profile, avg, nbAvis }) => {
+    grid.appendChild(buildProCard(profile, avg || null, nbAvis));
+  });
+
+  document.getElementById('countNum').textContent = pros.length;
+})();
 </script>
 
 </body>

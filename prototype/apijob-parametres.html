@@ -438,16 +438,13 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="supabase-config.js"></script>
 <script>
-  function openModal(id) {
-    document.getElementById(id).classList.add('open');
-  }
-  function closeModal(id) {
-    document.getElementById(id).classList.remove('open');
-  }
-  function closeOnBg(e, overlay) {
-    if (e.target === overlay) overlay.classList.remove('open');
-  }
+  let currentUser;
+
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  function closeOnBg(e, overlay) { if (e.target === overlay) overlay.classList.remove('open'); }
 
   function togglePwd(id, btn) {
     const inp = document.getElementById(id);
@@ -455,21 +452,66 @@
     else { inp.type = 'password'; btn.textContent = '👁'; }
   }
 
-  function confirmerMdp() {
-    const a = document.getElementById('pwd-actuel').value;
+  async function confirmerMdp() {
     const n = document.getElementById('pwd-new').value;
     const c = document.getElementById('pwd-conf').value;
-    if (!a || n.length < 8 || n !== c) {
+    if (n.length < 8 || n !== c) {
       document.getElementById('pwd-new').style.borderColor = 'var(--rouge)';
       return;
     }
+    const btn = document.querySelector('#modal-mdp .btn-confirm');
+    if (btn) { btn.disabled = true; btn.textContent = 'Enregistrement...'; }
+    const { error } = await db.auth.updateUser({ password: n });
+    if (error) {
+      alert('Erreur : ' + error.message);
+      if (btn) { btn.disabled = false; btn.textContent = 'Enregistrer'; }
+      return;
+    }
     closeModal('modal-mdp');
+    ['pwd-actuel','pwd-new','pwd-conf'].forEach(id => document.getElementById(id).value = '');
+    if (btn) { btn.disabled = false; btn.textContent = 'Enregistrer'; }
     toastMsg('Mot de passe modifié ✓');
+  }
+
+  async function confirmerEmail() {
+    const email = document.querySelector('#modal-email .form-input').value.trim();
+    if (!email || !email.includes('@')) return;
+    const btn = document.querySelector('#modal-email .btn-confirm');
+    if (btn) { btn.disabled = true; btn.textContent = 'Envoi...'; }
+    const { error } = await db.auth.updateUser({ email });
+    if (error) { alert('Erreur : ' + error.message); if (btn) { btn.disabled = false; btn.textContent = 'Enregistrer'; } return; }
+    closeModal('modal-email');
+    toastMsg('Email de confirmation envoyé ✓');
+    if (btn) { btn.disabled = false; btn.textContent = 'Enregistrer'; }
+  }
+
+  async function confirmerTel() {
+    const tel = document.querySelector('#modal-tel .form-input').value.trim();
+    if (!tel) return;
+    const meta = { ...(currentUser.metadata || {}), telephone: tel };
+    await db.from('profiles').update({ metadata: meta }).eq('id', currentUser.id);
+    currentUser.metadata = meta;
+    const telSub = document.querySelector('[onclick*="modal-tel"] .row-sub');
+    if (telSub) telSub.textContent = tel;
+    closeModal('modal-tel');
+    toastMsg('Numéro mis à jour ✓');
+  }
+
+  async function deconnecter() {
+    await signOut();
   }
 
   function majBtnSuppression() {
     const val = document.getElementById('confirm-suppression').value;
     document.getElementById('btn-suppression').disabled = (val !== 'SUPPRIMER');
+  }
+
+  async function supprimerCompte() {
+    const val = document.getElementById('confirm-suppression').value;
+    if (val !== 'SUPPRIMER') return;
+    // Supprimer le profil puis déconnecter
+    await db.from('profiles').delete().eq('id', currentUser.id);
+    await signOut();
   }
 
   let toastTimer;
@@ -480,6 +522,48 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
   }
+
+  async function init() {
+    currentUser = await requireAuth();
+    if (!currentUser) return;
+
+    // Profil mini
+    const initiales = ((currentUser.prenom?.[0] || '') + (currentUser.nom?.[0] || '')).toUpperCase() || '?';
+    const nomComplet = `${currentUser.prenom || ''} ${currentUser.nom || ''}`.trim() || 'Mon compte';
+
+    const avatarEl = document.querySelector('.profil-avatar');
+    if (avatarEl) {
+      if (currentUser.photo) { avatarEl.style.backgroundImage = `url(${currentUser.photo})`; avatarEl.style.backgroundSize = 'cover'; avatarEl.textContent = ''; }
+      else avatarEl.textContent = initiales;
+    }
+    const nomEl = document.querySelector('.profil-nom');
+    if (nomEl) nomEl.textContent = nomComplet;
+    const emailEl = document.querySelector('.profil-email');
+    if (emailEl) emailEl.textContent = currentUser.email || '';
+
+    // Email dans la ligne sécurité
+    const emailRowSub = document.querySelector('[onclick*="modal-email"] .row-sub');
+    if (emailRowSub) emailRowSub.textContent = currentUser.email || '';
+
+    // Téléphone
+    const tel = currentUser.metadata?.telephone;
+    const telRowSub = document.querySelector('[onclick*="modal-tel"] .row-sub');
+    if (telRowSub && tel) telRowSub.textContent = tel;
+
+    // Pré-remplir les inputs des modales
+    const emailInput = document.querySelector('#modal-email .form-input');
+    if (emailInput) emailInput.value = currentUser.email || '';
+    const telInput = document.querySelector('#modal-tel .form-input');
+    if (telInput && tel) telInput.value = tel;
+
+    // Override les boutons d'action des modales
+    document.querySelector('#modal-email .btn-confirm').onclick = confirmerEmail;
+    document.querySelector('#modal-tel .btn-confirm').onclick = confirmerTel;
+    document.querySelector('#modal-deconnexion .btn-confirm').onclick = deconnecter;
+    document.getElementById('btn-suppression').onclick = supprimerCompte;
+  }
+
+  init();
 </script>
 
 </body>

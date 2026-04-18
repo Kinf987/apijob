@@ -542,7 +542,13 @@
 
 <div class="toast" id="toast">✅ Profil sauvegardé !</div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script>
+  let currentUser = null;
+  let photoFile = null;
+
+  // ── UI HELPERS ──
   function updateCount() {
     const val = document.getElementById('description').value.length;
     document.getElementById('char-count').textContent = val;
@@ -580,19 +586,22 @@
 
   function previewPhoto(input) {
     if (input.files && input.files[0]) {
+      photoFile = input.files[0];
       const reader = new FileReader();
       reader.onload = (e) => {
         const preview = document.querySelector('.photo-preview');
+        const overlay = preview.querySelector('.photo-overlay');
         preview.style.backgroundImage = `url(${e.target.result})`;
         preview.style.backgroundSize = 'cover';
         preview.style.backgroundPosition = 'center';
-        preview.textContent = '';
-        preview.appendChild(document.querySelector('.photo-overlay') || (() => {
+        preview.innerHTML = '';
+        if (overlay) preview.appendChild(overlay);
+        else {
           const div = document.createElement('div');
           div.className = 'photo-overlay';
           div.textContent = '📷';
-          return div;
-        })());
+          preview.appendChild(div);
+        }
       };
       reader.readAsDataURL(input.files[0]);
       updateCompletude();
@@ -610,14 +619,187 @@
     document.getElementById('progress-fill').style.width = score + '%';
   }
 
-  function sauvegarder() {
+  // ── TOAST ──
+  function showToast(msg, isError = false) {
     const toast = document.getElementById('toast');
+    toast.textContent = (isError ? '❌ ' : '✅ ') + msg;
+    toast.style.background = isError ? 'var(--rouge)' : 'var(--night)';
     toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
+    setTimeout(() => toast.classList.remove('show'), 3500);
   }
 
-  // Init
-  updateCompletude();
+  // ── CHARGEMENT PROFIL ──
+  async function chargerProfil() {
+    const meta = currentUser.metadata || {};
+
+    // Photo ou initiales
+    const preview = document.querySelector('.photo-preview');
+    if (currentUser.photo) {
+      const overlay = preview.querySelector('.photo-overlay');
+      preview.style.backgroundImage = `url(${currentUser.photo})`;
+      preview.style.backgroundSize = 'cover';
+      preview.style.backgroundPosition = 'center';
+      preview.innerHTML = '';
+      if (overlay) preview.appendChild(overlay);
+    } else {
+      const initiales = ((currentUser.prenom || '?')[0] + (currentUser.nom || '?')[0]).toUpperCase();
+      const firstText = Array.from(preview.childNodes).find(n => n.nodeType === 3);
+      if (firstText) firstText.textContent = initiales;
+      else preview.insertBefore(document.createTextNode(initiales), preview.firstChild);
+    }
+
+    // Titre
+    if (meta.titre) document.getElementById('titre').value = meta.titre;
+
+    // Description (bio)
+    if (currentUser.bio) {
+      document.getElementById('description').value = currentUser.bio;
+      updateCount();
+    }
+
+    // Expérience & Temps de réponse
+    const selects = document.querySelectorAll('.form-select');
+    if (selects[0] && meta.experience) selects[0].value = meta.experience;
+    if (selects[1] && meta.temps_reponse) selects[1].value = meta.temps_reponse;
+
+    // Services cochés
+    if (meta.services && Array.isArray(meta.services)) {
+      document.querySelectorAll('.service-check').forEach(label => {
+        const txt = label.textContent.replace(/\s+/g, ' ').trim();
+        const checked = meta.services.some(s => txt === s || txt.includes(s));
+        label.classList.toggle('checked', checked);
+        const cb = label.querySelector('input');
+        if (cb) cb.checked = checked;
+      });
+    }
+
+    // Tarifs
+    if (meta.tarifs) {
+      document.querySelectorAll('.tarif-row').forEach(row => {
+        const svcEl = row.querySelector('.tarif-service');
+        const inp   = row.querySelector('.tarif-input');
+        if (!svcEl || !inp) return;
+        const key = svcEl.textContent.replace(/\s+/g, ' ').trim();
+        if (meta.tarifs[key] !== undefined) inp.value = meta.tarifs[key];
+      });
+    }
+
+    // Zones
+    if (meta.zones && Array.isArray(meta.zones) && meta.zones.length > 0) {
+      const wrap = document.getElementById('zones-wrap');
+      wrap.innerHTML = '';
+      meta.zones.forEach(zone => {
+        const tag = document.createElement('span');
+        tag.className = 'zone-tag';
+        tag.innerHTML = `${zone} <button class="zone-remove" onclick="removeZone(this)">✕</button>`;
+        wrap.appendChild(tag);
+      });
+    } else if (currentUser.localisation) {
+      const wrap = document.getElementById('zones-wrap');
+      wrap.innerHTML = '';
+      const tag = document.createElement('span');
+      tag.className = 'zone-tag';
+      tag.innerHTML = `${currentUser.localisation} <button class="zone-remove" onclick="removeZone(this)">✕</button>`;
+      wrap.appendChild(tag);
+    }
+
+    // Disponibilités
+    if (meta.disponibilites && Array.isArray(meta.disponibilites)) {
+      document.querySelectorAll('.dispo-day').forEach(day => {
+        const lbl    = day.querySelector('.dispo-label')?.textContent || '';
+        const toggle = day.querySelector('.dispo-toggle');
+        const active = meta.disponibilites.includes(lbl);
+        day.classList.toggle('active', active);
+        if (toggle) toggle.textContent = active ? '✓' : '✕';
+      });
+    }
+
+    updateCompletude();
+  }
+
+  // ── SAUVEGARDE ──
+  async function sauvegarder() {
+    if (!currentUser) return;
+    const btn = document.querySelector('.btn-save');
+    const txtOriginal = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Sauvegarde...';
+
+    try {
+      let photoUrl = currentUser.photo || null;
+
+      // Upload photo si une nouvelle a été choisie
+      if (photoFile) {
+        const ext  = photoFile.name.split('.').pop().toLowerCase();
+        const path = `${currentUser.id}/avatar.${ext}`;
+        const { error: upErr } = await db.storage
+          .from('identites')
+          .upload(path, photoFile, { upsert: true, contentType: photoFile.type });
+        if (upErr) throw upErr;
+        const { data: urlData } = db.storage.from('identites').getPublicUrl(path);
+        photoUrl = urlData.publicUrl;
+        photoFile = null;
+      }
+
+      // Services cochés
+      const services = Array.from(document.querySelectorAll('.service-check.checked'))
+        .map(l => l.textContent.replace(/\s+/g, ' ').trim())
+        .filter(Boolean);
+
+      // Tarifs
+      const tarifs = {};
+      document.querySelectorAll('.tarif-row').forEach(row => {
+        const svcEl = row.querySelector('.tarif-service');
+        const inp   = row.querySelector('.tarif-input');
+        if (!svcEl || !inp || !inp.value) return;
+        tarifs[svcEl.textContent.replace(/\s+/g, ' ').trim()] = parseInt(inp.value, 10);
+      });
+
+      // Zones
+      const zones = Array.from(document.querySelectorAll('#zones-wrap .zone-tag'))
+        .map(tag => tag.textContent.replace('✕', '').trim())
+        .filter(Boolean);
+
+      // Disponibilités
+      const disponibilites = Array.from(document.querySelectorAll('.dispo-day.active'))
+        .map(day => day.querySelector('.dispo-label')?.textContent || '')
+        .filter(Boolean);
+
+      const selects       = document.querySelectorAll('.form-select');
+      const titre         = document.getElementById('titre').value.trim();
+      const bio           = document.getElementById('description').value.trim();
+      const experience    = selects[0]?.value || '';
+      const temps_reponse = selects[1]?.value || '';
+      const localisation  = zones[0] || currentUser.localisation || '';
+
+      const metadata = {
+        ...(currentUser.metadata || {}),
+        titre, experience, temps_reponse, services, tarifs, zones, disponibilites
+      };
+
+      const updates = { bio, localisation, metadata };
+      if (photoUrl !== currentUser.photo) updates.photo = photoUrl;
+
+      const { error } = await db.from('profiles').update(updates).eq('id', currentUser.id);
+      if (error) throw error;
+
+      Object.assign(currentUser, { bio, localisation, photo: photoUrl, metadata });
+      showToast('Profil sauvegardé !');
+    } catch (e) {
+      console.error('Erreur profil:', e);
+      showToast(e.message || 'Erreur lors de la sauvegarde', true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = txtOriginal;
+    }
+  }
+
+  // ── INIT ──
+  (async () => {
+    currentUser = await requireAuth();
+    if (!currentUser) return;
+    await chargerProfil();
+  })();
 </script>
 
 </body>

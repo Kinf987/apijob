@@ -428,11 +428,37 @@
 
 </div>
 
+<script src="supabase-config.js"></script>
 <script>
   function toggleFaq(el) {
-    const item = el.parentElement;
-    item.classList.toggle('open');
+    el.parentElement.classList.toggle('open');
   }
+
+  async function init() {
+    const { data: { session } } = await db.auth.getSession();
+    if (!session) return; // non connecté → liens apijob-auth.html déjà en place
+
+    const { data: profile } = await db.from('profiles').select('is_pro, role').eq('id', session.user.id).single();
+    if (!profile || profile.role !== 'prestataire') return;
+
+    const ctas = document.querySelectorAll('a[href="apijob-auth.html"]');
+    if (profile.is_pro) {
+      // Déjà Pro → message
+      ctas.forEach(btn => {
+        btn.href = 'apijob-profil-edit.html';
+        btn.textContent = '✅ Vous êtes déjà Pro — Gérer mon profil';
+        btn.style.background = 'var(--vert)';
+      });
+    } else {
+      // Connecté mais pas Pro → aller acheter
+      ctas.forEach(btn => {
+        btn.href = 'apijob-jetons.html';
+        btn.textContent = '⭐ Passer au forfait Pro — 5 900 XPF/mois';
+      });
+    }
+  }
+
+  init();
 </script>
 
 </body>

@@ -298,29 +298,172 @@
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script>
+  let currentUser = null;
+  let allNotifs   = [];
+
+  function escHTML(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+
+  // ── FILTRER ──
   function filtrer(btn, type) {
     document.querySelectorAll('.filtre-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    const cards = document.querySelectorAll('.notif-card');
     let visible = 0;
-    cards.forEach(card => {
+    document.querySelectorAll('.notif-card').forEach(card => {
       const show = type === 'tous' || card.dataset.type === type;
       card.style.display = show ? 'flex' : 'none';
       if (show) visible++;
     });
+    // Masquer les groupes vides
+    document.querySelectorAll('.notif-groupe').forEach(g => {
+      g.style.display = Array.from(g.querySelectorAll('.notif-card')).some(c => c.style.display !== 'none') ? '' : 'none';
+    });
     document.getElementById('empty-state').style.display = visible === 0 ? 'block' : 'none';
   }
 
-  function toutMarquerLu() {
+  // ── TOUT MARQUER LU ──
+  async function toutMarquerLu() {
+    if (!currentUser) return;
+    await db.from('notifications').update({ lu: true }).eq('user_id', currentUser.id).eq('lu', false);
     document.querySelectorAll('.notif-card.unread').forEach(card => {
       card.classList.remove('unread');
-      const dot = card.querySelector('.unread-dot');
-      if (dot) dot.remove();
+      card.querySelector('.unread-dot')?.remove();
     });
-    document.getElementById('notif-count').textContent = '0';
-    document.getElementById('notif-count').style.background = 'var(--muted)';
+    const el = document.getElementById('notif-count');
+    el.textContent = '0';
+    el.style.display = 'none';
   }
+
+  // ── MARQUER UNE NOTIF LUE ──
+  async function marquerLu(id, card) {
+    if (!card.classList.contains('unread')) return;
+    card.classList.remove('unread');
+    card.querySelector('.unread-dot')?.remove();
+    await db.from('notifications').update({ lu: true }).eq('id', id);
+    const count = document.querySelectorAll('.notif-card.unread').length;
+    const el = document.getElementById('notif-count');
+    el.textContent = count;
+    el.style.display = count > 0 ? '' : 'none';
+  }
+
+  // ── HELPERS TYPE ──
+  function typeInfo(type) {
+    if (!type) return { icon:'🌺', cls:'icon-systeme', cat:'systeme' };
+    if (type.startsWith('mission') || type.startsWith('annonce') || type.startsWith('proposition'))
+      return { icon:'📋', cls:'icon-mission', cat:'mission' };
+    if (type.startsWith('message'))  return { icon:'💬', cls:'icon-message', cat:'message' };
+    if (type.startsWith('jeton') || type.startsWith('token') || type.startsWith('transaction'))
+      return { icon:'🪙', cls:'icon-jeton', cat:'jeton' };
+    if (type.startsWith('avis') || type.startsWith('eval'))
+      return { icon:'⭐', cls:'icon-avis', cat:'avis' };
+    return { icon:'🌺', cls:'icon-systeme', cat:'systeme' };
+  }
+
+  // ── BUILD CARD ──
+  function buildCard(notif) {
+    const { icon, cls, cat } = typeInfo(notif.type);
+    const unread = !notif.lu;
+    const timeStr = formatDate(notif.created_at);
+
+    const actionLabels = { message:'Répondre', avis:'Voir et répondre', mission:'Voir', jeton:'OK', systeme:'Compléter mon profil' };
+    const actionLabel = actionLabels[cat] || 'Voir';
+    const action = notif.lien
+      ? `<div class="notif-actions"><button class="btn-notif btn-notif-primary" onclick="event.stopPropagation();location.href='${notif.lien}'">${actionLabel}</button></div>`
+      : '';
+
+    const card = document.createElement('div');
+    card.className = `notif-card${unread ? ' unread' : ''}`;
+    card.dataset.type = cat;
+    card.innerHTML = `
+      <div class="notif-icon-wrap ${cls}">${icon}</div>
+      <div class="notif-content">
+        <div class="notif-title">${escHTML(notif.titre)}</div>
+        <div class="notif-desc">${escHTML(notif.message)}</div>
+        <div class="notif-time">${timeStr}</div>
+        ${action}
+      </div>
+      ${unread ? '<div class="unread-dot"></div>' : ''}`;
+    card.onclick = () => marquerLu(notif.id, card);
+    return card;
+  }
+
+  // ── GROUPER PAR DATE ──
+  function groupByDate(notifs) {
+    const now  = new Date();
+    const d0   = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const d1   = new Date(d0 - 86400000);
+    const d7   = new Date(d0 - 7 * 86400000);
+    const grps = [
+      { label:"Aujourd'hui", items:[] },
+      { label:"Hier",        items:[] },
+      { label:"Cette semaine", items:[] },
+      { label:"Plus ancien", items:[] }
+    ];
+    notifs.forEach(n => {
+      const d = new Date(new Date(n.created_at).getFullYear(), new Date(n.created_at).getMonth(), new Date(n.created_at).getDate());
+      if (d >= d0)      grps[0].items.push(n);
+      else if (d >= d1) grps[1].items.push(n);
+      else if (d >= d7) grps[2].items.push(n);
+      else              grps[3].items.push(n);
+    });
+    return grps;
+  }
+
+  // ── RENDER ──
+  function renderAll(notifs) {
+    // Supprimer anciens groupes
+    document.querySelectorAll('.notif-groupe').forEach(g => g.remove());
+
+    const page  = document.querySelector('.page');
+    const empty = document.getElementById('empty-state');
+    const grps  = groupByDate(notifs);
+    let anyItem = false;
+
+    grps.forEach(({ label, items }) => {
+      if (!items.length) return;
+      anyItem = true;
+      const groupe = document.createElement('div');
+      groupe.className = 'notif-groupe';
+      groupe.innerHTML = `<div class="notif-groupe-label">${label}</div>`;
+      items.forEach(n => groupe.appendChild(buildCard(n)));
+      page.insertBefore(groupe, empty);
+    });
+
+    empty.style.display = anyItem ? 'none' : 'block';
+
+    // Badge
+    const unread = notifs.filter(n => !n.lu).length;
+    const countEl = document.getElementById('notif-count');
+    countEl.textContent = unread;
+    countEl.style.display = unread > 0 ? '' : 'none';
+  }
+
+  // ── INIT ──
+  (async () => {
+    currentUser = await requireAuth();
+    if (!currentUser) return;
+
+    const { data } = await db.from('notifications')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('created_at', { ascending: false });
+
+    allNotifs = data || [];
+    renderAll(allNotifs);
+
+    // Realtime : nouvelles notifs
+    db.channel('notifs_' + currentUser.id)
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'notifications',
+        filter: `user_id=eq.${currentUser.id}`
+      }, (payload) => {
+        allNotifs.unshift(payload.new);
+        renderAll(allNotifs);
+      })
+      .subscribe();
+  })();
 </script>
 
 </body>

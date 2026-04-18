@@ -545,13 +545,142 @@
 
 </div>
 
+<script src="supabase-config.js"></script>
 <script>
+  const GRADIENTS = [
+    'linear-gradient(135deg,#CC0A2B,#FF4D6A)',
+    'linear-gradient(135deg,#1A7A4A,#2EA86A)',
+    'linear-gradient(135deg,#006B8F,#00A8C6)',
+    'linear-gradient(135deg,#8B4513,#D2691E)',
+    'linear-gradient(135deg,#4A0080,#8B00FF)',
+    'linear-gradient(135deg,#CC6600,#FF8C00)',
+    'linear-gradient(135deg,#B07800,#F0A500)',
+  ];
+
   function setView(vue) {
     document.getElementById('view-grille').classList.toggle('hidden', vue !== 'grille');
     document.getElementById('view-liste').classList.toggle('hidden', vue !== 'liste');
     document.getElementById('btn-grille').classList.toggle('active', vue === 'grille');
     document.getElementById('btn-liste').classList.toggle('active', vue === 'liste');
   }
+
+  async function init() {
+    // Charger les profils Pro
+    const { data: profiles } = await db.from('profiles')
+      .select('*')
+      .eq('is_pro', true)
+      .eq('role', 'prestataire');
+
+    if (!profiles || profiles.length === 0) return;
+
+    // Charger toutes les évaluations en une requête
+    const ids = profiles.map(p => p.id);
+    const { data: evals } = await db.from('evaluations')
+      .select('cible_id, note_globale')
+      .in('cible_id', ids);
+
+    // Charger les missions terminées
+    const { data: missions } = await db.from('missions')
+      .select('prestataire_id')
+      .in('prestataire_id', ids)
+      .eq('statut', 'terminee');
+
+    // Calculer moyennes et nb missions par profil
+    const avgByProfile = {};
+    const missionsByProfile = {};
+    (evals || []).forEach(e => {
+      if (!avgByProfile[e.cible_id]) avgByProfile[e.cible_id] = [];
+      avgByProfile[e.cible_id].push(e.note_globale || 0);
+    });
+    (missions || []).forEach(m => {
+      missionsByProfile[m.prestataire_id] = (missionsByProfile[m.prestataire_id] || 0) + 1;
+    });
+
+    // Enrichir et trier par note
+    const pros = profiles.map(p => {
+      const notes = avgByProfile[p.id] || [];
+      const avg = notes.length > 0 ? notes.reduce((a, b) => a + b, 0) / notes.length : null;
+      return { ...p, avgNote: avg, nbMissions: missionsByProfile[p.id] || 0, nbAvis: notes.length };
+    }).sort((a, b) => (b.avgNote || 0) - (a.avgNote || 0));
+
+    // Mettre à jour le compteur
+    const resultCount = document.querySelector('.results-count');
+    if (resultCount) resultCount.innerHTML = `<strong>${pros.length}</strong> prestataire${pros.length !== 1 ? 's' : ''} Pro`;
+
+    // Générer grille
+    const grille = document.getElementById('view-grille');
+    if (grille) {
+      grille.innerHTML = pros.map((p, i) => {
+        const meta = p.metadata || {};
+        const init = ((p.prenom?.[0] || '') + (p.nom?.[0] || '')).toUpperCase() || '?';
+        const nom = `${p.prenom || ''} ${p.nom || ''}`.trim();
+        const services = (meta.services || []).slice(0, 3);
+        const zones = (meta.zones || []).slice(0, 3).join(' · ');
+        const titre = meta.titre || p.localisation || '';
+        const gradient = GRADIENTS[i % GRADIENTS.length];
+        const note = p.avgNote ? p.avgNote.toFixed(1) : '—';
+        const avatarStyle = p.photo
+          ? `background:${gradient};background-image:url(${p.photo});background-size:cover;background-position:center;`
+          : `background:${gradient};`;
+        return `
+          <div class="pro-card" onclick="location.href='apijob-profil-public.html?id=${p.id}'">
+            <div class="pro-card-header">
+              <div class="pro-badge-top">⭐ PRO</div>
+              <div class="pro-avatar" style="${avatarStyle}">${p.photo ? '' : init}</div>
+              <div class="pro-name">${nom}</div>
+              <div class="pro-metier">${titre}</div>
+            </div>
+            <div class="pro-card-body">
+              <div class="pro-stats">
+                <div class="pro-stat"><div class="pro-stat-num or">${note}</div><div class="pro-stat-label">Note</div></div>
+                <div class="pro-stat"><div class="pro-stat-num">${p.nbMissions}</div><div class="pro-stat-label">Missions</div></div>
+                <div class="pro-stat"><div class="pro-stat-num">${p.nbAvis}</div><div class="pro-stat-label">Avis</div></div>
+              </div>
+              ${services.length > 0 ? `<div class="pro-services">${services.map(s => `<span class="pro-tag">${s}</span>`).join('')}</div>` : ''}
+              ${zones ? `<div class="pro-zone">📍 ${zones}</div>` : ''}
+              <button class="btn-contacter" onclick="event.stopPropagation();location.href='apijob-profil-public.html?id=${p.id}'">Voir le profil</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Générer liste
+    const liste = document.getElementById('view-liste');
+    if (liste) {
+      liste.innerHTML = pros.map((p, i) => {
+        const meta = p.metadata || {};
+        const init = ((p.prenom?.[0] || '') + (p.nom?.[0] || '')).toUpperCase() || '?';
+        const nom = `${p.prenom || ''} ${p.nom || ''}`.trim();
+        const titre = meta.titre || p.localisation || '';
+        const services = (meta.services || []).slice(0, 3);
+        const zones = (meta.zones || []).slice(0, 2).join(' · ');
+        const gradient = GRADIENTS[i % GRADIENTS.length];
+        const note = p.avgNote ? p.avgNote.toFixed(1) : '—';
+        const avatarStyle = p.photo
+          ? `background:${gradient};background-image:url(${p.photo});background-size:cover;background-position:center;`
+          : `background:${gradient};`;
+        return `
+          <div class="pro-row" onclick="location.href='apijob-profil-public.html?id=${p.id}'">
+            <div class="pro-row-avatar" style="${avatarStyle}">${p.photo ? '' : init}<div class="pro-row-badge">PRO</div></div>
+            <div class="pro-row-info">
+              <div class="pro-row-name">${nom}</div>
+              <div class="pro-row-metier">${titre}</div>
+              ${services.length > 0 ? `<div class="pro-row-tags">${services.map(s => `<span class="pro-row-tag">${s}</span>`).join('')}</div>` : ''}
+            </div>
+            <div class="pro-row-stats">
+              <div class="pro-row-stat"><div class="pro-row-stat-num or">${note}★</div><div class="pro-row-stat-label">Note</div></div>
+              <div class="pro-row-stat"><div class="pro-row-stat-num">${p.nbMissions}</div><div class="pro-row-stat-label">Missions</div></div>
+            </div>
+            ${zones ? `<div class="pro-row-zone">📍 ${zones}</div>` : ''}
+            <button class="btn-contacter-sm" onclick="event.stopPropagation();location.href='apijob-profil-public.html?id=${p.id}'">Voir le profil</button>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  init();
 </script>
 
 </body>

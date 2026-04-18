@@ -648,99 +648,323 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script>
-  // true = l'utilisateur est aussi prestataire, false = client uniquement
-  const userIsPrestataire = true;
+  let currentUser    = null;
+  let currentMission = null;
+  let realtimeChannel = null;
+  let allMissions    = { client: [], presta: [] };
+  let currentMode    = 'client';
 
-  let currentMode = 'client';
-
-  function setMode(mode) {
-    if (mode === 'presta' && !userIsPrestataire) return;
-
-    currentMode = mode;
-
-    // toggle boutons
-    document.getElementById('btn-client').classList.toggle('active', mode === 'client');
-    document.getElementById('btn-presta').classList.toggle('active', mode === 'presta');
-
-    // filtrer conversations
-    document.querySelectorAll('.conv-item').forEach(item => {
-      item.style.display = item.dataset.mode === mode ? 'flex' : 'none';
-    });
-  }
-
-  // verrou si client uniquement
-  if (!userIsPrestataire) {
-    const btnPresta = document.getElementById('btn-presta');
-    btnPresta.classList.add('locked');
-    btnPresta.title = 'Créez un compte prestataire pour accéder';
-  }
-
-  // init : afficher mode client par défaut
-  setMode('client');
-
-  function sendMessage() {
-    const input = document.getElementById('chat-input');
-    const text = input.value.trim();
-    if (!text) return;
-
-    const area = document.getElementById('messages-area');
-    const div = document.createElement('div');
-    div.className = 'msg-row mine';
-    div.innerHTML = `
-      <div>
-        <div class="msg-bubble">${text}</div>
-        <div class="msg-time">${new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})}</div>
-      </div>`;
-    area.appendChild(div);
-    input.value = '';
-    input.style.height = 'auto';
-    area.scrollTop = area.scrollHeight;
-  }
-
-  function handleKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  }
-
+  // ── UI HELPERS ──
   function autoResize(el) {
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, 100) + 'px';
   }
 
-  function accepterProp(btn) {
-    const card = btn.closest('.msg-proposition');
-    card.style.opacity = '0.6';
-    card.style.pointerEvents = 'none';
-    btn.textContent = '✓ Acceptée';
-    document.getElementById('msg-acceptation').style.display = 'block';
-    document.getElementById('messages-area').scrollTop = 999999;
-  }
-
-  function openConv(initiales, nom, service) {
-    document.querySelectorAll('.conv-item').forEach(c => c.classList.remove('active'));
-    event.currentTarget.classList.add('active');
-    event.currentTarget.querySelector('.unread-badge') && (event.currentTarget.querySelector('.unread-badge').style.display = 'none');
-    event.currentTarget.classList.remove('unread');
-    document.querySelector('.chat-header-avatar').textContent = initiales;
-    document.querySelector('.chat-header-name').textContent = nom;
-    document.querySelector('.chat-header-mission').textContent = service;
-    if (window.innerWidth <= 680) {
-      document.getElementById('sidebar').classList.remove('mobile-open');
-    }
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   }
 
   function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('mobile-open');
   }
 
-  // Scroll to bottom on load
-  window.onload = () => {
+  function escHTML(str) {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── MODE TOGGLE ──
+  function setMode(mode) {
+    if (mode === 'presta' && currentUser?.role !== 'prestataire') return;
+    currentMode = mode;
+    document.getElementById('btn-client').classList.toggle('active', mode === 'client');
+    document.getElementById('btn-presta').classList.toggle('active', mode === 'presta');
+    renderConvList(allMissions[mode] || []);
+  }
+
+  // ── LISTE CONVERSATIONS ──
+  function renderConvList(missions) {
+    const list = document.querySelector('.conv-list');
+    list.innerHTML = '';
+    if (missions.length === 0) {
+      list.innerHTML = '<div style="padding:1.5rem 1.2rem;font-size:0.82rem;color:var(--muted);text-align:center;">Aucune conversation</div>';
+      return;
+    }
+    missions.forEach(m => list.appendChild(buildConvItem(m)));
+  }
+
+  function buildConvItem(mission) {
+    const other  = currentMode === 'client' ? mission.prestataire : mission.client;
+    const init   = other ? ((other.prenom||'?')[0]+(other.nom||'?')[0]).toUpperCase() : '??';
+    const nom    = other ? `${other.prenom||''} ${other.nom||''}`.trim() : 'Utilisateur';
+    const ann    = mission.annonces;
+    const svc    = ann ? `${catEmoji(ann.categorie)} ${ann.titre}` : 'Mission';
+    const dateS  = formatDate(mission.created_at);
+    const statutTxt = { en_attente:'⏳ En attente', en_cours:'✅ En cours', terminee:'🏁 Terminée', annulee:'❌ Annulée' }[mission.statut] || mission.statut;
+
+    const div = document.createElement('div');
+    div.className = 'conv-item';
+    div.dataset.missionId = mission.id;
+    div.innerHTML = `
+      <div class="conv-avatar">${init}</div>
+      <div class="conv-info">
+        <div class="conv-service">${escHTML(svc)}</div>
+        <div class="conv-top">
+          <span class="conv-name">${escHTML(nom)}</span>
+          <span class="conv-time">${dateS}</span>
+        </div>
+        <div class="conv-last">${statutTxt}</div>
+      </div>`;
+    div.onclick = () => ouvrirMission(mission);
+    return div;
+  }
+
+  // ── OUVRIR MISSION ──
+  async function ouvrirMission(mission) {
+    currentMission = mission;
+    document.querySelectorAll('.conv-item').forEach(c => c.classList.remove('active'));
+    document.querySelector(`[data-mission-id="${mission.id}"]`)?.classList.add('active');
+
+    const other = currentMode === 'client' ? mission.prestataire : mission.client;
+    const init  = other ? ((other.prenom||'?')[0]+(other.nom||'?')[0]).toUpperCase() : '??';
+    const nom   = other ? `${other.prenom||''} ${other.nom||''}`.trim() : 'Utilisateur';
+    const ann   = mission.annonces;
+    const svc   = ann ? `${catEmoji(ann.categorie)} ${ann.titre} · ${ann.localisation||''}` : 'Mission';
+
+    document.querySelector('.chat-header-avatar').textContent = init;
+    document.querySelector('.chat-header-name').textContent   = nom;
+    document.querySelector('.chat-header-mission').textContent = svc;
+
+    const btnTerminer = document.querySelector('.btn-terminer-chat');
+    if (mission.statut === 'en_cours') {
+      btnTerminer.style.display = '';
+      btnTerminer.onclick = () => { window.location.href = `apijob-evaluation.html?mission=${mission.id}`; };
+    } else {
+      btnTerminer.style.display = 'none';
+    }
+
+    // Réactivité : désactiver input si mission terminée/annulée
+    const inputZone = document.querySelector('.chat-input-zone');
+    inputZone.style.opacity = ['terminee','annulee'].includes(mission.statut) ? '0.5' : '1';
+    document.getElementById('chat-input').disabled = ['terminee','annulee'].includes(mission.statut);
+
+    await chargerMessages(mission.id);
+
+    // Realtime
+    if (realtimeChannel) db.removeChannel(realtimeChannel);
+    realtimeChannel = db.channel(`msgs_${mission.id}`)
+      .on('postgres_changes', { event:'INSERT', schema:'public', table:'messages', filter:`mission_id=eq.${mission.id}` },
+        (payload) => {
+          if (payload.new.sender_id !== currentUser.id) {
+            appendMessage({ ...payload.new, profiles: other }, null, true);
+          }
+        })
+      .subscribe();
+
+    if (window.innerWidth <= 680) document.getElementById('sidebar').classList.remove('mobile-open');
+  }
+
+  // ── CHARGER MESSAGES ──
+  async function chargerMessages(missionId) {
     const area = document.getElementById('messages-area');
+    area.innerHTML = '<div style="text-align:center;padding:2rem;font-size:0.82rem;color:var(--muted);">Chargement…</div>';
+
+    const { data: msgs, error } = await db.from('messages')
+      .select('*, profiles!sender_id(prenom, nom)')
+      .eq('mission_id', missionId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      area.innerHTML = '<div style="text-align:center;padding:2rem;font-size:0.82rem;color:var(--rouge);">Erreur de chargement</div>';
+      return;
+    }
+
+    area.innerHTML = '';
+
+    // Message système selon statut
+    const sm = document.createElement('div');
+    sm.className = 'msg-system';
+    sm.textContent = { en_attente:'🪙 Proposition envoyée — en attente d\'acceptation', en_cours:'✅ Mission en cours · jeton débité', terminee:'🏁 Mission terminée', annulee:'❌ Proposition refusée' }[currentMission.statut] || '';
+    area.appendChild(sm);
+
+    // Carte proposition si en_attente
+    if (currentMission.statut === 'en_attente' && currentMission.proposition_id) {
+      await afficherCarteProposition(area, currentMission.proposition_id);
+    }
+
+    if (msgs.length === 0) {
+      const em = document.createElement('div');
+      em.style.cssText = 'text-align:center;padding:1.5rem;font-size:0.82rem;color:var(--muted);';
+      em.textContent = 'Commencez la conversation…';
+      area.appendChild(em);
+    } else {
+      msgs.forEach(m => appendMessage(m, area, false));
+    }
+
     area.scrollTop = area.scrollHeight;
-  };
+  }
+
+  // ── CARTE PROPOSITION ──
+  async function afficherCarteProposition(area, propositionId) {
+    const { data: prop } = await db.from('propositions')
+      .select('*, profiles!prestataire_id(prenom, nom)')
+      .eq('id', propositionId).single();
+    if (!prop) return;
+
+    const pName  = prop.profiles ? `${prop.profiles.prenom||''} ${prop.profiles.nom||''}`.trim() : 'Prestataire';
+    const isClient = currentUser.role === 'client';
+    const tariStr  = prop.tarif ? prop.tarif.toLocaleString('fr-FR') + ' XPF' : '—';
+
+    const card = document.createElement('div');
+    card.className = 'msg-proposition';
+    card.id = 'prop-card';
+    card.innerHTML = `
+      <div class="prop-header">📩 Proposition de ${escHTML(pName)}</div>
+      <div class="prop-text">${escHTML(prop.message || '')}</div>
+      <div class="prop-tarif">${tariStr}${prop.disponibilite ? ' · ' + escHTML(prop.disponibilite) : ''}</div>
+      <div class="prop-btns" id="prop-btns">
+        ${isClient
+          ? `<button class="btn-accepter" onclick="accepterProp('${prop.id}','${prop.prestataire_id}')">✓ Accepter</button>
+             <button class="btn-refuser"  onclick="refuserProp('${prop.id}')">✕ Refuser</button>`
+          : '<span style="font-size:0.75rem;color:var(--muted);font-style:italic;">En attente du client…</span>'}
+      </div>`;
+    area.appendChild(card);
+  }
+
+  // ── ACCEPTER PROPOSITION ──
+  async function accepterProp(propositionId, prestataireId) {
+    const btns = document.getElementById('prop-btns');
+    btns.innerHTML = '<span style="font-size:0.82rem;color:var(--muted);">Traitement…</span>';
+
+    try {
+      await db.from('propositions').update({ statut: 'acceptee' }).eq('id', propositionId);
+      await db.from('missions').update({ statut: 'en_cours' }).eq('id', currentMission.id);
+
+      // Débit jeton prestataire (sauf Pro)
+      const { data: presta } = await db.from('profiles').select('tokens, is_pro').eq('id', prestataireId).single();
+      if (presta && !presta.is_pro && presta.tokens > 0) {
+        await db.from('profiles').update({ tokens: presta.tokens - 1 }).eq('id', prestataireId);
+        await db.from('transactions_jetons').insert({ user_id: prestataireId, type: 'debit', quantite: 1, mission_id: currentMission.id });
+      }
+      await createNotification(prestataireId, 'mission_acceptee', 'Proposition acceptée !', 'Votre proposition a été acceptée. La mission commence !');
+
+      btns.innerHTML = '<span style="color:var(--vert);font-weight:600;">✅ Acceptée</span>';
+      const sysDiv = document.createElement('div');
+      sysDiv.className = 'msg-system';
+      sysDiv.textContent = '✅ Proposition acceptée — Mission démarrée · 1 jeton débité';
+      document.getElementById('messages-area').appendChild(sysDiv);
+      document.getElementById('messages-area').scrollTop = 999999;
+
+      currentMission.statut = 'en_cours';
+      document.querySelector('.btn-terminer-chat').style.display = '';
+      document.querySelector('.chat-input-zone').style.opacity = '1';
+      document.getElementById('chat-input').disabled = false;
+    } catch(e) {
+      console.error(e);
+      btns.innerHTML = '<span style="color:var(--rouge);">Erreur, réessayez</span>';
+    }
+  }
+
+  // ── REFUSER PROPOSITION ──
+  async function refuserProp(propositionId) {
+    await db.from('propositions').update({ statut: 'refusee' }).eq('id', propositionId);
+    await db.from('missions').update({ statut: 'annulee' }).eq('id', currentMission.id);
+    await createNotification(currentMission.prestataire_id, 'mission_refusee', 'Proposition refusée', 'Votre proposition n\'a pas été retenue.');
+    document.getElementById('prop-btns').innerHTML = '<span style="color:var(--rouge);font-weight:600;">❌ Refusée</span>';
+    currentMission.statut = 'annulee';
+    document.querySelector('.btn-terminer-chat').style.display = 'none';
+    document.querySelector('.chat-input-zone').style.opacity = '0.5';
+    document.getElementById('chat-input').disabled = true;
+  }
+
+  // ── APPEND MESSAGE ──
+  function appendMessage(msg, area = null, scroll = true) {
+    const zone  = area || document.getElementById('messages-area');
+    const isMine = msg.sender_id === currentUser.id;
+    const p     = msg.profiles;
+    const init  = p ? ((p.prenom||'?')[0]+(p.nom||'?')[0]).toUpperCase() : '??';
+    const time  = new Date(msg.created_at).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+
+    const row = document.createElement('div');
+    row.className = `msg-row ${isMine ? 'mine' : 'other'}`;
+    row.innerHTML = isMine
+      ? `<div><div class="msg-bubble">${escHTML(msg.contenu)}</div><div class="msg-time">${time}</div></div>`
+      : `<div class="msg-avatar-sm">${init}</div><div><div class="msg-bubble">${escHTML(msg.contenu)}</div><div class="msg-time">${time}</div></div>`;
+    zone.appendChild(row);
+    if (scroll) zone.scrollTop = zone.scrollHeight;
+  }
+
+  // ── ENVOYER MESSAGE ──
+  async function sendMessage() {
+    if (!currentMission || ['terminee','annulee'].includes(currentMission.statut)) return;
+    const input = document.getElementById('chat-input');
+    const text  = input.value.trim();
+    if (!text) return;
+
+    // Affichage optimiste
+    appendMessage({ sender_id: currentUser.id, contenu: text, created_at: new Date().toISOString(), profiles: null });
+    input.value = '';
+    input.style.height = 'auto';
+
+    const { error } = await db.from('messages').insert({
+      mission_id: currentMission.id,
+      sender_id:  currentUser.id,
+      contenu:    text
+    });
+    if (error) console.error('Envoi message:', error);
+  }
+
+  // ── CHARGER MISSIONS ──
+  async function chargerMissions() {
+    const [{ data: mClient }, { data: mPresta }] = await Promise.all([
+      db.from('missions')
+        .select('*, annonces(titre, categorie, localisation), prestataire:profiles!prestataire_id(prenom, nom, photo)')
+        .eq('client_id', currentUser.id)
+        .neq('statut', 'annulee')
+        .order('created_at', { ascending: false }),
+      db.from('missions')
+        .select('*, annonces(titre, categorie, localisation), client:profiles!client_id(prenom, nom, photo)')
+        .eq('prestataire_id', currentUser.id)
+        .neq('statut', 'annulee')
+        .order('created_at', { ascending: false })
+    ]);
+    allMissions.client = mClient || [];
+    allMissions.presta = mPresta || [];
+  }
+
+  // ── INIT ──
+  (async () => {
+    currentUser = await requireAuth();
+    if (!currentUser) return;
+
+    const isPresta = currentUser.role === 'prestataire';
+    if (!isPresta) {
+      const bp = document.getElementById('btn-presta');
+      bp.classList.add('locked');
+      bp.disabled = true;
+    }
+
+    await chargerMissions();
+    const mode = isPresta ? 'presta' : 'client';
+    setMode(mode);
+
+    const first = allMissions[mode][0];
+    if (first) {
+      await ouvrirMission(first);
+    } else {
+      document.querySelector('.chat-header').style.visibility = 'hidden';
+      document.querySelector('.chat-input-zone').style.display = 'none';
+      document.getElementById('messages-area').innerHTML = `
+        <div class="chat-empty">
+          <div class="chat-empty-icon">💬</div>
+          <div class="chat-empty-title">Aucune conversation</div>
+          <div class="chat-empty-sub">Vos échanges apparaîtront ici après l'envoi d'une proposition.</div>
+        </div>`;
+    }
+  })();
 </script>
 
 </body>

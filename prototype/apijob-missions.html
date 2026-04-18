@@ -423,20 +423,23 @@
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script>
-  let currentMode = 'prestataire';
+  let currentUser  = null;
+  let currentMode  = 'prestataire';
   let currentFiltre = 'toutes';
+  let allData = { presta: [], client: [] };
 
+  // ── MODE TOGGLE ──
   function setMode(mode, btn) {
     currentMode = mode;
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-
-    document.getElementById('list-presta').style.display = mode === 'prestataire' ? 'flex' : 'none';
-    document.getElementById('list-client').style.display = mode === 'client' ? 'flex' : 'none';
+    document.getElementById('list-presta').style.display  = mode === 'prestataire' ? 'flex' : 'none';
+    document.getElementById('list-client').style.display  = mode === 'client'       ? 'flex' : 'none';
     document.getElementById('stats-presta').style.display = mode === 'prestataire' ? 'grid' : 'none';
-    document.getElementById('stats-client').style.display = mode === 'client' ? 'grid' : 'none';
-
+    document.getElementById('stats-client').style.display = mode === 'client'       ? 'grid' : 'none';
     appliquerFiltre();
   }
 
@@ -449,12 +452,168 @@
 
   function appliquerFiltre() {
     const listId = currentMode === 'prestataire' ? 'list-presta' : 'list-client';
-    const cards = document.querySelectorAll('#' + listId + ' .mission-card');
-    cards.forEach(card => {
-      const statut = card.dataset.statut;
-      card.style.display = (currentFiltre === 'toutes' || statut === currentFiltre) ? '' : 'none';
+    document.querySelectorAll('#' + listId + ' .mission-card').forEach(card => {
+      card.style.display = (currentFiltre === 'toutes' || card.dataset.statut === currentFiltre) ? '' : 'none';
     });
   }
+
+  // ── HELPERS ──
+  function escHTML(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+
+  function statutInfo(statut) {
+    return {
+      en_cours:   { css: 'en-cours',   badge: 'badge-encours',  label: '⏳ En cours'   },
+      en_attente: { css: 'en-attente', badge: 'badge-attente',  label: '🕐 En attente' },
+      terminee:   { css: 'terminee',   badge: 'badge-terminee', label: '✅ Terminée'   },
+      annulee:    { css: 'terminee',   badge: 'badge-attente',  label: '❌ Annulée'    },
+    }[statut] || { css: 'en-attente', badge: 'badge-attente', label: statut };
+  }
+
+  // ── RENDER CARD ──
+  function buildCard(mission, role) {
+    const other  = role === 'prestataire' ? mission.client : mission.prestataire;
+    const init   = other ? ((other.prenom||'?')[0]+(other.nom||'?')[0]).toUpperCase() : '??';
+    const nom    = other ? `${other.prenom||''} ${other.nom||''}`.trim() : 'Utilisateur';
+    const ann    = mission.annonces;
+    const titre  = ann ? `${escHTML(ann.titre)}${ann.localisation ? ' — '+escHTML(ann.localisation) : ''}` : 'Mission';
+    const emoji  = ann ? catEmoji(ann.categorie) : '✨';
+    const dateS  = new Date(mission.created_at).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    const s      = statutInfo(mission.statut);
+    const roleLabel = role === 'prestataire' ? 'Client' : 'Prestataire';
+
+    // Footer selon rôle + statut
+    let footer = '';
+    if (mission.statut === 'en_cours') {
+      const btnEval = role === 'prestataire'
+        ? `<a href="apijob-evaluation.html?mission=${mission.id}" class="btn-action btn-rouge">✅ Terminer</a>`
+        : `<a href="apijob-evaluation.html?mission=${mission.id}" class="btn-action btn-rouge">⭐ Laisser un avis</a>`;
+      footer = `
+        <div class="mission-footer-left">📍 ${escHTML(ann?.localisation||'')}</div>
+        <div class="mission-actions">
+          <a href="apijob-messagerie.html?mission=${mission.id}" class="btn-action btn-outline">💬 Message</a>
+          ${btnEval}
+        </div>`;
+    } else if (mission.statut === 'en_attente') {
+      footer = `
+        <div class="mission-footer-left">📍 ${escHTML(ann?.localisation||'')} · En attente de confirmation</div>
+        <div class="mission-actions">
+          <a href="apijob-messagerie.html?mission=${mission.id}" class="btn-action btn-outline">💬 Voir la proposition</a>
+        </div>`;
+    } else if (mission.statut === 'terminee') {
+      const evalInfo = mission.eval_recu;
+      const footLeft = evalInfo
+        ? `⭐ Avis reçu : ${evalInfo.note_globale}/5${evalInfo.commentaire ? ' — &ldquo;'+escHTML(evalInfo.commentaire.slice(0,60))+'…&rdquo;' : ''}`
+        : (role === 'client' ? '💬 <a href="apijob-evaluation.html?mission='+mission.id+'" style="color:var(--rouge)">Laisser un avis</a>' : 'Pas encore d\'avis');
+      footer = `<div class="mission-footer-left">${footLeft}</div><div class="mission-actions"></div>`;
+    } else {
+      footer = `<div class="mission-footer-left">Mission annulée</div><div class="mission-actions"></div>`;
+    }
+
+    const div = document.createElement('div');
+    div.className = `mission-card ${s.css}`;
+    div.dataset.statut = s.css;
+    div.innerHTML = `
+      <div class="mission-top">
+        <div class="mission-emoji">${emoji}</div>
+        <div class="mission-content">
+          <div class="mission-title">${titre}</div>
+          <div class="mission-interlocuteur">
+            <div class="avatar-xs">${init}</div>
+            ${roleLabel} : ${escHTML(nom)}
+          </div>
+          <div class="mission-date">📅 ${dateS}</div>
+        </div>
+        <span class="mission-badge ${s.badge}">${s.label}</span>
+      </div>
+      <div class="mission-footer">${footer}</div>`;
+    return div;
+  }
+
+  // ── RENDER LIST ──
+  function renderList(listId, missions, role) {
+    const el = document.getElementById(listId);
+    el.innerHTML = '';
+    if (!missions.length) {
+      el.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <div class="empty-title">Aucune mission</div>
+          <div class="empty-sub">Vos missions apparaîtront ici une fois une proposition acceptée.</div>
+        </div>`;
+      return;
+    }
+    missions.forEach(m => el.appendChild(buildCard(m, role)));
+  }
+
+  // ── STATS ──
+  async function chargerStats() {
+    const uid = currentUser.id;
+
+    // Stats prestataire
+    const [{ count: enCoursPr }, { count: termineePr }, { data: evals }] = await Promise.all([
+      db.from('missions').select('*',{count:'exact',head:true}).eq('prestataire_id',uid).eq('statut','en_cours'),
+      db.from('missions').select('*',{count:'exact',head:true}).eq('prestataire_id',uid).eq('statut','terminee'),
+      db.from('evaluations').select('note_globale').eq('cible_id',uid)
+    ]);
+    const avg = evals?.length ? (evals.reduce((s,e)=>s+e.note_globale,0)/evals.length).toFixed(1)+'★' : '—';
+    const sPr = document.querySelectorAll('#stats-presta .stat-num');
+    if (sPr[0]) sPr[0].textContent = enCoursPr || 0;
+    if (sPr[1]) sPr[1].textContent = termineePr || 0;
+    if (sPr[2]) sPr[2].textContent = avg;
+
+    // Stats client
+    const [{ count: enCoursCl }, { count: termineeCl }, { count: annonces }] = await Promise.all([
+      db.from('missions').select('*',{count:'exact',head:true}).eq('client_id',uid).eq('statut','en_cours'),
+      db.from('missions').select('*',{count:'exact',head:true}).eq('client_id',uid).eq('statut','terminee'),
+      db.from('annonces').select('*',{count:'exact',head:true}).eq('client_id',uid)
+    ]);
+    const sCl = document.querySelectorAll('#stats-client .stat-num');
+    if (sCl[0]) sCl[0].textContent = enCoursCl || 0;
+    if (sCl[1]) sCl[1].textContent = termineeCl || 0;
+    if (sCl[2]) sCl[2].textContent = annonces || 0;
+  }
+
+  // ── INIT ──
+  (async () => {
+    currentUser = await requireAuth();
+    if (!currentUser) return;
+
+    // Charger missions + évaluations reçues
+    const [{ data: mPresta }, { data: mClient }] = await Promise.all([
+      db.from('missions')
+        .select('*, annonces(titre,categorie,localisation), client:profiles!client_id(prenom,nom), eval_recu:evaluations!mission_id(note_globale,commentaire,auteur_id)')
+        .eq('prestataire_id', currentUser.id)
+        .order('created_at', { ascending: false }),
+      db.from('missions')
+        .select('*, annonces(titre,categorie,localisation), prestataire:profiles!prestataire_id(prenom,nom), eval_recu:evaluations!mission_id(note_globale,commentaire,auteur_id)')
+        .eq('client_id', currentUser.id)
+        .order('created_at', { ascending: false })
+    ]);
+
+    // eval_recu = tableau → garder seulement l'éval de l'autre partie
+    const withEval = (missions, role) => (missions || []).map(m => ({
+      ...m,
+      eval_recu: Array.isArray(m.eval_recu)
+        ? m.eval_recu.find(e => role === 'prestataire'
+            ? e.auteur_id === m.client_id       // avis du client sur le presta
+            : e.auteur_id === m.prestataire_id) // avis du presta sur le client
+        : null
+    }));
+
+    allData.presta = withEval(mPresta, 'prestataire');
+    allData.client = withEval(mClient, 'client');
+
+    renderList('list-presta', allData.presta, 'prestataire');
+    renderList('list-client', allData.client, 'client');
+    await chargerStats();
+
+    // Mode par défaut selon rôle
+    const defaultMode = currentUser.role === 'client' ? 'client' : 'prestataire';
+    const btnDefault = defaultMode === 'client'
+      ? document.querySelectorAll('.mode-btn')[1]
+      : document.querySelectorAll('.mode-btn')[0];
+    setMode(defaultMode, btnDefault);
+  })();
 </script>
 
 </body>
