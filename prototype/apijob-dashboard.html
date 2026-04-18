@@ -765,8 +765,7 @@
     const nom    = currentUser.nom || '';
     const initiales = ((currentUser.prenom||'?')[0] + (currentUser.nom||'?')[0]).toUpperCase();
 
-    const greetEl = document.querySelector('.dash-greeting span');
-    if (greetEl) greetEl.textContent = prenom;
+    document.querySelectorAll('.dash-greeting span').forEach(el => el.textContent = prenom);
 
     const avatarEl = document.querySelector('.nav-avatar');
     if (avatarEl) {
@@ -783,12 +782,15 @@
       dateEl.textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1) + ' · Tahiti';
     }
 
-    // Activer le bon panneau selon le rôle
+    // Activer le bon panneau selon le rôle et masquer le toggle
     const role = currentUser.role;
+    const modeToggle = document.querySelector('.mode-toggle');
     if (role === 'client') {
       switchMode('client');
+      if (modeToggle) modeToggle.style.display = 'none';
     } else {
       switchMode('prestataire');
+      if (modeToggle) modeToggle.style.display = 'none';
     }
 
     // Mettre à jour les jetons (prestataire)
@@ -808,12 +810,11 @@
     await chargerStats();
 
     // Fixer le lien de déconnexion
-    document.querySelectorAll('a[href="apijob-auth.html"]').forEach(link => {
-      if (link.textContent.includes('déconnecter')) {
-        link.href = '#';
-        link.onclick = async (e) => { e.preventDefault(); await signOut(); };
-      }
-    });
+    const menuDecoLink = document.querySelector('#avatar-menu a[href="apijob-auth.html"]');
+    if (menuDecoLink) {
+      menuDecoLink.href = '#';
+      menuDecoLink.onclick = async (e) => { e.preventDefault(); await signOut(); };
+    }
   })();
 
   // ── STATS ──
