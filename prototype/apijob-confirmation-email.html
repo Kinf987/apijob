@@ -235,6 +235,23 @@
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2500);
   }
+
+  // Décompte 5s → retour accueil
+  let remaining = 5;
+  const countdownEl = document.createElement('p');
+  countdownEl.style.cssText = 'margin-top:1.2rem;font-size:0.82rem;color:var(--muted);';
+  countdownEl.innerHTML = `Retour à l'accueil dans <strong id="countdown">5</strong>s — <a href="apijob-v4.html" style="color:var(--rouge);text-decoration:none;">y aller maintenant</a>`;
+  document.querySelector('.help-text').after(countdownEl);
+
+  const timer = setInterval(() => {
+    remaining--;
+    const el = document.getElementById('countdown');
+    if (el) el.textContent = remaining;
+    if (remaining <= 0) {
+      clearInterval(timer);
+      window.location.href = 'apijob-v4.html';
+    }
+  }, 1000);
 </script>
 
 </body>
