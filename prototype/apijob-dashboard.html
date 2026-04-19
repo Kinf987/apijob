@@ -821,9 +821,6 @@
       switchMode('prestataire');
     }
 
-    // Rendre la page visible maintenant que le bon panel est affiché
-    document.documentElement.style.visibility = 'visible';
-
     // Mettre à jour les jetons (prestataire)
     if (role === 'prestataire') {
       const tokens = currentUser.is_pro ? '∞' : currentUser.tokens;
@@ -1076,8 +1073,7 @@
     if (!confirm('Supprimer cette annonce ? Cette action est irréversible.')) return;
     const { error } = await db.from('annonces').delete().eq('id', id).eq('client_id', currentUser.id);
     if (error) { alert('Erreur lors de la suppression.'); return; }
-    await chargerAnnoncesClient();
-    await loadStats();
+    await chargerStats();
   }
 
   // ── SWITCH MODE ──
