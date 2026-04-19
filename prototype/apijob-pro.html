@@ -547,6 +547,10 @@
 
 <script src="supabase-config.js"></script>
 <script>
+  // Vider le contenu statique immédiatement
+  document.getElementById('view-grille').innerHTML = '';
+  document.getElementById('view-liste').innerHTML = '';
+
   const GRADIENTS = [
     'linear-gradient(135deg,#CC0A2B,#FF4D6A)',
     'linear-gradient(135deg,#1A7A4A,#2EA86A)',

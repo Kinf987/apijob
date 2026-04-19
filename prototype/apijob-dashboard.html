@@ -757,8 +757,11 @@
   document.documentElement.style.visibility = 'hidden';
 
   // Désactiver le bfcache (évite que le dashboard s'affiche après déconnexion)
-  window.addEventListener('pageshow', (e) => {
-    if (e.persisted) window.location.reload();
+  window.addEventListener('pageshow', async (e) => {
+    if (e.persisted) {
+      const { data: { session } } = await db.auth.getSession();
+      if (!session) window.location.replace('apijob-auth.html?logout=1');
+    }
   });
 
   // Cacher tous les panels et le toggle de mode
@@ -850,6 +853,52 @@
         window.location.replace('apijob-auth.html?logout=1');
       });
     });
+
+    // Mettre à jour la profil card prestataire avec de vraies données
+    if (role === 'prestataire') {
+      const avatarEl = document.querySelector('.profil-avatar');
+      if (avatarEl) avatarEl.textContent = initiales;
+      const nameEl = document.querySelector('.profil-name');
+      if (nameEl) nameEl.textContent = prenom + ' ' + nom;
+      // Lien profil public avec vrai ID
+      document.querySelectorAll('a[href="apijob-profil-public.html"]').forEach(a => {
+        a.href = `apijob-profil-public.html?id=${currentUser.id}`;
+      });
+      // Charger avis récents
+      const { data: avisData } = await db.from('evaluations')
+        .select('note_globale, commentaire, created_at, profiles!auteur_id(prenom, nom)')
+        .eq('cible_id', currentUser.id)
+        .order('created_at', { ascending: false })
+        .limit(2);
+      const avisContainer = document.querySelector('#panel-prestataire .data-content');
+      if (avisContainer) {
+        if (!avisData || avisData.length === 0) {
+          avisContainer.innerHTML = '';
+        } else {
+          avisContainer.innerHTML = avisData.map(a => `
+            <div class="avis-item">
+              <div class="avis-top">
+                <div class="avis-author">${escDash(a.profiles?.prenom)} ${escDash(a.profiles?.nom?.[0])}.`
+              + `</div><div class="avis-stars">${'★'.repeat(Math.round(a.note_globale))}${'☆'.repeat(5-Math.round(a.note_globale))}</div></div>
+              <div class="avis-text">${escDash(a.commentaire)}</div>
+              <div class="avis-date">${formatDate(a.created_at)}</div>
+            </div>`).join('');
+        }
+      }
+      // Note et nb avis sur la profil card
+      if (avisData && avisData.length > 0) {
+        const moy = avisData.reduce((s, e) => s + e.note_globale, 0) / avisData.length;
+        const starsEl = document.querySelector('.profil-stars');
+        const reviewsEl = document.querySelector('.profil-reviews');
+        if (starsEl) starsEl.textContent = '★'.repeat(Math.round(moy)) + '☆'.repeat(5 - Math.round(moy));
+        if (reviewsEl) reviewsEl.textContent = `${moy.toFixed(1)} · ${avisData.length} avis`;
+      } else {
+        const starsEl = document.querySelector('.profil-stars');
+        const reviewsEl = document.querySelector('.profil-reviews');
+        if (starsEl) starsEl.textContent = '☆☆☆☆☆';
+        if (reviewsEl) reviewsEl.textContent = 'Pas encore d\'avis';
+      }
+    }
 
     // Ajouter le lien "Devenir prestataire" pour les clients
     if (role === 'client') {

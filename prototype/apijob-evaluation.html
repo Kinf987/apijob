@@ -430,7 +430,7 @@
 
     const missionId = new URLSearchParams(location.search).get('mission');
     if (!missionId) {
-      // Pas d'ID mission → afficher quand même le formulaire vide (démo)
+      window.location.href = 'apijob-missions.html';
       return;
     }
 
