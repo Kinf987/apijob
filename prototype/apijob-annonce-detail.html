@@ -711,11 +711,11 @@
     }
   }
 
-  init().finally(() => { document.documentElement.style.visibility = ''; });
+  init().finally(() => { document.documentElement.style.visibility = 'visible'; });
 
   // Filet de sécurité : si une erreur JS non catchée bloque tout, on affiche quand même la page
-  window.addEventListener('error', () => { document.documentElement.style.visibility = ''; });
-  window.addEventListener('unhandledrejection', () => { document.documentElement.style.visibility = ''; });
+  window.addEventListener('error', () => { document.documentElement.style.visibility = 'visible'; });
+  window.addEventListener('unhandledrejection', () => { document.documentElement.style.visibility = 'visible'; });
 </script>
 
 </body>
