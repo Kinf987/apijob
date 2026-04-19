@@ -753,6 +753,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script>
+  // Cacher tous les panels immédiatement pour éviter le flash prestataire
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+
   let currentUser = null;
 
   // ── INIT ──
@@ -813,7 +816,35 @@
     const menuDecoLink = document.querySelector('#avatar-menu a[href="apijob-auth.html"]');
     if (menuDecoLink) {
       menuDecoLink.href = '#';
-      menuDecoLink.onclick = async (e) => { e.preventDefault(); await signOut(); };
+      menuDecoLink.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        await db.auth.signOut();
+        window.location.href = 'apijob-auth.html';
+      });
+    }
+
+    // Ajouter le lien "Devenir prestataire" pour les clients
+    if (role === 'client') {
+      const clientPanel = document.getElementById('panel-client');
+      if (clientPanel) {
+        const card = document.createElement('div');
+        card.className = 'section-card';
+        card.style.cssText = 'margin-top:1.5rem;background:linear-gradient(135deg,rgba(240,165,0,0.08),rgba(240,165,0,0.03));border:1.5px solid rgba(240,165,0,0.25);';
+        card.innerHTML = `
+          <div class="section-card-header">
+            <div class="section-card-title">⭐ Devenez prestataire</div>
+          </div>
+          <div style="padding:0.5rem 1.2rem 1.2rem;">
+            <p style="font-size:0.88rem;color:var(--muted);margin-bottom:1rem;line-height:1.5;">
+              Proposez vos services à Tahiti &amp; Moorea et développez votre activité avec API JOB Pro.
+            </p>
+            <a href="apijob-devenir-pro.html" style="display:inline-block;padding:0.7rem 1.4rem;background:var(--or);color:var(--night);border-radius:10px;font-weight:700;font-size:0.88rem;text-decoration:none;">
+              Découvrir l'offre Pro →
+            </a>
+          </div>`;
+        clientPanel.appendChild(card);
+      }
     }
   })();
 
