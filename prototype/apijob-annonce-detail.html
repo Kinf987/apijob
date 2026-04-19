@@ -656,10 +656,24 @@
       modalSub.innerHTML = `<strong>${client.prenom || 'Le client'}</strong> a été notifié·e. Si il/elle accepte votre proposition, 1 jeton sera débité et vous pourrez échanger directement en messagerie.`;
     }
 
-    // Si le client est l'auteur de l'annonce → masquer le formulaire, afficher les props
+    // Si le client est l'auteur de l'annonce → masquer le formulaire, afficher les props + bouton supprimer
     if (currentUser.role === 'client' && currentUser.id === a.client_id) {
       const formCard = document.querySelector('.form-card');
       if (formCard) formCard.style.display = 'none';
+
+      // Bouton supprimer
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = '🗑️ Supprimer cette annonce';
+      deleteBtn.style.cssText = 'display:block;width:100%;margin-top:1rem;padding:0.75rem;background:none;border:1.5px solid rgba(204,10,43,0.3);border-radius:12px;color:var(--rouge);font-family:inherit;font-size:0.88rem;cursor:pointer;';
+      deleteBtn.onmouseenter = () => deleteBtn.style.background = 'rgba(204,10,43,0.05)';
+      deleteBtn.onmouseleave = () => deleteBtn.style.background = 'none';
+      deleteBtn.onclick = async () => {
+        if (!confirm('Supprimer cette annonce ? Cette action est irréversible.')) return;
+        const { error } = await db.from('annonces').delete().eq('id', annonceId).eq('client_id', currentUser.id);
+        if (error) { alert('Erreur lors de la suppression.'); return; }
+        window.location.href = 'apijob-dashboard.html';
+      };
+      document.querySelector('.main-col').appendChild(deleteBtn);
 
       const { data: props } = await db.from('propositions')
         .select('*, prestataire:profiles!prestataire_id(id, prenom, nom, is_pro, is_verified)')
