@@ -917,12 +917,27 @@
             </button>
             <div id="form-devenir-presta" style="display:none;margin-top:1.2rem;border-top:1px solid rgba(240,165,0,0.2);padding-top:1.2rem;">
               <div style="margin-bottom:1rem;">
-                <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.4rem;">Votre métier / domaine d'activité <span style="color:var(--rouge)">*</span></label>
-                <input id="presta-metier" type="text" placeholder="Ex : Jardinage, Plomberie, Ménage..." style="width:100%;padding:0.65rem 0.9rem;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:0.88rem;background:white;outline:none;">
+                <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.6rem;">Vos domaines d'activité <span style="color:var(--rouge)">*</span></label>
+                <div id="presta-cats" style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+                  ${[['🌿','Jardinage'],['🏠','Ménage'],['🔧','Plomberie'],['⚡','Électricité'],['🛠️','Bricolage'],['📦','Déménagement'],['👶','Baby-sitting'],['🏡','Gardiennage'],['🐾','Animaux'],['🎨','Peinture'],['🚗','Transports'],['🔩','Mécanique'],['🤝','Aide à la personne'],['💻','Informatique'],['🎓','Cours particuliers'],['📋','Démarches & administratif'],['🛋️','Aménagement & déco'],['🎉','Événementiel'],['💼','Bureautique & administratif'],['🧘','Bien-être'],['✨','Autre']].map(([e,c]) =>
+                    `<button type="button" data-cat="${c}" onclick="toggleCat(this)" style="padding:0.35rem 0.75rem;border:1.5px solid var(--border);border-radius:20px;background:white;font-size:0.8rem;cursor:pointer;transition:all 0.15s;">${e} ${c}</button>`
+                  ).join('')}
+                </div>
               </div>
               <div style="margin-bottom:1rem;">
-                <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.4rem;">Zone d'intervention <span style="color:var(--rouge)">*</span></label>
-                <input id="presta-zone" type="text" placeholder="Ex : Papeete, Punaauia, Moorea..." style="width:100%;padding:0.65rem 0.9rem;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:0.88rem;background:white;outline:none;">
+                <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.6rem;">Zone d'intervention <span style="color:var(--rouge)">*</span></label>
+                <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.5rem;">Tahiti</div>
+                <div id="presta-zones" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.6rem;">
+                  ${['Papeete','Faa\'a','Pirae','Arue','Mahina','Hitiaa O Te Ra','Taiarapu-Est','Taiarapu-Ouest','Teva i Uta','Paea','Papara','Mataiea','Punaauia'].map(z =>
+                    `<button type="button" data-zone="${z}" onclick="toggleZone(this)" style="padding:0.35rem 0.75rem;border:1.5px solid var(--border);border-radius:20px;background:white;font-size:0.8rem;cursor:pointer;transition:all 0.15s;">${z}</button>`
+                  ).join('')}
+                </div>
+                <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.5rem;">Îles</div>
+                <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+                  ${['Moorea','Huahine','Raiatea','Tahaa','Bora-Bora','Maupiti','Rangiroa','Tikehau','Fakarava','Nuku Hiva','Hiva Oa','Rurutu','Tubuai','Toute la Polynésie'].map(z =>
+                    `<button type="button" data-zone="${z}" onclick="toggleZone(this)" style="padding:0.35rem 0.75rem;border:1.5px solid var(--border);border-radius:20px;background:white;font-size:0.8rem;cursor:pointer;transition:all 0.15s;">${z}</button>`
+                  ).join('')}
+                </div>
               </div>
               <div style="margin-bottom:1rem;">
                 <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.4rem;">Courte présentation <span style="color:var(--rouge)">*</span></label>
@@ -1103,6 +1118,22 @@
 
   function escDash(str) { return String(str||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+  function toggleCat(btn) {
+    const on = btn.dataset.on === '1';
+    btn.dataset.on = on ? '0' : '1';
+    btn.style.background = on ? 'white' : 'var(--rouge)';
+    btn.style.color = on ? '' : 'white';
+    btn.style.borderColor = on ? 'var(--border)' : 'var(--rouge)';
+  }
+
+  function toggleZone(btn) {
+    const on = btn.dataset.on === '1';
+    btn.dataset.on = on ? '0' : '1';
+    btn.style.background = on ? 'white' : 'var(--or)';
+    btn.style.color = on ? '' : 'var(--night)';
+    btn.style.borderColor = on ? 'var(--border)' : 'var(--or)';
+  }
+
   function ouvrirFormulairePresta() {
     const form = document.getElementById('form-devenir-presta');
     const btn = document.getElementById('btn-decouvrir-offre');
@@ -1113,16 +1144,19 @@
   }
 
   async function validerDevenirPresta() {
-    const metier = document.getElementById('presta-metier')?.value.trim();
-    const zone   = document.getElementById('presta-zone')?.value.trim();
-    const bio    = document.getElementById('presta-bio')?.value.trim();
-    const cps    = document.getElementById('check-cps')?.checked;
-    const auto   = document.getElementById('check-auto')?.checked;
-    const cgu    = document.getElementById('check-cgu')?.checked;
-    const errEl  = document.getElementById('presta-error');
+    const cats  = [...document.querySelectorAll('#presta-cats [data-on="1"]')].map(b => b.dataset.cat);
+    const zones = [...document.querySelectorAll('#presta-zones [data-on="1"]'), ...document.querySelectorAll('[data-zone][data-on="1"]')].map(b => b.dataset.zone);
+    const bio   = document.getElementById('presta-bio')?.value.trim();
+    const cps   = document.getElementById('check-cps')?.checked;
+    const auto  = document.getElementById('check-auto')?.checked;
+    const cgu   = document.getElementById('check-cgu')?.checked;
+    const errEl = document.getElementById('presta-error');
 
-    if (!metier || !zone || !bio) { errEl.textContent = 'Merci de remplir tous les champs.'; errEl.style.display = 'block'; return; }
-    if (!cps || !auto || !cgu)   { errEl.textContent = 'Merci de cocher toutes les cases de conformité légale.'; errEl.style.display = 'block'; return; }
+    if (cats.length === 0) { errEl.textContent = 'Sélectionnez au moins un domaine d\'activité.'; errEl.style.display = 'block'; return; }
+    if (zones.length === 0){ errEl.textContent = 'Sélectionnez au moins une zone d\'intervention.'; errEl.style.display = 'block'; return; }
+    if (!bio)              { errEl.textContent = 'Merci de rédiger une courte présentation.'; errEl.style.display = 'block'; return; }
+    if (!cps || !auto || !cgu) { errEl.textContent = 'Merci de cocher toutes les cases de conformité légale.'; errEl.style.display = 'block'; return; }
+    const zone = [...new Set(zones)].join(', ');
     errEl.style.display = 'none';
 
     const btnValid = document.querySelector('#form-devenir-presta button:last-child');
@@ -1134,6 +1168,7 @@
       localisation: zone,
       tokens: 3
     }).eq('id', currentUser.id);
+    // Note: les catégories sélectionnées (cats) pourront être stockées dans un champ dédié lors de l'évolution du schéma
 
     if (error) {
       if (btnValid) { btnValid.disabled = false; btnValid.textContent = '✅ Activer mon compte prestataire'; }
