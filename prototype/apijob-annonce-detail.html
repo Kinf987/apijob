@@ -591,17 +591,18 @@
     if (error || !a) return;
     annonce = a;
 
-    // Comptages en parallèle + vérif doublon
-    const [{ count: nbAnnonces }, { count: nbProps }, { data: existingProp }] = await Promise.all([
+    // Comptages en parallèle + récupération profil client séparée si join échoue
+    const [{ count: nbAnnonces }, { count: nbProps }, { data: existingProp }, { data: clientProfile }] = await Promise.all([
       db.from('annonces').select('id', { count: 'exact', head: true }).eq('client_id', a.client_id),
       db.from('propositions').select('id', { count: 'exact', head: true }).eq('annonce_id', annonceId),
-      db.from('propositions').select('id').eq('annonce_id', annonceId).eq('prestataire_id', currentUser.id).maybeSingle()
+      db.from('propositions').select('id').eq('annonce_id', annonceId).eq('prestataire_id', currentUser.id).maybeSingle(),
+      db.from('profiles').select('id, prenom, nom, photo, created_at').eq('id', a.client_id).maybeSingle()
     ]);
 
-    const client = a.client;
-    const initiales = ((client.prenom?.[0] || '') + (client.nom?.[0] || '')).toUpperCase() || '?';
-    const nomAbrege = `${client.prenom || ''} ${client.nom ? client.nom[0] + '.' : ''}`.trim();
-    const mois = new Date(client.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    const client = a.client || clientProfile || {};
+    const initiales = (((client.prenom || '')[0] || '') + ((client.nom || '')[0] || '')).toUpperCase() || '?';
+    const nomAbrege = `${client.prenom || ''} ${client.nom ? client.nom[0] + '.' : ''}`.trim() || 'Client';
+    const mois = client.created_at ? new Date(client.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : '';
 
     // --- Carte "Publié par" ---
     const publishCard = document.querySelector('.main-col > a > .card');
