@@ -761,8 +761,10 @@
     if (e.persisted) window.location.reload();
   });
 
-  // Cacher tous les panels
+  // Cacher tous les panels et le toggle de mode
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const toggleEl = document.querySelector('.mode-toggle');
+  if (toggleEl) toggleEl.style.display = 'none';
 
   // Masquer le bouton démo
   const btnVide = document.getElementById('btn-vide');
