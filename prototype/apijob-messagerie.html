@@ -925,12 +925,12 @@
   async function chargerMissions() {
     const [{ data: mClient }, { data: mPresta }] = await Promise.all([
       db.from('missions')
-        .select('*, annonces(titre, categorie, localisation), prestataire:profiles!prestataire_id(prenom, nom, photo)')
+        .select('*, annonces(titre, categorie, localisation), prestataire:profiles!prestataire_id(prenom, nom)')
         .eq('client_id', currentUser.id)
         .neq('statut', 'annulee')
         .order('created_at', { ascending: false }),
       db.from('missions')
-        .select('*, annonces(titre, categorie, localisation), client:profiles!client_id(prenom, nom, photo)')
+        .select('*, annonces(titre, categorie, localisation), client:profiles!client_id(prenom, nom)')
         .eq('prestataire_id', currentUser.id)
         .neq('statut', 'annulee')
         .order('created_at', { ascending: false })

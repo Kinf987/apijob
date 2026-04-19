@@ -424,7 +424,7 @@
     if (!propositionId) return; // mode démo
 
     const { data: prop, error } = await db.from('propositions')
-      .select('*, prestataire:profiles!prestataire_id(id, prenom, nom, photo, tokens, is_pro, is_verified), annonce:annonces!annonce_id(id, titre, categorie, localisation, created_at)')
+      .select('*, prestataire:profiles!prestataire_id(id, prenom, nom, tokens, is_pro, is_verified), annonce:annonces!annonce_id(id, titre, categorie, localisation, created_at)')
       .eq('id', propositionId)
       .single();
 
