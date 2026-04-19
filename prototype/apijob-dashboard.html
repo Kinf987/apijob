@@ -801,6 +801,21 @@
                 <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.4rem;">Numéro professionnel <span style="color:var(--rouge)">*</span></label>
                 <input id="presta-numro" type="text" placeholder="Numéro de patente ou d'immatriculation CPS" style="width:100%;padding:0.65rem 0.9rem;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:0.88rem;background:white;outline:none;">
               </div>
+              <div style="background:rgba(26,0,8,0.04);border-radius:10px;padding:1rem;margin-bottom:1rem;">
+                <div style="font-size:0.82rem;font-weight:700;margin-bottom:0.75rem;color:var(--night);">📋 Conformité légale (Polynésie française)</div>
+                <label style="display:flex;align-items:flex-start;gap:0.6rem;margin-bottom:0.6rem;cursor:pointer;">
+                  <input type="checkbox" id="check-cps" style="margin-top:2px;flex-shrink:0;accent-color:var(--rouge);">
+                  <span style="font-size:0.8rem;color:var(--muted);line-height:1.4;">Je déclare exercer mon activité dans le respect de la réglementation en vigueur en Polynésie française (déclaration CPS, régime fiscal applicable).</span>
+                </label>
+                <label style="display:flex;align-items:flex-start;gap:0.6rem;margin-bottom:0.6rem;cursor:pointer;">
+                  <input type="checkbox" id="check-auto" style="margin-top:2px;flex-shrink:0;accent-color:var(--rouge);">
+                  <span style="font-size:0.8rem;color:var(--muted);line-height:1.4;">Je suis inscrit·e en tant que travailleur indépendant, auto-entrepreneur ou salarié·e déclaré·e, ou j'effectue des prestations occasionnelles conformes à la loi.</span>
+                </label>
+                <label style="display:flex;align-items:flex-start;gap:0.6rem;cursor:pointer;">
+                  <input type="checkbox" id="check-cgu" style="margin-top:2px;flex-shrink:0;accent-color:var(--rouge);">
+                  <span style="font-size:0.8rem;color:var(--muted);line-height:1.4;">J'accepte les <a href="apijob-cgu.html" target="_blank" style="color:var(--rouge);">conditions générales d'utilisation</a> d'API JOB et je m'engage à ne pas partager mes coordonnées avant acceptation d'une proposition.</span>
+                </label>
+              </div>
               <div id="presta-error" style="display:none;color:var(--rouge);font-size:0.82rem;margin-bottom:0.75rem;"></div>
               <button onclick="validerDevenirPresta()" style="width:100%;padding:0.8rem;background:var(--rouge);color:white;border:none;border-radius:10px;font-family:inherit;font-weight:700;font-size:0.9rem;cursor:pointer;">
                 ✅ Activer mon compte prestataire
@@ -988,9 +1003,13 @@
 
   async function validerDevenirPresta() {
     const numro = document.getElementById('presta-numro')?.value.trim();
+    const cps   = document.getElementById('check-cps')?.checked;
+    const auto  = document.getElementById('check-auto')?.checked;
+    const cgu   = document.getElementById('check-cgu')?.checked;
     const errEl = document.getElementById('presta-error');
 
     if (!numro) { errEl.textContent = 'Merci de saisir votre numéro de patente ou d\'immatriculation CPS.'; errEl.style.display = 'block'; return; }
+    if (!cps || !auto || !cgu) { errEl.textContent = 'Merci de cocher toutes les cases de conformité légale.'; errEl.style.display = 'block'; return; }
     errEl.style.display = 'none';
 
     const btnValid = document.querySelector('#form-devenir-presta button:last-child');
