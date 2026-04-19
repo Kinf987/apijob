@@ -669,9 +669,10 @@
       deleteBtn.onmouseleave = () => deleteBtn.style.background = 'none';
       deleteBtn.onclick = async () => {
         if (!confirm('Supprimer cette annonce ? Cette action est irréversible.')) return;
-        const { error } = await db.from('annonces').delete().eq('id', annonceId).eq('client_id', currentUser.id);
-        if (error) { alert('Erreur lors de la suppression.'); return; }
-        window.location.href = 'apijob-dashboard.html';
+        const { error, count } = await db.from('annonces').delete({ count: 'exact' }).eq('id', annonceId).eq('client_id', currentUser.id);
+        if (error) { alert('Erreur : ' + error.message); return; }
+        if (count === 0) { alert('Suppression bloquée — vérifiez les permissions.'); return; }
+        window.location.replace('apijob-dashboard.html');
       };
       document.querySelector('.main-col').appendChild(deleteBtn);
 
