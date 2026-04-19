@@ -753,7 +753,10 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script>
-  // Cacher tous les panels immédiatement pour éviter le flash prestataire
+  // Masquer toute la page jusqu'à ce que le bon panel soit prêt (anti-flash)
+  document.documentElement.style.visibility = 'hidden';
+
+  // Cacher tous les panels
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
 
   // Masquer le bouton démo
@@ -762,7 +765,12 @@
 
   // Vider les données statiques de démo
   document.querySelectorAll('.data-content').forEach(el => {
-    el.innerHTML = '<div style="padding:1rem;color:var(--muted);font-size:0.85rem;text-align:center;">Chargement...</div>';
+    el.innerHTML = '';
+  });
+
+  // Vider aussi les sections sans .data-content (missions passées client)
+  document.querySelectorAll('#panel-client .section-card-body').forEach(el => {
+    if (!el.querySelector('.data-content')) el.innerHTML = '';
   });
 
   let currentUser = null;
@@ -797,13 +805,15 @@
     // Activer le bon panneau selon le rôle et masquer le toggle
     const role = currentUser.role;
     const modeToggle = document.querySelector('.mode-toggle');
+    if (modeToggle) modeToggle.style.display = 'none';
     if (role === 'client') {
       switchMode('client');
-      if (modeToggle) modeToggle.style.display = 'none';
     } else {
       switchMode('prestataire');
-      if (modeToggle) modeToggle.style.display = 'none';
     }
+
+    // Rendre la page visible maintenant que le bon panel est affiché
+    document.documentElement.style.visibility = '';
 
     // Mettre à jour les jetons (prestataire)
     if (role === 'prestataire') {
@@ -821,17 +831,16 @@
     // Charger les stats
     await chargerStats();
 
-    // Fixer le lien de déconnexion
-    const menuDecoLink = document.querySelector('#avatar-menu a[href="apijob-auth.html"]');
-    if (menuDecoLink) {
-      menuDecoLink.href = '#';
-      menuDecoLink.addEventListener('click', async (e) => {
+    // Fixer tous les liens de déconnexion
+    document.querySelectorAll('a[href="apijob-auth.html"]').forEach(link => {
+      link.href = '#';
+      link.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
         await db.auth.signOut({ scope: 'global' });
         window.location.replace('apijob-auth.html?logout=1');
       });
-    }
+    });
 
     // Ajouter le lien "Devenir prestataire" pour les clients
     if (role === 'client') {
@@ -948,16 +957,40 @@
     if (!list || !data) return;
     if (data.length === 0) {
       list.innerHTML = '<div class="empty-state"><div class="empty-emoji">📭</div><div class="empty-title">Aucune annonce publiée</div><div class="empty-sub">Publiez votre première annonce et recevez des propositions.</div></div>';
+    } else {
+      list.innerHTML = data.map(a => `
+        <div class="annonce-item" onclick="location.href='apijob-annonce-detail.html?id=${a.id}'">
+          <div class="annonce-dot ${a.statut === 'active' ? 'dot-rouge' : a.statut === 'en_cours' ? 'dot-or' : 'dot-vert'}"></div>
+          <div>
+            <div class="annonce-title">${escDash(a.titre)}</div>
+            <div class="annonce-meta">${a.categorie} · ${formatDate(a.created_at)}</div>
+          </div>
+          <div class="annonce-count">${a.nb_propositions || 0} prop.</div>
+        </div>`).join('');
+    }
+
+    // Missions passées client
+    const { data: missions } = await db.from('missions')
+      .select('*, annonces(titre, categorie), profiles!prestataire_id(prenom, nom)')
+      .eq('client_id', currentUser.id)
+      .eq('statut', 'terminee')
+      .order('created_at', { ascending: false })
+      .limit(3);
+
+    const missionsEl = document.querySelectorAll('#panel-client .section-card-body')[2];
+    if (!missionsEl) return;
+    if (!missions || missions.length === 0) {
+      missionsEl.innerHTML = '<div class="empty-state"><div class="empty-emoji">🕐</div><div class="empty-title">Aucune mission terminée</div></div>';
       return;
     }
-    list.innerHTML = data.map(a => `
-      <div class="annonce-item" onclick="location.href='apijob-annonce-detail.html?id=${a.id}'">
-        <div class="annonce-dot ${a.statut === 'active' ? 'dot-rouge' : a.statut === 'en_cours' ? 'dot-or' : 'dot-vert'}"></div>
-        <div>
-          <div class="annonce-title">${escDash(a.titre)}</div>
-          <div class="annonce-meta">${a.categorie} · ${formatDate(a.created_at)}</div>
+    missionsEl.innerHTML = missions.map(m => `
+      <div class="mission-item">
+        <div class="mission-emoji">${catEmoji(m.annonces?.categorie)}</div>
+        <div class="mission-info">
+          <div class="mission-title">${escDash(m.annonces?.titre)} — ${escDash(m.profiles?.prenom)} ${escDash(m.profiles?.nom)}</div>
+          <div class="mission-meta">Terminée ${formatDate(m.created_at)} · ${m.annonces?.categorie}</div>
         </div>
-        <div class="annonce-count">${a.nb_propositions} prop.</div>
+        <div class="mission-badge badge-termine">Terminée ✓</div>
       </div>`).join('');
   }
 
