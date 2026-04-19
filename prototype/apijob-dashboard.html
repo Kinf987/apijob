@@ -957,20 +957,33 @@
         await chargerMissionsPresta();
 
       } else if (currentUser.role === 'client') {
-        // Annonces actives
-        const { count: nbAnnonces } = await db.from('annonces')
-          .select('*', { count: 'exact', head: true })
-          .eq('client_id', currentUser.id)
-          .eq('statut', 'active');
+        // Récupère les IDs d'annonces pour compter les propositions reçues
+        const { data: annoncesIds } = await db.from('annonces')
+          .select('id').eq('client_id', currentUser.id);
+        const ids = annoncesIds?.map(a => a.id) || [];
 
-        const { count: nbMissions } = await db.from('missions')
-          .select('*', { count: 'exact', head: true })
-          .eq('client_id', currentUser.id)
-          .eq('statut', 'terminee');
+        const [
+          { count: nbAnnonces },
+          { count: nbProps },
+          { count: nbMissions },
+          { count: nbAvis }
+        ] = await Promise.all([
+          db.from('annonces').select('*', { count: 'exact', head: true })
+            .eq('client_id', currentUser.id).eq('statut', 'active'),
+          ids.length > 0
+            ? db.from('propositions').select('*', { count: 'exact', head: true }).in('annonce_id', ids)
+            : Promise.resolve({ count: 0 }),
+          db.from('missions').select('*', { count: 'exact', head: true })
+            .eq('client_id', currentUser.id).eq('statut', 'terminee'),
+          db.from('evaluations').select('*', { count: 'exact', head: true })
+            .eq('auteur_id', currentUser.id)
+        ]);
 
         const statsClient = document.querySelectorAll('#panel-client .stat-num');
         if (statsClient[0]) statsClient[0].textContent = nbAnnonces || 0;
-        if (statsClient[1]) statsClient[1].textContent = nbMissions || 0;
+        if (statsClient[1]) statsClient[1].textContent = nbProps || 0;
+        if (statsClient[2]) statsClient[2].textContent = nbMissions || 0;
+        if (statsClient[3]) statsClient[3].textContent = nbAvis || 0;
 
         // Charger les annonces du client
         await chargerAnnoncesClient();
@@ -996,7 +1009,7 @@
       <div class="mission-item" onclick="location.href='apijob-messagerie.html?mission=${m.id}'">
         <div class="mission-emoji">${catEmoji(m.annonces?.categorie)}</div>
         <div class="mission-info">
-          <div class="mission-title">${escDash(m.annonces?.titre)}</div>
+          <div class="mission-title">${m.annonces?.titre || ''}</div>
           <div class="mission-meta">${formatDate(m.created_at)}</div>
         </div>
         <span class="mission-badge badge-cours">En cours</span>
