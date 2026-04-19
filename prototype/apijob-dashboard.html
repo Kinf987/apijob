@@ -905,17 +905,10 @@
         card.id = 'card-devenir-presta';
         card.style.cssText = 'margin-top:1.5rem;background:linear-gradient(135deg,rgba(240,165,0,0.08),rgba(240,165,0,0.03));border:1.5px solid rgba(240,165,0,0.25);';
         card.innerHTML = `
-          <div class="section-card-header">
-            <div class="section-card-title">⭐ Devenez prestataire</div>
+          <div class="section-card-header" onclick="toggleFormulairePresta()" id="header-devenir-presta" style="cursor:pointer;user-select:none;">
+            <div class="section-card-title">⭐ Devenez prestataire <span id="toggle-arrow-presta" style="font-size:0.8rem;opacity:0.6;margin-left:0.3rem;">▼</span></div>
           </div>
-          <div style="padding:0.5rem 1.2rem 1.2rem;">
-            <p style="font-size:0.88rem;color:var(--muted);margin-bottom:1rem;line-height:1.5;">
-              Proposez vos services à Tahiti &amp; Moorea. Complétez les informations ci-dessous pour activer votre compte prestataire.
-            </p>
-            <button onclick="ouvrirFormulairePresta()" id="btn-decouvrir-offre" style="display:inline-block;padding:0.7rem 1.4rem;background:var(--or);color:var(--night);border-radius:10px;font-weight:700;font-size:0.88rem;border:none;cursor:pointer;">
-              Découvrir l'offre →
-            </button>
-            <div id="form-devenir-presta" style="display:none;margin-top:1.2rem;border-top:1px solid rgba(240,165,0,0.2);padding-top:1.2rem;">
+          <div id="form-devenir-presta" style="display:none;padding:0 1.2rem 1.2rem;border-top:1px solid rgba(240,165,0,0.2);padding-top:1.2rem;">
               <div style="margin-bottom:1rem;">
                 <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.6rem;">Vos domaines d'activité <span style="color:var(--rouge)">*</span></label>
                 <div id="presta-cats" style="display:flex;flex-wrap:wrap;gap:0.4rem;">
@@ -937,6 +930,13 @@
                   ${['Moorea','Huahine','Raiatea','Tahaa','Bora-Bora','Maupiti','Rangiroa','Tikehau','Fakarava','Nuku Hiva','Hiva Oa','Rurutu','Tubuai','Toute la Polynésie'].map(z =>
                     `<button type="button" data-zone="${z}" onclick="toggleZone(this)" style="padding:0.35rem 0.75rem;border:1.5px solid var(--border);border-radius:20px;background:white;font-size:0.8rem;cursor:pointer;transition:all 0.15s;">${z}</button>`
                   ).join('')}
+                </div>
+              </div>
+              <div style="margin-bottom:1rem;">
+                <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.4rem;">Numéro de téléphone <span style="color:var(--rouge)">*</span></label>
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                  <span style="padding:0.65rem 0.75rem;background:rgba(26,0,8,0.05);border:1.5px solid var(--border);border-radius:10px;font-size:0.88rem;font-weight:600;color:var(--night);white-space:nowrap;">+689</span>
+                  <input id="presta-tel" type="tel" placeholder="87 XX XX XX" maxlength="11" style="flex:1;padding:0.65rem 0.9rem;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:0.88rem;background:white;outline:none;">
                 </div>
               </div>
               <div style="margin-bottom:1rem;">
@@ -962,8 +962,7 @@
               <button onclick="validerDevenirPresta()" style="width:100%;padding:0.8rem;background:var(--rouge);color:white;border:none;border-radius:10px;font-family:inherit;font-weight:700;font-size:0.9rem;cursor:pointer;">
                 ✅ Activer mon compte prestataire
               </button>
-            </div>
-          </div>`;
+            </div>`;
         clientPanel.appendChild(card);
       }
     }
@@ -1134,18 +1133,20 @@
     btn.style.borderColor = on ? 'var(--border)' : 'var(--or)';
   }
 
-  function ouvrirFormulairePresta() {
+  function toggleFormulairePresta() {
     const form = document.getElementById('form-devenir-presta');
-    const btn = document.getElementById('btn-decouvrir-offre');
+    const arrow = document.getElementById('toggle-arrow-presta');
     if (!form) return;
-    form.style.display = 'block';
-    if (btn) btn.style.display = 'none';
-    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const isOpen = form.style.display !== 'none';
+    form.style.display = isOpen ? 'none' : 'block';
+    if (arrow) arrow.textContent = isOpen ? '▼' : '▲';
+    if (!isOpen) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   async function validerDevenirPresta() {
     const cats  = [...document.querySelectorAll('#presta-cats [data-on="1"]')].map(b => b.dataset.cat);
     const zones = [...document.querySelectorAll('#presta-zones [data-on="1"]'), ...document.querySelectorAll('[data-zone][data-on="1"]')].map(b => b.dataset.zone);
+    const tel   = document.getElementById('presta-tel')?.value.trim().replace(/\s/g, '');
     const bio   = document.getElementById('presta-bio')?.value.trim();
     const cps   = document.getElementById('check-cps')?.checked;
     const auto  = document.getElementById('check-auto')?.checked;
@@ -1154,6 +1155,7 @@
 
     if (cats.length === 0) { errEl.textContent = 'Sélectionnez au moins un domaine d\'activité.'; errEl.style.display = 'block'; return; }
     if (zones.length === 0){ errEl.textContent = 'Sélectionnez au moins une zone d\'intervention.'; errEl.style.display = 'block'; return; }
+    if (!tel || tel.length < 6) { errEl.textContent = 'Merci de saisir un numéro de téléphone valide.'; errEl.style.display = 'block'; return; }
     if (!bio)              { errEl.textContent = 'Merci de rédiger une courte présentation.'; errEl.style.display = 'block'; return; }
     if (!cps || !auto || !cgu) { errEl.textContent = 'Merci de cocher toutes les cases de conformité légale.'; errEl.style.display = 'block'; return; }
     const zone = [...new Set(zones)].join(', ');
