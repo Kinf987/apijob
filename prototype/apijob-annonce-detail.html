@@ -642,7 +642,7 @@
         </div>
         <div class="section-label">Description</div>
         <p class="annonce-desc">${a.description || ''}</p>
-        ${a.budget ? `<div class="budget-block" style="flex-direction:column;align-items:flex-start;gap:0.2rem;"><span class="budget-label">Budget indicatif</span><div style="display:flex;align-items:baseline;gap:0.4rem;"><span class="budget-amount">${parseInt(a.budget).toLocaleString('fr-FR')}</span><span class="budget-unit">XPF</span></div></div>` : ''}`;
+        ${a.budget ? `<div class="budget-block" style="flex-direction:column;align-items:flex-start;gap:0.2rem;"><span class="budget-label">Budget indicatif</span><div style="display:flex;align-items:baseline;gap:0.4rem;"><span class="budget-amount" style="font-family:'Inter','DM Sans',system-ui,sans-serif;font-weight:700;letter-spacing:-0.01em;">${parseInt(a.budget).toLocaleString('fr-FR')}</span><span class="budget-unit">XPF</span></div></div>` : ''}`;
     }
 
     // --- Texte du modal ---
