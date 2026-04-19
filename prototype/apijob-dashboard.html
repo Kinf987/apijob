@@ -933,11 +933,9 @@
                 </div>
               </div>
               <div style="margin-bottom:1rem;">
-                <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.4rem;">Numéro de téléphone <span style="color:var(--rouge)">*</span></label>
-                <div style="display:flex;align-items:center;gap:0.5rem;">
-                  <span style="padding:0.65rem 0.75rem;background:rgba(26,0,8,0.05);border:1.5px solid var(--border);border-radius:10px;font-size:0.88rem;font-weight:600;color:var(--night);white-space:nowrap;">+689</span>
-                  <input id="presta-tel" type="tel" placeholder="87 XX XX XX" maxlength="11" style="flex:1;padding:0.65rem 0.9rem;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:0.88rem;background:white;outline:none;">
-                </div>
+                <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.4rem;">Numéro professionnel <span style="color:var(--rouge)">*</span></label>
+                <input id="presta-numro" type="text" placeholder="Numéro de patente ou d'immatriculation CPS" style="width:100%;padding:0.65rem 0.9rem;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:0.88rem;background:white;outline:none;">
+                <div style="font-size:0.75rem;color:var(--muted);margin-top:0.35rem;">Numéro délivré par la Direction des Impôts (patente) ou la CPS.</div>
               </div>
               <div style="margin-bottom:1rem;">
                 <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.4rem;">Courte présentation <span style="color:var(--rouge)">*</span></label>
@@ -1146,7 +1144,7 @@
   async function validerDevenirPresta() {
     const cats  = [...document.querySelectorAll('#presta-cats [data-on="1"]')].map(b => b.dataset.cat);
     const zones = [...document.querySelectorAll('#presta-zones [data-on="1"]'), ...document.querySelectorAll('[data-zone][data-on="1"]')].map(b => b.dataset.zone);
-    const tel   = document.getElementById('presta-tel')?.value.trim().replace(/\s/g, '');
+    const numro = document.getElementById('presta-numro')?.value.trim();
     const bio   = document.getElementById('presta-bio')?.value.trim();
     const cps   = document.getElementById('check-cps')?.checked;
     const auto  = document.getElementById('check-auto')?.checked;
@@ -1155,7 +1153,7 @@
 
     if (cats.length === 0) { errEl.textContent = 'Sélectionnez au moins un domaine d\'activité.'; errEl.style.display = 'block'; return; }
     if (zones.length === 0){ errEl.textContent = 'Sélectionnez au moins une zone d\'intervention.'; errEl.style.display = 'block'; return; }
-    if (!tel || tel.length < 6) { errEl.textContent = 'Merci de saisir un numéro de téléphone valide.'; errEl.style.display = 'block'; return; }
+    if (!numro) { errEl.textContent = 'Merci de saisir votre numéro de patente ou d\'immatriculation CPS.'; errEl.style.display = 'block'; return; }
     if (!bio)              { errEl.textContent = 'Merci de rédiger une courte présentation.'; errEl.style.display = 'block'; return; }
     if (!cps || !auto || !cgu) { errEl.textContent = 'Merci de cocher toutes les cases de conformité légale.'; errEl.style.display = 'block'; return; }
     const zone = [...new Set(zones)].join(', ');
