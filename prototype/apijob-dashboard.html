@@ -6,6 +6,7 @@
 <title>API JOB — Tableau de bord</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
+  html { visibility: hidden; }
   :root {
     --rouge: #CC0A2B;
     --rouge-dark: #A00822;
@@ -753,9 +754,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script>
-  // Masquer toute la page jusqu'à ce que le bon panel soit prêt (anti-flash)
-  document.documentElement.style.visibility = 'hidden';
-
   // Désactiver le bfcache (évite que le dashboard s'affiche après déconnexion)
   window.addEventListener('pageshow', async (e) => {
     if (e.persisted) {
@@ -787,6 +785,7 @@
 
   // ── INIT ──
   (async () => {
+    try {
     currentUser = await requireAuth();
     if (!currentUser) return;
 
@@ -823,7 +822,7 @@
     }
 
     // Rendre la page visible maintenant que le bon panel est affiché
-    document.documentElement.style.visibility = '';
+    document.documentElement.style.visibility = 'visible';
 
     // Mettre à jour les jetons (prestataire)
     if (role === 'prestataire') {
@@ -922,7 +921,13 @@
         clientPanel.appendChild(card);
       }
     }
-  })();
+    } catch(e) { console.error('Dashboard init error:', e); }
+  })().finally(() => {
+    document.documentElement.style.visibility = 'visible';
+  });
+
+  window.addEventListener('error', () => { document.documentElement.style.visibility = 'visible'; });
+  window.addEventListener('unhandledrejection', () => { document.documentElement.style.visibility = 'visible'; });
 
   // ── STATS ──
   async function chargerStats() {
