@@ -623,7 +623,7 @@
         </div>
         <div style="font-size:0.78rem;color:var(--muted);">Voir le profil →</div>`;
       const link = publishCard.closest('a');
-      if (link) link.href = `apijob-profil-client.html?id=${client.id}`;
+      if (link) link.href = `apijob-profil-client.html?id=${client.id}&annonce=${annonceId}`;
     }
 
     // --- Carte annonce ---
