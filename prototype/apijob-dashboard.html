@@ -426,7 +426,7 @@
 <div class="dashboard">
 
   <!-- ── VUE PRESTATAIRE ── -->
-  <div class="panel active" id="panel-prestataire">
+  <div class="panel" id="panel-prestataire">
 
     <div class="dash-header">
       <div>
@@ -756,6 +756,11 @@
   // Masquer toute la page jusqu'à ce que le bon panel soit prêt (anti-flash)
   document.documentElement.style.visibility = 'hidden';
 
+  // Désactiver le bfcache (évite que le dashboard s'affiche après déconnexion)
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) window.location.reload();
+  });
+
   // Cacher tous les panels
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
 
@@ -838,6 +843,8 @@
         e.preventDefault();
         e.stopPropagation();
         await db.auth.signOut({ scope: 'global' });
+        localStorage.clear();
+        sessionStorage.clear();
         window.location.replace('apijob-auth.html?logout=1');
       });
     });
