@@ -402,8 +402,15 @@
   </div>
 
   <div class="nav-right">
-    <button id="btn-vide" onclick="toggleEtatVide()" style="font-size:0.75rem;color:var(--muted);background:none;border:1px solid var(--border);padding:0.3rem 0.7rem;border-radius:50px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--rouge)';this.style.color='var(--rouge)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">🆕 Vue nouveau compte</button>
-    <a href="apijob-notifications.html" class="nav-notif" style="text-decoration:none;">🔔<div class="notif-dot"></div></a>
+    <div class="nav-notif" onclick="toggleNotifPanel()" id="notif-bell">🔔<div class="notif-dot" id="notif-dot" style="display:none;"></div>
+      <div id="notif-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:white;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);width:320px;max-height:400px;overflow-y:auto;z-index:200;" onclick="event.stopPropagation()">
+        <div style="padding:0.9rem 1rem 0.6rem;font-weight:700;font-size:0.88rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          Notifications
+          <a href="apijob-notifications.html" style="font-size:0.78rem;font-weight:400;color:var(--rouge);text-decoration:none;">Tout voir →</a>
+        </div>
+        <div id="notif-list" style="padding:0.4rem 0;"></div>
+      </div>
+    </div>
     <div class="nav-avatar" onclick="toggleMenu()" style="position:relative;">TM
       <div id="avatar-menu" style="display:none; position:absolute; top:calc(100% + 8px); right:0;
         background:white; border:1px solid var(--border); border-radius:12px;
@@ -431,8 +438,8 @@
 
     <div class="dash-header">
       <div>
-        <div class="dash-greeting">Ia ora na, <span>Teiva</span> 🌺</div>
-        <div class="dash-date">Samedi 22 mars 2025 · Tahiti</div>
+        <div class="dash-greeting">Ia ora na, <span></span> 🌺</div>
+        <div class="dash-date"></div>
       </div>
       <a href="apijob-annonces.html" class="btn-primary">🔍 Voir les annonces</a>
     </div>
@@ -441,22 +448,22 @@
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="1.15em" height="1.15em" style="vertical-align:-0.18em;display:inline-block"><circle cx="16" cy="16" r="15.5" fill="#F0A500"/><circle cx="16" cy="16" r="13" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><g transform="translate(16,16)"><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(72)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(144)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(216)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(288)"/><circle cx="0" cy="0" r="2" fill="#F0A500"/><circle cx="0" cy="0" r="0.9" fill="#C8860A"/></g></svg></div>
-        <div class="stat-num or">5</div>
+        <div class="stat-num or">—</div>
         <div class="stat-label">Jetons disponibles</div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">✅</div>
-        <div class="stat-num vert">12</div>
+        <div class="stat-num vert">—</div>
         <div class="stat-label">Missions terminées</div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">⭐</div>
-        <div class="stat-num rouge">4.8</div>
+        <div class="stat-num rouge">—</div>
         <div class="stat-label">Note moyenne</div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">📤</div>
-        <div class="stat-num">8</div>
+        <div class="stat-num">—</div>
         <div class="stat-label">Propositions envoyées</div>
       </div>
     </div>
@@ -465,7 +472,7 @@
     <div class="jetons-card">
       <div class="jetons-left">
         <div class="jetons-label">Mes jetons</div>
-        <div class="jetons-num"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="1.15em" height="1.15em" style="vertical-align:-0.18em;display:inline-block"><circle cx="16" cy="16" r="15.5" fill="#F0A500"/><circle cx="16" cy="16" r="13" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><g transform="translate(16,16)"><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(72)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(144)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(216)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(288)"/><circle cx="0" cy="0" r="2" fill="#F0A500"/><circle cx="0" cy="0" r="0.9" fill="#C8860A"/></g></svg> 5</div>
+        <div class="jetons-num"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="1.15em" height="1.15em" style="vertical-align:-0.18em;display:inline-block"><circle cx="16" cy="16" r="15.5" fill="#F0A500"/><circle cx="16" cy="16" r="13" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><g transform="translate(16,16)"><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(72)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(144)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(216)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(288)"/><circle cx="0" cy="0" r="2" fill="#F0A500"/><circle cx="0" cy="0" r="0.9" fill="#C8860A"/></g></svg> —</div>
         <div class="jetons-sub">Utilisables sur toutes les annonces</div>
       </div>
       <div class="jetons-right">
@@ -484,40 +491,7 @@
           <a href="apijob-missions.html" class="section-card-link">Tout voir</a>
         </div>
         <div class="section-card-body">
-          <div class="data-content">
-          <div class="mission-item">
-            <div class="mission-emoji">🌿</div>
-            <div class="mission-info">
-              <div class="mission-title">Tonte jardin — Punaauia</div>
-              <div class="mission-meta">Marie-Hélène T. · Samedi 22 mars</div>
-            </div>
-            <button class="btn-terminer" onclick="window.location='apijob-evaluation.html'">✅ Mission terminée</button>
-          </div>
-          <div class="mission-item">
-            <div class="mission-emoji">🏠</div>
-            <div class="mission-info">
-              <div class="mission-title">Ménage appartement T3</div>
-              <div class="mission-meta">Poerava M. · Vendredi 21 mars</div>
-            </div>
-            <div class="mission-badge badge-attente">En attente</div>
-          </div>
-          <div class="mission-item">
-            <div class="mission-emoji">🔧</div>
-            <div class="mission-info">
-              <div class="mission-title">Réparation fuite évier</div>
-              <div class="mission-meta">Reva T. · Jeudi 20 mars</div>
-            </div>
-            <div class="mission-badge badge-termine">Terminée</div>
-          </div>
-          <div class="mission-item">
-            <div class="mission-emoji">🐾</div>
-            <div class="mission-info">
-              <div class="mission-title">Garde chien 5 jours</div>
-              <div class="mission-meta">Hina F. · Lundi 18 mars</div>
-            </div>
-            <div class="mission-badge badge-termine">Terminée</div>
-          </div>
-          </div>
+          <div class="data-content"></div>
           <div class="empty-content" style="display:none;">
             <div class="empty-state">
               <div class="empty-emoji">📋</div>
@@ -530,20 +504,20 @@
 
       <!-- PROFIL -->
       <div class="profil-card">
-        <div class="profil-avatar">TM</div>
-        <div class="profil-name">Teiva Manutahi</div>
+        <div class="profil-avatar">?</div>
+        <div class="profil-name"></div>
         <div class="profil-badge">✅ Profil vérifié</div>
         <div>
-          <span class="profil-stars">★★★★★</span>
-          <span class="profil-reviews">4.8 · 12 avis</span>
+          <span class="profil-stars">☆☆☆☆☆</span>
+          <span class="profil-reviews">Pas encore d'avis</span>
         </div>
         <div class="profil-completude">
           <div class="profil-completude-label">
             <span>Complétude du profil</span>
-            <span style="color:var(--rouge); font-weight:600;">75%</span>
+            <span style="color:var(--rouge); font-weight:600;">0%</span>
           </div>
           <div class="progress-bar">
-            <div class="progress-fill" style="width:75%"></div>
+            <div class="progress-fill" style="width:0%"></div>
           </div>
         </div>
         <div class="profil-actions">
@@ -561,24 +535,7 @@
         <a href="apijob-evaluation.html" class="section-card-link">Tout voir</a>
       </div>
       <div class="section-card-body">
-        <div class="data-content">
-        <div class="avis-item">
-          <div class="avis-top">
-            <div class="avis-author">Marie-Hélène T.</div>
-            <div class="avis-stars">★★★★★</div>
-          </div>
-          <div class="avis-text">Très sérieux, travail impeccable. Mon jardin n'a jamais été aussi beau ! Je recommande sans hésiter.</div>
-          <div class="avis-date">Il y a 2 jours</div>
-        </div>
-        <div class="avis-item">
-          <div class="avis-top">
-            <div class="avis-author">Poerava M.</div>
-            <div class="avis-stars">★★★★★</div>
-          </div>
-          <div class="avis-text">Ponctuel et efficace. Appartement nickel en moins de 3h. Je rappelle dès que j'ai besoin.</div>
-          <div class="avis-date">Il y a 5 jours</div>
-        </div>
-        </div>
+        <div class="data-content"></div>
         <div class="empty-content" style="display:none;">
           <div class="empty-state">
             <div class="empty-emoji">⭐</div>
@@ -596,8 +553,8 @@
 
     <div class="dash-header">
       <div>
-        <div class="dash-greeting">Bonjour, <span>Teiva</span> 👋</div>
-        <div class="dash-date">Samedi 22 mars 2025 · Tahiti</div>
+        <div class="dash-greeting">Bonjour, <span></span> 👋</div>
+        <div class="dash-date"></div>
       </div>
       <a href="apijob-annonce.html" class="btn-primary">+ Publier une annonce</a>
     </div>
@@ -606,22 +563,22 @@
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon">📢</div>
-        <div class="stat-num rouge">3</div>
+        <div class="stat-num rouge">—</div>
         <div class="stat-label">Annonces actives</div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">📩</div>
-        <div class="stat-num or">7</div>
+        <div class="stat-num or">—</div>
         <div class="stat-label">Propositions reçues</div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">✅</div>
-        <div class="stat-num vert">8</div>
+        <div class="stat-num vert">—</div>
         <div class="stat-label">Missions terminées</div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">⭐</div>
-        <div class="stat-num">5</div>
+        <div class="stat-num">—</div>
         <div class="stat-label">Avis laissés</div>
       </div>
     </div>
@@ -635,32 +592,7 @@
           <a href="apijob-annonces.html" class="section-card-link">Tout voir</a>
         </div>
         <div class="section-card-body">
-          <div class="data-content">
-          <div class="annonce-item">
-            <div class="annonce-dot dot-rouge"></div>
-            <div>
-              <div class="annonce-title">Tonte jardin urgent — Punaauia</div>
-              <div class="annonce-meta">Publiée aujourd'hui · Jardinage</div>
-            </div>
-            <div class="annonce-count">3 prop.</div>
-          </div>
-          <div class="annonce-item">
-            <div class="annonce-dot dot-or"></div>
-            <div>
-              <div class="annonce-title">Baby-sitter mercredi après-midi</div>
-              <div class="annonce-meta">Publiée hier · Baby-sitting</div>
-            </div>
-            <div class="annonce-count">2 prop.</div>
-          </div>
-          <div class="annonce-item">
-            <div class="annonce-dot dot-vert"></div>
-            <div>
-              <div class="annonce-title">Garde chien 10 jours</div>
-              <div class="annonce-meta">Publiée il y a 3 jours · Animaux</div>
-            </div>
-            <div class="annonce-count">2 prop.</div>
-          </div>
-          </div>
+          <div class="data-content"></div>
           <div class="empty-content" style="display:none;">
             <div class="empty-state">
               <div class="empty-emoji">📢</div>
@@ -678,38 +610,7 @@
           <a href="apijob-messagerie.html" class="section-card-link">Tout voir</a>
         </div>
         <div class="section-card-body">
-          <div class="data-content">
-          <a href="apijob-proposition.html" style="text-decoration:none;color:inherit;">
-          <div class="mission-item" style="cursor:pointer;">
-            <div class="mission-emoji">🌿</div>
-            <div class="mission-info">
-              <div class="mission-title">Teiva M. — Jardinier</div>
-              <div class="mission-meta">★★★★★ 4.9 · Pour : Tonte jardin</div>
-            </div>
-            <div class="mission-badge badge-nouveau">Nouveau</div>
-          </div>
-          </a>
-          <a href="apijob-proposition.html" style="text-decoration:none;color:inherit;">
-          <div class="mission-item" style="cursor:pointer;">
-            <div class="mission-emoji">👶</div>
-            <div class="mission-info">
-              <div class="mission-title">Hina R. — Baby-sitter</div>
-              <div class="mission-meta">★★★★★ 5.0 · Pour : Baby-sitter</div>
-            </div>
-            <div class="mission-badge badge-nouveau">Nouveau</div>
-          </div>
-          </a>
-          <a href="apijob-proposition.html" style="text-decoration:none;color:inherit;">
-          <div class="mission-item" style="cursor:pointer;">
-            <div class="mission-emoji">🌿</div>
-            <div class="mission-info">
-              <div class="mission-title">Reva T. — Jardinier</div>
-              <div class="mission-meta">★★★★☆ 4.6 · Pour : Tonte jardin</div>
-            </div>
-            <div class="mission-badge" style="background:var(--vert-light);color:var(--vert);">Voir →</div>
-          </div>
-          </a>
-          </div>
+          <div class="data-content"></div>
           <div class="empty-content" style="display:none;">
             <div class="empty-state">
               <div class="empty-emoji">📩</div>
@@ -728,24 +629,7 @@
         <div class="section-card-title">🕐 Missions passées</div>
         <a href="apijob-missions.html" class="section-card-link">Tout voir</a>
       </div>
-      <div class="section-card-body">
-        <div class="mission-item">
-          <div class="mission-emoji">🔧</div>
-          <div class="mission-info">
-            <div class="mission-title">Réparation fuite — Māui T.</div>
-            <div class="mission-meta">Terminée le 20 mars · Plomberie</div>
-          </div>
-          <div class="mission-badge badge-termine">Terminée ✓</div>
-        </div>
-        <div class="mission-item">
-          <div class="mission-emoji">🏠</div>
-          <div class="mission-info">
-            <div class="mission-title">Ménage appartement — Hina R.</div>
-            <div class="mission-meta">Terminée le 15 mars · Ménage</div>
-          </div>
-          <div class="mission-badge badge-termine">Terminée ✓</div>
-        </div>
-      </div>
+      <div class="section-card-body"></div>
     </div>
 
   </div>
@@ -834,8 +718,9 @@
       }
     }
 
-    // Charger les stats
+    // Charger les stats et notifications
     await chargerStats();
+    chargerNotifications();
 
     // Fixer tous les liens de déconnexion
     document.querySelectorAll('a[href="apijob-auth.html"]').forEach(link => {
@@ -1146,23 +1031,44 @@
     menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
   }
 
+  function toggleNotifPanel() {
+    const panel = document.getElementById('notif-panel');
+    const isOpen = panel.style.display !== 'none';
+    panel.style.display = isOpen ? 'none' : 'block';
+  }
+
+  async function chargerNotifications() {
+    if (!currentUser) return;
+    const { data: notifs } = await db.from('notifications')
+      .select('*').eq('user_id', currentUser.id)
+      .order('created_at', { ascending: false }).limit(20);
+    if (!notifs || notifs.length === 0) return;
+    const nonLues = notifs.filter(n => !n.lu);
+    const dot = document.getElementById('notif-dot');
+    if (dot && nonLues.length > 0) dot.style.display = 'block';
+    const list = document.getElementById('notif-list');
+    if (!list) return;
+    list.innerHTML = notifs.map(n => `
+      <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);${!n.lu ? 'background:rgba(204,10,43,0.03);' : ''}">
+        <div style="font-size:0.82rem;font-weight:${n.lu ? '400' : '600'};color:var(--night);margin-bottom:0.2rem;">${n.titre || ''}</div>
+        <div style="font-size:0.78rem;color:var(--muted);line-height:1.4;">${n.message || ''}</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:0.25rem;opacity:0.7;">${new Date(n.created_at).toLocaleDateString('fr-FR', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
+      </div>`).join('');
+  }
+
   document.addEventListener('click', function(e) {
     const avatar = document.querySelector('.nav-avatar');
     if (avatar && !avatar.contains(e.target)) {
       const menu = document.getElementById('avatar-menu');
       if (menu) menu.style.display = 'none';
     }
+    const bell = document.getElementById('notif-bell');
+    if (bell && !bell.contains(e.target)) {
+      const panel = document.getElementById('notif-panel');
+      if (panel) panel.style.display = 'none';
+    }
   });
 
-  // Toggle état vide / état rempli (outil de démo, peut être retiré en prod)
-  let modeVide = false;
-  function toggleEtatVide() {
-    modeVide = !modeVide;
-    document.querySelectorAll('.data-content').forEach(el => el.style.display = modeVide ? 'none' : '');
-    document.querySelectorAll('.empty-content').forEach(el => el.style.display = modeVide ? 'block' : 'none');
-    const btn = document.getElementById('btn-vide');
-    if (btn) btn.textContent = modeVide ? '👤 Voir compte actif' : '🆕 Vue nouveau compte';
-  }
 </script>
 
 </body>

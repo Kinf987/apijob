@@ -165,7 +165,7 @@
   <div class="page-header">
     <div class="page-title">
       🔔 Notifications
-      <span class="notif-count" id="notif-count">4</span>
+      <span class="notif-count" id="notif-count" style="display:none;">0</span>
     </div>
   </div>
 
@@ -177,119 +177,6 @@
     <button class="filtre-btn" onclick="filtrer(this,'avis')">⭐ Avis</button>
   </div>
 
-  <!-- AUJOURD'HUI -->
-  <div class="notif-groupe">
-    <div class="notif-groupe-label">Aujourd'hui</div>
-
-    <div class="notif-card unread" data-type="mission">
-      <div class="notif-icon-wrap icon-mission">✅</div>
-      <div class="notif-content">
-        <div class="notif-title">Proposition acceptée — Marie-Hélène T.</div>
-        <div class="notif-desc">Votre proposition pour "Tonte et débroussaillage — Punaauia" a été acceptée. 1 jeton débité.</div>
-        <div class="notif-time">Il y a 32 minutes</div>
-        <div class="notif-actions">
-          <button class="btn-notif btn-notif-primary" onclick="window.location='apijob-messagerie.html'">Voir la conversation</button>
-        </div>
-      </div>
-      <div class="unread-dot"></div>
-    </div>
-
-    <div class="notif-card unread" data-type="message">
-      <div class="notif-icon-wrap icon-message">💬</div>
-      <div class="notif-content">
-        <div class="notif-title">Nouveau message — Marie-Hélène T.</div>
-        <div class="notif-desc">"Super, je confirme pour samedi matin ! À quelle heure vous arrivez ?"</div>
-        <div class="notif-time">Il y a 1 heure</div>
-        <div class="notif-actions">
-          <button class="btn-notif btn-notif-primary" onclick="window.location='apijob-messagerie.html'">Répondre</button>
-        </div>
-      </div>
-      <div class="unread-dot"></div>
-    </div>
-
-    <div class="notif-card unread" data-type="avis">
-      <div class="notif-icon-wrap icon-avis">⭐</div>
-      <div class="notif-content">
-        <div class="notif-title">Nouvel avis reçu — Poerava R.</div>
-        <div class="notif-desc">Poerava R. vous a laissé un avis 5 étoiles : "Travail impeccable, très sérieux..."</div>
-        <div class="notif-time">Il y a 3 heures</div>
-        <div class="notif-actions">
-          <button class="btn-notif btn-notif-primary" onclick="window.location='apijob-evaluation.html'">Voir et répondre</button>
-        </div>
-      </div>
-      <div class="unread-dot"></div>
-    </div>
-
-    <div class="notif-card unread" data-type="jeton">
-      <div class="notif-icon-wrap icon-jeton">🪙</div>
-      <div class="notif-content">
-        <div class="notif-title">Jeton restitué — Hina F.</div>
-        <div class="notif-desc">Le client Hina F. a annulé la mission après acceptation. Votre jeton a été restitué automatiquement.</div>
-        <div class="notif-time">Il y a 5 heures</div>
-      </div>
-      <div class="unread-dot"></div>
-    </div>
-
-  </div>
-
-  <!-- HIER -->
-  <div class="notif-groupe">
-    <div class="notif-groupe-label">Hier</div>
-
-    <div class="notif-card" data-type="mission">
-      <div class="notif-icon-wrap icon-mission">📋</div>
-      <div class="notif-content">
-        <div class="notif-title">Nouvelle annonce dans votre zone — Jardinage</div>
-        <div class="notif-desc">"Débroussaillage terrain 600m² — Paea" · Correspond à vos services.</div>
-        <div class="notif-time">Hier à 16:45</div>
-        <div class="notif-actions">
-          <button class="btn-notif btn-notif-primary" onclick="window.location='apijob-annonces.html'">Voir l'annonce</button>
-          <button class="btn-notif btn-notif-secondary">Ignorer</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="notif-card" data-type="mission">
-      <div class="notif-icon-wrap icon-mission">📋</div>
-      <div class="notif-content">
-        <div class="notif-title">Nouvelle annonce dans votre zone — Jardinage</div>
-        <div class="notif-desc">"Taille de haies urgente — Punaauia" · Correspond à vos services.</div>
-        <div class="notif-time">Hier à 09:12</div>
-        <div class="notif-actions">
-          <button class="btn-notif btn-notif-primary" onclick="window.location='apijob-annonces.html'">Voir l'annonce</button>
-          <button class="btn-notif btn-notif-secondary">Ignorer</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="notif-card" data-type="jeton">
-      <div class="notif-icon-wrap icon-jeton">🪙</div>
-      <div class="notif-content">
-        <div class="notif-title">Achat de jetons confirmé</div>
-        <div class="notif-desc">Votre achat de 9 jetons (Standard — 2 000 XPF) a été confirmé. Solde : 14 jetons.</div>
-        <div class="notif-time">Hier à 08:30</div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- CETTE SEMAINE -->
-  <div class="notif-groupe">
-    <div class="notif-groupe-label">Cette semaine</div>
-
-    <div class="notif-card" data-type="systeme">
-      <div class="notif-icon-wrap icon-systeme">🌺</div>
-      <div class="notif-content">
-        <div class="notif-title">Bienvenue sur API JOB !</div>
-        <div class="notif-desc">Votre compte a été créé avec succès. Complétez votre profil pour recevoir plus de missions.</div>
-        <div class="notif-time">Il y a 4 jours</div>
-        <div class="notif-actions">
-          <button class="btn-notif btn-notif-primary" onclick="window.location='apijob-profil-edit.html'">Compléter mon profil</button>
-        </div>
-      </div>
-    </div>
-
-  </div>
 
   <div class="empty-state" id="empty-state">
     <div class="empty-icon">🔔</div>

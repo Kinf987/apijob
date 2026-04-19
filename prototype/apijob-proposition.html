@@ -254,32 +254,29 @@
   <div class="card">
     <div class="card-title">Le prestataire</div>
     <div class="presta-hero">
-      <div class="presta-avatar">TM</div>
+      <div class="presta-avatar">?</div>
       <div class="presta-info">
-        <div class="presta-name">Teiva Manutahi</div>
-        <div class="presta-badges">
-          <span class="badge badge-verifie">✅ Vérifié</span>
-          <span class="badge badge-pro">⭐ Pro</span>
-        </div>
+        <div class="presta-name"></div>
+        <div class="presta-badges"></div>
         <div class="presta-stars">
-          <span>★★★★★</span>
-          <strong>4.9</strong>
-          <span>· 18 avis</span>
+          <span>☆☆☆☆☆</span>
+          <strong>—</strong>
+          <span></span>
         </div>
       </div>
       <a href="apijob-profil-public.html" class="btn-voir-profil">Voir le profil →</a>
     </div>
     <div class="presta-stats">
       <div class="presta-stat">
-        <div class="presta-stat-num">18</div>
+        <div class="presta-stat-num">—</div>
         <div class="presta-stat-label">Missions réalisées</div>
       </div>
       <div class="presta-stat">
-        <div class="presta-stat-num">100%</div>
+        <div class="presta-stat-num">—</div>
         <div class="presta-stat-label">Taux de réponse</div>
       </div>
       <div class="presta-stat">
-        <div class="presta-stat-num">&lt; 1h</div>
+        <div class="presta-stat-num">—</div>
         <div class="presta-stat-label">Temps de réponse</div>
       </div>
     </div>
@@ -291,24 +288,18 @@
     <div class="prop-grid">
       <div class="prop-item">
         <div class="prop-label">Disponibilité</div>
-        <div class="prop-val">Dès aujourd'hui</div>
+        <div class="prop-val" id="prop-dispo">—</div>
       </div>
       <div class="prop-item">
         <div class="prop-label">Tarif estimé</div>
-        <div class="prop-val or">3 500 XPF</div>
-      </div>
-      <div class="prop-item">
-        <div class="prop-label">Expérience</div>
-        <div class="prop-val">Plus de 5 ans</div>
+        <div class="prop-val or" id="prop-tarif">—</div>
       </div>
       <div class="prop-item">
         <div class="prop-label">Reçue</div>
-        <div class="prop-val">Il y a 2h</div>
+        <div class="prop-val" id="prop-date">—</div>
       </div>
     </div>
-    <div class="prop-accroche">
-      "Bonjour, je suis disponible dès ce matin. J'ai tout le matériel nécessaire pour la tonte et le débroussaillage. Très expérimenté dans ce type de travaux."
-    </div>
+    <div class="prop-accroche" id="prop-message"></div>
   </div>
 
   <!-- ACTIONS -->
@@ -329,7 +320,7 @@
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">Refuser cette proposition ?</div>
-    <p class="modal-sub">Teiva M. sera informé que sa proposition n'a pas été retenue. Aucun jeton ne sera débité.</p>
+    <p class="modal-sub">Le prestataire sera informé que sa proposition n'a pas été retenue. Aucun jeton ne sera débité.</p>
     <div class="modal-actions">
       <button class="btn-modal-cancel" onclick="document.getElementById('modal-refus').classList.remove('open')">Annuler</button>
       <button class="btn-modal-confirm" onclick="location.href='apijob-dashboard.html'">Refuser</button>
@@ -342,7 +333,7 @@
   <div class="success-modal">
     <div class="success-icon">🤝</div>
     <div class="success-title">Mission acceptée !</div>
-    <p class="success-sub">Vous êtes maintenant en contact avec Teiva M. Vous pouvez échanger directement via la messagerie pour organiser la mission.</p>
+    <p class="success-sub">Vous êtes maintenant en contact avec ce prestataire. Vous pouvez échanger directement via la messagerie pour organiser la mission.</p>
     <button class="btn-success" onclick="location.href='apijob-messagerie.html'">Aller à la messagerie →</button>
   </div>
 </div>
