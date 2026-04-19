@@ -422,7 +422,7 @@
           color:var(--night); text-decoration:none; transition:background 0.15s;"
           onmouseover="this.style.background='#f7f3f0'" onmouseout="this.style.background=''">⚙️ Paramètres</a>
         <div style="height:1px; background:var(--border);"></div>
-        <a href="apijob-auth.html" style="display:block; padding:0.75rem 1rem; font-size:0.85rem;
+        <a href="#" onclick="seDeconnecter(event)" style="display:block; padding:0.75rem 1rem; font-size:0.85rem;
           color:var(--rouge); text-decoration:none; font-weight:600; transition:background 0.15s;"
           onmouseover="this.style.background='#f7f3f0'" onmouseout="this.style.background=''">🚪 Se déconnecter</a>
       </div>
@@ -638,6 +638,13 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script>
+  // Déconnexion — appelée directement depuis le lien HTML
+  async function seDeconnecter(e) {
+    if (e) e.preventDefault();
+    await db.auth.signOut({ scope: 'global' });
+    window.location.replace('apijob-auth.html?logout=1');
+  }
+
   // Désactiver le bfcache (évite que le dashboard s'affiche après déconnexion)
   window.addEventListener('pageshow', async (e) => {
     if (e.persisted) {
@@ -722,18 +729,6 @@
     await chargerStats();
     chargerNotifications();
 
-    // Fixer tous les liens de déconnexion
-    document.querySelectorAll('a[href="apijob-auth.html"]').forEach(link => {
-      link.href = '#';
-      link.addEventListener('click', async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        await db.auth.signOut({ scope: 'global' });
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.replace('apijob-auth.html?logout=1');
-      });
-    });
 
     // Mettre à jour la profil card prestataire avec de vraies données
     if (role === 'prestataire') {
