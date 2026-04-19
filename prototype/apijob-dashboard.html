@@ -1017,7 +1017,7 @@
       list.innerHTML = '<div class="empty-state"><div class="empty-emoji">📭</div><div class="empty-title">Aucune annonce publiée</div><div class="empty-sub">Publiez votre première annonce et recevez des propositions.</div></div>';
     } else {
       list.innerHTML = data.map(a => `
-        <div class="annonce-item" onclick="location.href='apijob-annonce-detail.html?id=${a.id}'">
+        <div class="annonce-item" onclick="location.href='apijob-annonce-detail.html?annonce=${a.id}'">
           <div class="annonce-dot ${a.statut === 'active' ? 'dot-rouge' : a.statut === 'en_cours' ? 'dot-or' : 'dot-vert'}"></div>
           <div>
             <div class="annonce-title">${escDash(a.titre)}</div>

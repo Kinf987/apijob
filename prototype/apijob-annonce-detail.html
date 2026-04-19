@@ -449,6 +449,9 @@
 
 <script src="supabase-config.js"></script>
 <script>
+  // Masquer la page jusqu'au chargement des données réelles
+  document.documentElement.style.visibility = 'hidden';
+
   let currentUser, annonceId, annonce;
 
   function contientCoordonnees(texte) {
@@ -551,25 +554,33 @@
     currentUser = await requireAuth();
     if (!currentUser) return;
 
-    // Badge jetons
-    const tokens = currentUser.tokens || 0;
+    // Badge jetons — visible uniquement pour les prestataires
     const tokenBadge = document.querySelector('.jetons-badge');
     if (tokenBadge) {
-      const textNodes = [...tokenBadge.childNodes].filter(n => n.nodeType === 3);
-      if (textNodes.length > 0) textNodes[textNodes.length - 1].textContent = ` ${tokens} jeton${tokens !== 1 ? 's' : ''}`;
+      if (currentUser.role === 'prestataire') {
+        const tokens = currentUser.tokens || 0;
+        const textNodes = [...tokenBadge.childNodes].filter(n => n.nodeType === 3);
+        if (textNodes.length > 0) textNodes[textNodes.length - 1].textContent = ` ${tokens} jeton${tokens !== 1 ? 's' : ''}`;
+        const remaining = tokens - 1;
+        const jetonInfoSpan = document.querySelector('.jeton-info span');
+        if (jetonInfoSpan) {
+          jetonInfoSpan.innerHTML = `1 jeton sera débité si le client accepte votre proposition. Il vous restera <strong>${remaining} jeton${remaining !== 1 ? 's' : ''}</strong>.`;
+        }
+      } else {
+        tokenBadge.style.display = 'none';
+      }
     }
 
-    // Jeton-info texte
-    const remaining = tokens - 1;
-    const jetonInfoSpan = document.querySelector('.jeton-info span');
-    if (jetonInfoSpan) {
-      jetonInfoSpan.innerHTML = `1 jeton sera débité si le client accepte votre proposition. Il vous restera <strong>${remaining} jeton${remaining !== 1 ? 's' : ''}</strong>.`;
+    // Formulaire proposition — masquer pour les clients (sauf affichage des props reçues)
+    if (currentUser.role === 'client') {
+      const formCard = document.querySelector('.form-card');
+      if (formCard) formCard.style.display = 'none';
     }
 
     // Lire l'ID depuis l'URL
     const params = new URLSearchParams(window.location.search);
     annonceId = params.get('annonce');
-    if (!annonceId) return;
+    if (!annonceId) { document.documentElement.style.visibility = ''; return; }
 
     // Charger annonce + profil client
     const { data: a, error } = await db.from('annonces')
@@ -577,7 +588,8 @@
       .eq('id', annonceId)
       .single();
 
-    if (error || !a) return;
+    if (error || !a) { document.documentElement.style.visibility = ''; return; }
+    document.documentElement.style.visibility = '';
     annonce = a;
 
     // Comptages en parallèle + vérif doublon
