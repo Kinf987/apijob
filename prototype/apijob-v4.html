@@ -806,6 +806,23 @@
     if (!isOpen) el.classList.add('open');
   }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+  (async () => {
+    const session = await getSession();
+    if (!session) return;
+    const user = await getCurrentUser();
+    if (!user) return;
+    const initiales = (((user.prenom||'')[0]||'') + ((user.nom||'')[0]||'')).toUpperCase() || '?';
+    const btn = document.querySelector('.nav-cta');
+    if (!btn) return;
+    btn.href = 'apijob-dashboard.html';
+    btn.textContent = '';
+    btn.style.cssText = 'width:36px;height:36px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;font-family:"Syne",sans-serif;font-weight:800;font-size:0.85rem;background:var(--rouge);color:white;text-decoration:none;cursor:pointer;';
+    btn.textContent = initiales;
+  })();
+</script>
 
 </body>
 </html>
