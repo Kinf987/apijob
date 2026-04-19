@@ -6,6 +6,7 @@
 <title>API JOB — Paramètres</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
+  html { visibility: hidden; }
   :root {
     --rouge: #CC0A2B;
     --rouge-dark: #A00822;
@@ -438,6 +439,7 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script>
   let currentUser;
@@ -563,7 +565,9 @@
     document.getElementById('btn-suppression').onclick = supprimerCompte;
   }
 
-  init();
+  init().finally(() => { document.documentElement.style.visibility = 'visible'; });
+  window.addEventListener('error', () => { document.documentElement.style.visibility = 'visible'; });
+  window.addEventListener('unhandledrejection', () => { document.documentElement.style.visibility = 'visible'; });
 </script>
 
 </body>
