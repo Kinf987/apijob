@@ -462,7 +462,7 @@
     return false;
   }
 
-  document.getElementById('accroche').addEventListener('input', function() {
+  document.getElementById('accroche')?.addEventListener('input', function() {
     document.getElementById('charCount').textContent = this.value.length + ' / 200';
   });
 
@@ -712,6 +712,10 @@
   }
 
   init().finally(() => { document.documentElement.style.visibility = ''; });
+
+  // Filet de sécurité : si une erreur JS non catchée bloque tout, on affiche quand même la page
+  window.addEventListener('error', () => { document.documentElement.style.visibility = ''; });
+  window.addEventListener('unhandledrejection', () => { document.documentElement.style.visibility = ''; });
 </script>
 
 </body>
