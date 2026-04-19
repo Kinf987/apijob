@@ -302,39 +302,52 @@
   async function init() {
     const params = new URLSearchParams(window.location.search);
     const profileId = params.get('id');
-    if (!profileId) return; // mode démo
+    if (!profileId) return;
 
-    const { data: profile, error } = await db.from('profiles').select('*').eq('id', profileId).single();
+    const { data: profile, error } = await db.from('profiles').select('id, prenom, nom, localisation, created_at').eq('id', profileId).single();
     if (error || !profile) return;
 
-    // Charger annonces + évaluations données en parallèle
-    const [{ data: annonces }, { data: evals }, { count: nbMissions }] = await Promise.all([
-      db.from('annonces').select('id, titre, categorie, localisation, statut, created_at')
-        .eq('client_id', profileId).order('created_at', { ascending: false }).limit(5),
-      db.from('evaluations')
-        .select('note_globale, commentaire, created_at, cible:profiles!cible_id(prenom, nom), mission:missions!mission_id(annonce:annonces!annonce_id(titre, categorie))')
-        .eq('auteur_id', profileId).order('created_at', { ascending: false }).limit(5),
-      db.from('missions').select('id', { count: 'exact', head: true })
-        .eq('client_id', profileId).eq('statut', 'terminee')
-    ]);
-
-    const initiales = ((profile.prenom?.[0] || '') + (profile.nom?.[0] || '')).toUpperCase() || '?';
-    const nomComplet = `${profile.prenom || ''} ${profile.nom || ''}`.trim();
-
-    // Lien retour avec l'annonce si dispo
+    // Lien retour
     const annonceParam = params.get('annonce');
     const navBack = document.querySelector('.nav-back');
     if (navBack && annonceParam) navBack.href = `apijob-annonce-detail.html?annonce=${annonceParam}`;
 
+    // Étape 1 : annonces du client
+    const [{ data: annonces }, { count: nbAnnonces }] = await Promise.all([
+      db.from('annonces').select('id, titre, categorie, localisation, statut, created_at')
+        .eq('client_id', profileId).order('created_at', { ascending: false }).limit(5),
+      db.from('annonces').select('id', { count: 'exact', head: true }).eq('client_id', profileId)
+    ]);
+    const annonceIds = annonces?.map(a => a.id) || [];
+
+    // Étape 2 : reste en parallèle
+    const [
+      { data: evals },
+      { count: nbMissions },
+      { count: nbMissionsTotal },
+      { count: nbPropsRecues },
+      { count: nbPropsAcceptees }
+    ] = await Promise.all([
+      db.from('evaluations')
+        .select('note_globale, commentaire, created_at, cible:profiles!cible_id(prenom, nom), mission:missions!mission_id(annonce:annonces!annonce_id(titre, categorie))')
+        .eq('auteur_id', profileId).order('created_at', { ascending: false }).limit(5),
+      db.from('missions').select('id', { count: 'exact', head: true }).eq('client_id', profileId).eq('statut', 'terminee'),
+      db.from('missions').select('id', { count: 'exact', head: true }).eq('client_id', profileId),
+      annonceIds.length > 0
+        ? db.from('propositions').select('id', { count: 'exact', head: true }).in('annonce_id', annonceIds)
+        : Promise.resolve({ count: 0 }),
+      annonceIds.length > 0
+        ? db.from('propositions').select('id', { count: 'exact', head: true }).eq('statut', 'acceptee').in('annonce_id', annonceIds)
+        : Promise.resolve({ count: 0 })
+    ]);
+
     // Hero
+    const initiales = (((profile.prenom||'')[0]||'') + ((profile.nom||'')[0]||'')).toUpperCase() || '?';
+    const nomComplet = `${profile.prenom || ''} ${profile.nom || ''}`.trim();
     const avatarEl = document.querySelector('.client-avatar');
-    if (avatarEl) {
-      if (profile.photo) { avatarEl.style.backgroundImage = `url(${profile.photo})`; avatarEl.style.backgroundSize = 'cover'; avatarEl.textContent = ''; }
-      else avatarEl.textContent = initiales;
-    }
+    if (avatarEl) avatarEl.textContent = initiales;
     const nameEl = document.querySelector('.client-name');
     if (nameEl) nameEl.textContent = nomComplet;
-
     const sinceEl = document.querySelector('.client-since');
     if (sinceEl) {
       const mois = new Date(profile.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
@@ -343,66 +356,75 @@
 
     // Stats
     const statNums = document.querySelectorAll('.stat-num');
-    const totalAnnonces = annonces ? annonces.length : 0;
-    if (statNums[0]) statNums[0].textContent = totalAnnonces;
+    if (statNums[0]) statNums[0].textContent = nbAnnonces || 0;
     if (statNums[1]) statNums[1].textContent = nbMissions || 0;
-
     const avgNote = evals && evals.length > 0
-      ? evals.reduce((s, e) => s + (e.note_globale || 0), 0) / evals.length : null;
+      ? (evals.reduce((s, e) => s + (e.note_globale || 0), 0) / evals.length) : null;
     if (statNums[2]) statNums[2].textContent = avgNote !== null ? avgNote.toFixed(1) + '★' : '—';
 
+    // Fiabilité — trouver la carte par son titre
+    const allCards = [...document.querySelectorAll('.card')];
+    const fiabiliteCard = allCards.find(c => c.querySelector('.card-title')?.textContent?.includes('Fiabilité'));
+    if (fiabiliteCard) {
+      const bars = fiabiliteCard.querySelectorAll('.comportement-bar');
+      const vals = fiabiliteCard.querySelectorAll('.comportement-val');
+      // Taux d'acceptation
+      const tauxAccept = nbPropsRecues > 0 ? Math.round((nbPropsAcceptees / nbPropsRecues) * 100) : 0;
+      if (bars[0]) bars[0].style.width = tauxAccept + '%';
+      if (vals[0]) { vals[0].textContent = tauxAccept + '%'; vals[0].style.color = tauxAccept >= 60 ? 'var(--vert)' : 'var(--or)'; }
+      // Missions menées à terme
+      const tauxMissions = nbMissionsTotal > 0 ? Math.round((nbMissions / nbMissionsTotal) * 100) : 0;
+      if (bars[1]) bars[1].style.width = tauxMissions + '%';
+      if (vals[1]) { vals[1].textContent = tauxMissions + '%'; vals[1].style.color = tauxMissions >= 80 ? 'var(--vert)' : 'var(--or)'; }
+      // Réactivité — pas de données disponibles, on masque
+      const comportItems = fiabiliteCard.querySelectorAll('.comportement-item');
+      if (comportItems[2]) comportItems[2].style.display = 'none';
+    }
+
     // Annonces récentes
-    const annonceList = document.querySelector('.card:nth-of-type(3) .annonce-item')?.closest('.card');
-    if (annonceList && annonces) {
-      const items = annonceList.querySelectorAll('.annonce-item');
-      // Remplacer le contenu de la liste
-      const container = items[0]?.parentNode;
-      if (container) {
-        container.innerHTML = annonces.length === 0
+    const annoncesCard = allCards.find(c => c.querySelector('.card-title')?.textContent?.includes('Annonces'));
+    if (annoncesCard) {
+      annoncesCard.innerHTML = `<div class="card-title">Annonces récentes</div>` + (
+        !annonces || annonces.length === 0
           ? '<p style="color:var(--muted);font-size:0.85rem;padding:0.5rem 0;">Aucune annonce publiée.</p>'
           : annonces.map(a => {
-            const cls = a.statut === 'terminee' ? 'statut-termine' : 'statut-ouvert';
-            const label = a.statut === 'terminee' ? 'Terminée' : 'Ouverte';
-            return `
-              <div class="annonce-item">
+              const cls = a.statut === 'terminee' ? 'statut-termine' : 'statut-ouvert';
+              const label = a.statut === 'terminee' ? 'Terminée' : 'Ouverte';
+              return `<div class="annonce-item">
                 <div class="annonce-emoji">${catEmoji(a.categorie)}</div>
                 <div class="annonce-info">
                   <div class="annonce-title">${a.titre || ''}</div>
                   <div class="annonce-meta">📍 ${a.localisation || 'Tahiti'} · ${formatDate(a.created_at)}</div>
                 </div>
                 <span class="annonce-statut ${cls}">${label}</span>
-              </div>
-            `;
-          }).join('');
-      }
+              </div>`;
+            }).join('')
+      );
     }
 
-    // Avis donnés
-    const avisCard = document.querySelector('.card:last-of-type');
-    if (avisCard && evals) {
-      const avisContainer = avisCard.querySelector('.avis-item')?.parentNode;
-      if (avisContainer) {
-        avisContainer.innerHTML = evals.length === 0
+    // Avis laissés
+    const avisCard = allCards.find(c => c.querySelector('.card-title')?.textContent?.includes('Avis'));
+    if (avisCard) {
+      avisCard.innerHTML = `<div class="card-title">Avis laissés par ce client</div>` + (
+        !evals || evals.length === 0
           ? '<p style="color:var(--muted);font-size:0.85rem;padding:0.5rem 0;">Aucun avis laissé pour l\'instant.</p>'
           : evals.map(ev => {
-            const cible = ev.cible || {};
-            const nomCible = `${cible.prenom || ''} ${cible.nom ? cible.nom[0] + '.' : ''}`.trim();
-            const cat = ev.mission?.annonce?.categorie || '';
-            const serviceStr = nomCible ? `Pour ${nomCible}${cat ? ' — ' + cat : ''}` : '';
-            const filled = Math.round(ev.note_globale || 0);
-            const stars = '★'.repeat(filled) + '☆'.repeat(5 - filled);
-            return `
-              <div class="avis-item">
+              const cible = ev.cible || {};
+              const nomCible = `${cible.prenom || ''} ${cible.nom ? cible.nom[0] + '.' : ''}`.trim();
+              const cat = ev.mission?.annonce?.categorie || '';
+              const serviceStr = nomCible ? `Pour ${nomCible}${cat ? ' — ' + cat : ''}` : '';
+              const filled = Math.round(ev.note_globale || 0);
+              const stars = '★'.repeat(filled) + '☆'.repeat(5 - filled);
+              return `<div class="avis-item">
                 <div class="avis-top">
                   <div class="avis-presta">${serviceStr}</div>
                   <span class="avis-stars">${stars}</span>
                   <span class="avis-date">${formatDate(ev.created_at)}</span>
                 </div>
                 ${ev.commentaire ? `<div class="avis-text">"${ev.commentaire}"</div>` : ''}
-              </div>
-            `;
-          }).join('');
-      }
+              </div>`;
+            }).join('')
+      );
     }
   }
 
