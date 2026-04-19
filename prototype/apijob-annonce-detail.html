@@ -580,7 +580,7 @@
     // Lire l'ID depuis l'URL
     const params = new URLSearchParams(window.location.search);
     annonceId = params.get('annonce');
-    if (!annonceId) { document.documentElement.style.visibility = ''; return; }
+    if (!annonceId) return;
 
     // Charger annonce + profil client
     const { data: a, error } = await db.from('annonces')
@@ -588,8 +588,7 @@
       .eq('id', annonceId)
       .single();
 
-    if (error || !a) { document.documentElement.style.visibility = ''; return; }
-    document.documentElement.style.visibility = '';
+    if (error || !a) return;
     annonce = a;
 
     // Comptages en parallèle + vérif doublon
@@ -721,7 +720,7 @@
     }
   }
 
-  init();
+  init().finally(() => { document.documentElement.style.visibility = ''; });
 </script>
 
 </body>
