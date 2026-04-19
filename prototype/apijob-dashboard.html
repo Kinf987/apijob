@@ -896,12 +896,13 @@
       }
     }
 
-    // Ajouter le lien "Devenir prestataire" pour les clients
+    // Ajouter le formulaire "Devenir prestataire" pour les clients
     if (role === 'client') {
       const clientPanel = document.getElementById('panel-client');
       if (clientPanel) {
         const card = document.createElement('div');
         card.className = 'section-card';
+        card.id = 'card-devenir-presta';
         card.style.cssText = 'margin-top:1.5rem;background:linear-gradient(135deg,rgba(240,165,0,0.08),rgba(240,165,0,0.03));border:1.5px solid rgba(240,165,0,0.25);';
         card.innerHTML = `
           <div class="section-card-header">
@@ -909,11 +910,44 @@
           </div>
           <div style="padding:0.5rem 1.2rem 1.2rem;">
             <p style="font-size:0.88rem;color:var(--muted);margin-bottom:1rem;line-height:1.5;">
-              Proposez vos services à Tahiti &amp; Moorea et développez votre activité avec API JOB Pro.
+              Proposez vos services à Tahiti &amp; Moorea. Complétez les informations ci-dessous pour activer votre compte prestataire.
             </p>
-            <a href="apijob-devenir-pro.html" style="display:inline-block;padding:0.7rem 1.4rem;background:var(--or);color:var(--night);border-radius:10px;font-weight:700;font-size:0.88rem;text-decoration:none;">
-              Découvrir l'offre Pro →
-            </a>
+            <button onclick="ouvrirFormulairePresta()" id="btn-decouvrir-offre" style="display:inline-block;padding:0.7rem 1.4rem;background:var(--or);color:var(--night);border-radius:10px;font-weight:700;font-size:0.88rem;border:none;cursor:pointer;">
+              Découvrir l'offre →
+            </button>
+            <div id="form-devenir-presta" style="display:none;margin-top:1.2rem;border-top:1px solid rgba(240,165,0,0.2);padding-top:1.2rem;">
+              <div style="margin-bottom:1rem;">
+                <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.4rem;">Votre métier / domaine d'activité <span style="color:var(--rouge)">*</span></label>
+                <input id="presta-metier" type="text" placeholder="Ex : Jardinage, Plomberie, Ménage..." style="width:100%;padding:0.65rem 0.9rem;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:0.88rem;background:white;outline:none;">
+              </div>
+              <div style="margin-bottom:1rem;">
+                <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.4rem;">Zone d'intervention <span style="color:var(--rouge)">*</span></label>
+                <input id="presta-zone" type="text" placeholder="Ex : Papeete, Punaauia, Moorea..." style="width:100%;padding:0.65rem 0.9rem;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:0.88rem;background:white;outline:none;">
+              </div>
+              <div style="margin-bottom:1rem;">
+                <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.4rem;">Courte présentation <span style="color:var(--rouge)">*</span></label>
+                <textarea id="presta-bio" placeholder="Décrivez votre expérience et ce que vous proposez..." style="width:100%;padding:0.65rem 0.9rem;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:0.88rem;background:white;outline:none;resize:vertical;min-height:80px;"></textarea>
+              </div>
+              <div style="background:rgba(26,0,8,0.04);border-radius:10px;padding:1rem;margin-bottom:1rem;">
+                <div style="font-size:0.82rem;font-weight:700;margin-bottom:0.75rem;color:var(--night);">📋 Conformité légale (Polynésie française)</div>
+                <label style="display:flex;align-items:flex-start;gap:0.6rem;margin-bottom:0.6rem;cursor:pointer;">
+                  <input type="checkbox" id="check-cps" style="margin-top:2px;flex-shrink:0;accent-color:var(--rouge);">
+                  <span style="font-size:0.8rem;color:var(--muted);line-height:1.4;">Je déclare exercer mon activité dans le respect de la réglementation en vigueur en Polynésie française (déclaration CPS, régime fiscal applicable).</span>
+                </label>
+                <label style="display:flex;align-items:flex-start;gap:0.6rem;margin-bottom:0.6rem;cursor:pointer;">
+                  <input type="checkbox" id="check-auto" style="margin-top:2px;flex-shrink:0;accent-color:var(--rouge);">
+                  <span style="font-size:0.8rem;color:var(--muted);line-height:1.4;">Je suis inscrit·e en tant que travailleur indépendant, auto-entrepreneur ou salarié·e déclaré·e, ou j'effectue des prestations occasionnelles conformes à la loi.</span>
+                </label>
+                <label style="display:flex;align-items:flex-start;gap:0.6rem;cursor:pointer;">
+                  <input type="checkbox" id="check-cgu" style="margin-top:2px;flex-shrink:0;accent-color:var(--rouge);">
+                  <span style="font-size:0.8rem;color:var(--muted);line-height:1.4;">J'accepte les <a href="apijob-cgu.html" target="_blank" style="color:var(--rouge);">conditions générales d'utilisation</a> d'API JOB et je m'engage à ne pas partager mes coordonnées avant acceptation d'une proposition.</span>
+                </label>
+              </div>
+              <div id="presta-error" style="display:none;color:var(--rouge);font-size:0.82rem;margin-bottom:0.75rem;"></div>
+              <button onclick="validerDevenirPresta()" style="width:100%;padding:0.8rem;background:var(--rouge);color:white;border:none;border-radius:10px;font-family:inherit;font-weight:700;font-size:0.9rem;cursor:pointer;">
+                ✅ Activer mon compte prestataire
+              </button>
+            </div>
           </div>`;
         clientPanel.appendChild(card);
       }
@@ -1068,6 +1102,48 @@
   }
 
   function escDash(str) { return String(str||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function ouvrirFormulairePresta() {
+    const form = document.getElementById('form-devenir-presta');
+    const btn = document.getElementById('btn-decouvrir-offre');
+    if (!form) return;
+    form.style.display = 'block';
+    if (btn) btn.style.display = 'none';
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function validerDevenirPresta() {
+    const metier = document.getElementById('presta-metier')?.value.trim();
+    const zone   = document.getElementById('presta-zone')?.value.trim();
+    const bio    = document.getElementById('presta-bio')?.value.trim();
+    const cps    = document.getElementById('check-cps')?.checked;
+    const auto   = document.getElementById('check-auto')?.checked;
+    const cgu    = document.getElementById('check-cgu')?.checked;
+    const errEl  = document.getElementById('presta-error');
+
+    if (!metier || !zone || !bio) { errEl.textContent = 'Merci de remplir tous les champs.'; errEl.style.display = 'block'; return; }
+    if (!cps || !auto || !cgu)   { errEl.textContent = 'Merci de cocher toutes les cases de conformité légale.'; errEl.style.display = 'block'; return; }
+    errEl.style.display = 'none';
+
+    const btnValid = document.querySelector('#form-devenir-presta button:last-child');
+    if (btnValid) { btnValid.disabled = true; btnValid.textContent = 'Activation en cours...'; }
+
+    const { error } = await db.from('profiles').update({
+      role: 'prestataire',
+      bio: bio,
+      localisation: zone,
+      tokens: 3
+    }).eq('id', currentUser.id);
+
+    if (error) {
+      if (btnValid) { btnValid.disabled = false; btnValid.textContent = '✅ Activer mon compte prestataire'; }
+      errEl.textContent = 'Erreur lors de l\'activation : ' + error.message;
+      errEl.style.display = 'block';
+      return;
+    }
+
+    window.location.reload();
+  }
 
   async function supprimerAnnonce(id) {
     if (!confirm('Supprimer cette annonce ? Cette action est irréversible.')) return;
