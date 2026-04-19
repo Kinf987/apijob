@@ -756,6 +756,15 @@
   // Cacher tous les panels immédiatement pour éviter le flash prestataire
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
 
+  // Masquer le bouton démo
+  const btnVide = document.getElementById('btn-vide');
+  if (btnVide) btnVide.style.display = 'none';
+
+  // Vider les données statiques de démo
+  document.querySelectorAll('.data-content').forEach(el => {
+    el.innerHTML = '<div style="padding:1rem;color:var(--muted);font-size:0.85rem;text-align:center;">Chargement...</div>';
+  });
+
   let currentUser = null;
 
   // ── INIT ──
@@ -819,8 +828,8 @@
       menuDecoLink.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        await db.auth.signOut();
-        window.location.href = 'apijob-auth.html';
+        await db.auth.signOut({ scope: 'global' });
+        window.location.replace('apijob-auth.html?logout=1');
       });
     }
 

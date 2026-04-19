@@ -419,6 +419,7 @@
 <script>
   // ── Si déjà connecté, rediriger vers le dashboard ──
   (async () => {
+    if (new URLSearchParams(window.location.search).get('logout')) return;
     const s = await getSession();
     if (s) window.location.href = 'apijob-dashboard.html';
   })();
