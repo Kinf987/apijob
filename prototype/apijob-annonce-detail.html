@@ -713,7 +713,14 @@
 
   init().finally(() => { document.documentElement.style.visibility = 'visible'; });
 
-  // Filet de sécurité : si une erreur JS non catchée bloque tout, on affiche quand même la page
+  // bfcache : quand l'utilisateur revient en arrière, relancer init()
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) {
+      document.documentElement.style.visibility = 'hidden';
+      init().finally(() => { document.documentElement.style.visibility = 'visible'; });
+    }
+  });
+
   window.addEventListener('error', () => { document.documentElement.style.visibility = 'visible'; });
   window.addEventListener('unhandledrejection', () => { document.documentElement.style.visibility = 'visible'; });
 </script>
