@@ -6,6 +6,7 @@
 <title>API JOB — Détail de l'annonce</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
+  html { visibility: hidden; }
   :root {
     --rouge: #CC0A2B;
     --rouge-dark: #A00822;
@@ -329,7 +330,7 @@
 <nav>
   <div class="nav-logo">API<span>JOB</span></div>
   <div style="display:flex;align-items:center;gap:1rem;">
-    <a href="apijob-annonces.html" class="nav-back">← Retour aux annonces</a>
+    <a href="apijob-annonces.html" class="nav-back" id="nav-back">← Retour aux annonces</a>
     <div class="jetons-badge">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="1.15em" height="1.15em" style="vertical-align:-0.18em;display:inline-block"><circle cx="16" cy="16" r="15.5" fill="#F0A500"/><circle cx="16" cy="16" r="13" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><g transform="translate(16,16)"><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(72)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(144)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(216)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(288)"/><circle cx="0" cy="0" r="2" fill="#F0A500"/><circle cx="0" cy="0" r="0.9" fill="#C8860A"/></g></svg>
       6 jetons
@@ -450,9 +451,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script>
-  // Masquer la page jusqu'au chargement des données réelles
-  document.documentElement.style.visibility = 'hidden';
-
   let currentUser, annonceId, annonce;
 
   function contientCoordonnees(texte) {
@@ -554,6 +552,13 @@
   async function init() {
     currentUser = await requireAuth();
     if (!currentUser) return;
+
+    // Lien retour selon le rôle
+    const navBack = document.getElementById('nav-back');
+    if (navBack && currentUser.role === 'client') {
+      navBack.href = 'apijob-dashboard.html';
+      navBack.textContent = '← Mon dashboard';
+    }
 
     // Badge jetons — visible uniquement pour les prestataires
     const tokenBadge = document.querySelector('.jetons-badge');
