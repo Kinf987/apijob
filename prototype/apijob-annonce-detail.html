@@ -586,7 +586,7 @@
 
     // Lire l'ID depuis l'URL
     const params = new URLSearchParams(window.location.search);
-    annonceId = params.get('annonce');
+    annonceId = params.get('id') || params.get('annonce');
     if (!annonceId) return;
 
     // Charger annonce + profil client
