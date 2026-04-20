@@ -943,6 +943,49 @@
         </div>`).join('');
     }
 
+    // Propositions reçues (toutes les annonces du client)
+    const { data: toutesAnnonces } = await db.from('annonces')
+      .select('id').eq('client_id', currentUser.id);
+    const tousIds = toutesAnnonces?.map(a => a.id) || [];
+
+    const propsEl = document.querySelectorAll('#panel-client .section-card-body')[1];
+    if (propsEl) {
+      const dataContent = propsEl.querySelector('.data-content');
+      const emptyContent = propsEl.querySelector('.empty-content');
+      if (tousIds.length === 0) {
+        if (dataContent) dataContent.innerHTML = '';
+        if (emptyContent) emptyContent.style.display = 'block';
+      } else {
+        const { data: props } = await db.from('propositions')
+          .select('*, annonces(titre, categorie), profiles!prestataire_id(prenom, nom)')
+          .in('annonce_id', tousIds)
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        if (!props || props.length === 0) {
+          if (dataContent) dataContent.innerHTML = '';
+          if (emptyContent) emptyContent.style.display = 'block';
+        } else {
+          if (emptyContent) emptyContent.style.display = 'none';
+          if (dataContent) dataContent.innerHTML = props.map(p => {
+            const presta = p.profiles || {};
+            const nom = `${presta.prenom || ''} ${presta.nom || ''}`.trim() || 'Prestataire';
+            const badgeCls = p.statut === 'acceptee' ? 'badge-cours' : p.statut === 'refusee' ? 'badge-termine' : 'badge-attente';
+            const badgeLabel = p.statut === 'acceptee' ? 'Acceptée' : p.statut === 'refusee' ? 'Refusée' : 'En attente';
+            return `
+              <div class="mission-item" onclick="location.href='apijob-annonce-detail.html?id=${p.annonce_id}'">
+                <div class="mission-emoji">${catEmoji(p.annonces?.categorie)}</div>
+                <div class="mission-info">
+                  <div class="mission-title">${escDash(nom)}</div>
+                  <div class="mission-meta">${escDash(p.annonces?.titre)} · ${formatDate(p.created_at)}</div>
+                </div>
+                <span class="mission-badge ${badgeCls}">${badgeLabel}</span>
+              </div>`;
+          }).join('');
+        }
+      }
+    }
+
     // Missions passées client
     const { data: missions } = await db.from('missions')
       .select('*, annonces(titre, categorie), profiles!prestataire_id(prenom, nom)')
