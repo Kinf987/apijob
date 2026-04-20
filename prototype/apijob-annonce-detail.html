@@ -668,8 +668,13 @@
       const formCard = document.querySelector('.form-card');
       if (formCard) formCard.style.display = 'none';
 
+      // Nettoyer les éléments dynamiques existants (évite les doublons au retour arrière)
+      document.getElementById('props-card')?.remove();
+      document.getElementById('delete-btn')?.remove();
+
       // Bouton supprimer
       const deleteBtn = document.createElement('button');
+      deleteBtn.id = 'delete-btn';
       deleteBtn.textContent = '🗑️ Supprimer cette annonce';
       deleteBtn.style.cssText = 'display:block;width:100%;margin-top:1rem;padding:0.75rem;background:none;border:1.5px solid rgba(204,10,43,0.3);border-radius:12px;color:var(--rouge);font-family:inherit;font-size:0.88rem;cursor:pointer;';
       deleteBtn.onmouseenter = () => deleteBtn.style.background = 'rgba(204,10,43,0.05)';
