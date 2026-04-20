@@ -11,7 +11,7 @@
     --rouge-dark: #A00822;
     --or: #F0A500;
     --night: #1A0008;
-    --blanc: #FFFFFF;
+    --blanc: #FFFFFF
     --gris: #F7F3F0;
     --gris2: #EDE8E3;
     --muted: rgba(26,0,8,0.45);
@@ -337,70 +337,70 @@
     </div>
     <div class="section-body">
       <div class="services-grid">
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> 🌿 Jardinage
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> 🏠 Ménage
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> 🔧 Plomberie
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> ⚡ Électricité
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> 🛠️ Bricolage
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> 📦 Déménagement
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> 👶 Baby-sitting
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> 🏡 Gardiennage
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> 🐾 Animaux
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> 🎨 Peinture
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> 🚗 Transports
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> 🔩 Mécanique
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> 🤝 Aide à la personne
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> 💻 Informatique
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> 🎓 Cours particuliers
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> 📋 Démarches & administratif
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> 📚 Enseignement
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> 🛋️ Aménagement & déco
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> 🎉 Événementiel
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> 💼 Bureautique & administratif
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> 🧘 Bien-être
         </label>
-        <label class="service-check" onclick="toggleService(this)">
+        <label class="service-check" onclick="toggleService(this, event)">
           <input type="checkbox"> ✨ Autre
         </label>
       </div>
@@ -513,7 +513,8 @@
     document.getElementById('char-count').textContent = val;
   }
 
-  function toggleService(label) {
+  function toggleService(label, e) {
+    if (e) e.preventDefault();
     label.classList.toggle('checked');
     updateCompletude();
   }
