@@ -310,6 +310,21 @@
     } else {
       document.getElementById('view-presta').classList.add('active');
       document.getElementById('view-client').classList.remove('active');
+
+      // Créditer 3 jetons de bienvenue si le prestataire n'en a pas encore
+      const { data: tokenData } = await db.from('profiles')
+        .select('tokens')
+        .eq('id', sess.user.id)
+        .single();
+
+      if (tokenData && (tokenData.tokens === 0 || tokenData.tokens === null)) {
+        await db.from('profiles').update({ tokens: 3 }).eq('id', sess.user.id);
+        await db.from('transactions_jetons').insert({
+          user_id: sess.user.id,
+          type: 'bienvenue',
+          quantite: 3
+        });
+      }
     }
 
     // Nettoie l'email en attente

@@ -502,7 +502,13 @@
       return;
     }
 
-    if (!currentUser) { window.location.href = 'apijob-auth.html'; return; }
+    // Vérifier les jetons (rechargement depuis la base pour éviter les données périmées)
+    const { data: freshProfile } = await db.from('profiles').select('tokens, is_pro').eq('id', currentUser.id).single();
+    if (freshProfile && !freshProfile.is_pro && (freshProfile.tokens === 0 || freshProfile.tokens === null || freshProfile.tokens < 1)) {
+      alert('Vous n\'avez plus de jetons. Rechargez votre compte pour continuer.');
+      window.location.href = 'apijob-jetons.html';
+      return;
+    }
 
     // Anti-doublon
     const { data: existing } = await db.from('propositions')

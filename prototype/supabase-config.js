@@ -124,7 +124,7 @@ function catEmoji(cat) {
     'Informatique': '💻', 'Cours particuliers': '🎓', 'Enseignement': '📚',
     'Démarches & administratif': '📋', 'Aménagement & déco': '🛋️',
     'Événementiel': '🎉', 'Bureautique & administratif': '💼',
-    'Bien-être': '🧘', 'Autre': '✨'
+    'Bien-être': '🧘', 'Pisciniste': '🏊', 'Climatisation': '❄️', 'Artisanat': '🗿', 'Autre': '✨'
   };
   return map[cat] || '✨';
 }
