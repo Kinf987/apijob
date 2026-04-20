@@ -316,25 +316,15 @@
         <textarea class="form-textarea" id="description" placeholder="Présentez-vous : votre expérience, vos compétences, ce qui vous différencie..." maxlength="500" oninput="updateCount(); updateCompletude()"></textarea>
         <div class="char-count"><span id="char-count">0</span>/500</div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Expérience</label>
-          <select class="form-select" onchange="updateCompletude()">
-            <option value="">Choisir</option>
-            <option>Moins d'1 an</option>
-            <option>1 à 2 ans</option>
-            <option>3 à 5 ans</option>
-            <option selected>Plus de 5 ans</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Temps de réponse</label>
-          <select class="form-select">
-            <option>Moins d'1 heure</option>
-            <option selected>Moins de 2 heures</option>
-            <option>Dans la journée</option>
-          </select>
-        </div>
+      <div class="form-group">
+        <label class="form-label">Expérience</label>
+        <select class="form-select" id="experience" onchange="updateCompletude()">
+          <option value="">Choisir</option>
+          <option>Moins d'1 an</option>
+          <option>1 à 2 ans</option>
+          <option>3 à 5 ans</option>
+          <option>Plus de 5 ans</option>
+        </select>
       </div>
     </div>
   </div>
@@ -347,8 +337,8 @@
     </div>
     <div class="section-body">
       <div class="services-grid">
-        <label class="service-check checked" onclick="toggleService(this)">
-          <input type="checkbox" checked> 🌿 Jardinage
+        <label class="service-check" onclick="toggleService(this)">
+          <input type="checkbox"> 🌿 Jardinage
         </label>
         <label class="service-check" onclick="toggleService(this)">
           <input type="checkbox"> 🏠 Ménage
@@ -414,38 +404,6 @@
           <input type="checkbox"> ✨ Autre
         </label>
       </div>
-    </div>
-  </div>
-
-  <!-- TARIFS -->
-  <div class="section-card">
-    <div class="section-header">
-      <span class="section-icon">💰</span>
-      <span class="section-title">Tarifs indicatifs</span>
-    </div>
-    <div class="section-body">
-      <div class="tarif-row">
-        <div class="tarif-service">🌿 Jardinage</div>
-        <div class="tarif-input-wrap">
-          <input type="number" class="tarif-input" placeholder="Ex : 2500" min="0">
-          <span class="tarif-unit">XPF / heure</span>
-        </div>
-      </div>
-      <div class="tarif-row">
-        <div class="tarif-service">🏠 Ménage</div>
-        <div class="tarif-input-wrap">
-          <input type="number" class="tarif-input" placeholder="Ex : 2000" min="0">
-          <span class="tarif-unit">XPF / heure</span>
-        </div>
-      </div>
-      <div class="tarif-row">
-        <div class="tarif-service">🔧 Plomberie</div>
-        <div class="tarif-input-wrap">
-          <input type="number" class="tarif-input" placeholder="Ex : 4000" min="0">
-          <span class="tarif-unit">XPF / heure</span>
-        </div>
-      </div>
-      <p style="font-size:0.75rem;color:var(--muted);margin-top:1rem;">Ces tarifs sont indicatifs et visibles sur votre profil. Vous pouvez ajuster le prix lors de chaque proposition.</p>
     </div>
   </div>
 
@@ -658,12 +616,16 @@
       updateCount();
     }
 
-    // Expérience & Temps de réponse
-    const selects = document.querySelectorAll('.form-select');
-    if (selects[0] && meta.experience) selects[0].value = meta.experience;
-    if (selects[1] && meta.temps_reponse) selects[1].value = meta.temps_reponse;
+    // Expérience
+    const expSelect = document.getElementById('experience');
+    if (expSelect && meta.experience) expSelect.value = meta.experience;
 
-    // Services cochés
+    // Services cochés — toujours tout réinitialiser d'abord
+    document.querySelectorAll('.service-check').forEach(label => {
+      label.classList.remove('checked');
+      const cb = label.querySelector('input');
+      if (cb) cb.checked = false;
+    });
     if (meta.services && Array.isArray(meta.services)) {
       document.querySelectorAll('.service-check').forEach(label => {
         const txt = label.textContent.replace(/\s+/g, ' ').trim();
@@ -671,17 +633,6 @@
         label.classList.toggle('checked', checked);
         const cb = label.querySelector('input');
         if (cb) cb.checked = checked;
-      });
-    }
-
-    // Tarifs
-    if (meta.tarifs) {
-      document.querySelectorAll('.tarif-row').forEach(row => {
-        const svcEl = row.querySelector('.tarif-service');
-        const inp   = row.querySelector('.tarif-input');
-        if (!svcEl || !inp) return;
-        const key = svcEl.textContent.replace(/\s+/g, ' ').trim();
-        if (meta.tarifs[key] !== undefined) inp.value = meta.tarifs[key];
       });
     }
 
@@ -747,15 +698,6 @@
         .map(l => l.textContent.replace(/\s+/g, ' ').trim())
         .filter(Boolean);
 
-      // Tarifs
-      const tarifs = {};
-      document.querySelectorAll('.tarif-row').forEach(row => {
-        const svcEl = row.querySelector('.tarif-service');
-        const inp   = row.querySelector('.tarif-input');
-        if (!svcEl || !inp || !inp.value) return;
-        tarifs[svcEl.textContent.replace(/\s+/g, ' ').trim()] = parseInt(inp.value, 10);
-      });
-
       // Zones
       const zones = Array.from(document.querySelectorAll('#zones-wrap .zone-tag'))
         .map(tag => tag.textContent.replace('✕', '').trim())
@@ -766,16 +708,14 @@
         .map(day => day.querySelector('.dispo-label')?.textContent || '')
         .filter(Boolean);
 
-      const selects       = document.querySelectorAll('.form-select');
-      const titre         = document.getElementById('titre').value.trim();
-      const bio           = document.getElementById('description').value.trim();
-      const experience    = selects[0]?.value || '';
-      const temps_reponse = selects[1]?.value || '';
-      const localisation  = zones[0] || currentUser.localisation || '';
+      const titre        = document.getElementById('titre').value.trim();
+      const bio          = document.getElementById('description').value.trim();
+      const experience   = document.getElementById('experience')?.value || '';
+      const localisation = zones[0] || currentUser.localisation || '';
 
       const metadata = {
         ...(currentUser.metadata || {}),
-        titre, experience, temps_reponse, services, tarifs, zones, disponibilites
+        titre, experience, services, zones, disponibilites
       };
 
       const updates = { bio, localisation, metadata };
