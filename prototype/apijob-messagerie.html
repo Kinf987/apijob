@@ -581,12 +581,17 @@
     document.querySelector('.chat-header-name').textContent   = nom;
     document.querySelector('.chat-header-mission').textContent = svc;
 
-    const btnTerminer = document.querySelector('.btn-terminer-chat');
-    if (mission.statut === 'en_cours') {
-      btnTerminer.style.display = '';
-      btnTerminer.onclick = () => { window.location.href = `apijob-evaluation.html?mission=${mission.id}`; };
-    } else {
-      btnTerminer.style.display = 'none';
+    // Bouton "Terminer" injecté dynamiquement dans les actions du header
+    const actionsEl = document.querySelector('.chat-header-actions');
+    if (actionsEl) {
+      actionsEl.innerHTML = '';
+      if (mission.statut === 'en_cours') {
+        const btnT = document.createElement('button');
+        btnT.className = 'btn-terminer-chat';
+        btnT.textContent = '✅ Terminer la mission';
+        btnT.onclick = () => { window.location.href = `apijob-evaluation.html?mission=${mission.id}`; };
+        actionsEl.appendChild(btnT);
+      }
     }
 
     // Réactivité : désactiver input si mission terminée/annulée
@@ -702,7 +707,15 @@
       document.getElementById('messages-area').scrollTop = 999999;
 
       currentMission.statut = 'en_cours';
-      document.querySelector('.btn-terminer-chat').style.display = '';
+      const actEl = document.querySelector('.chat-header-actions');
+      if (actEl) {
+        actEl.innerHTML = '';
+        const btnT = document.createElement('button');
+        btnT.className = 'btn-terminer-chat';
+        btnT.textContent = '✅ Terminer la mission';
+        btnT.onclick = () => { window.location.href = `apijob-evaluation.html?mission=${currentMission.id}`; };
+        actEl.appendChild(btnT);
+      }
       document.querySelector('.chat-input-zone').style.opacity = '1';
       document.getElementById('chat-input').disabled = false;
     } catch(e) {
@@ -718,7 +731,8 @@
     await createNotification(currentMission.prestataire_id, 'mission_refusee', 'Proposition refusée', 'Votre proposition n\'a pas été retenue.');
     document.getElementById('prop-btns').innerHTML = '<span style="color:var(--rouge);font-weight:600;">❌ Refusée</span>';
     currentMission.statut = 'annulee';
-    document.querySelector('.btn-terminer-chat').style.display = 'none';
+    const actElR = document.querySelector('.chat-header-actions');
+    if (actElR) actElR.innerHTML = '';
     document.querySelector('.chat-input-zone').style.opacity = '0.5';
     document.getElementById('chat-input').disabled = true;
   }
