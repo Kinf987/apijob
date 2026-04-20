@@ -239,6 +239,7 @@
 
   @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
   .page { animation:fadeUp 0.4s ease both; }
+  html { visibility: hidden; }
 
   @media (max-width:500px) {
     .services-grid { grid-template-columns:repeat(2,1fr); }
@@ -269,10 +270,10 @@
     <div class="completude-info">
       <div class="completude-label">
         <span>Complétude du profil</span>
-        <span class="completude-pct" id="pct">75%</span>
+        <span class="completude-pct" id="pct">0%</span>
       </div>
       <div class="progress-track">
-        <div class="progress-fill" id="progress-fill" style="width:75%"></div>
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
       </div>
       <div class="completude-note">💡 Un profil complet à 100% reçoit 3x plus de missions</div>
     </div>
@@ -287,7 +288,6 @@
     <div class="section-body">
       <div class="photo-zone">
         <div class="photo-preview" onclick="document.getElementById('photo-input').click()">
-          TM
           <div class="photo-overlay">📷</div>
         </div>
         <div class="photo-info">
@@ -743,6 +743,7 @@
     currentUser = await requireAuth();
     if (!currentUser) return;
     await chargerProfil();
+    document.documentElement.style.visibility = 'visible';
   })();
 </script>
 
