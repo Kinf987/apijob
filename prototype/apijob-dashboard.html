@@ -895,28 +895,64 @@
   }
 
   async function chargerMissionsPresta() {
-    const { data } = await db.from('missions')
-      .select('*, annonces(titre, categorie)')
+    const dataContent  = document.querySelector('#panel-prestataire .section-card .data-content');
+    const emptyContent = document.querySelector('#panel-prestataire .section-card .empty-content');
+    if (!dataContent) return;
+
+    // Propositions en attente (pas encore des missions)
+    const { data: propsEnAttente } = await db.from('propositions')
+      .select('*, annonces(id, titre, categorie)')
       .eq('prestataire_id', currentUser.id)
-      .neq('statut', 'terminee')
+      .eq('statut', 'en_attente')
       .order('created_at', { ascending: false })
       .limit(3);
 
-    const list = document.querySelector('#panel-prestataire .data-content .section-card-body');
-    if (!list || !data) return;
-    if (data.length === 0) {
-      list.innerHTML = '<div class="empty-state"><div class="empty-emoji">📭</div><div class="empty-title">Aucune mission en cours</div><div class="empty-sub">Parcourez les annonces pour trouver votre prochaine mission.</div></div>';
-      return;
+    // Missions en cours et terminées
+    const { data: missions } = await db.from('missions')
+      .select('*, annonces(titre, categorie)')
+      .eq('prestataire_id', currentUser.id)
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    const items = [];
+
+    // Propositions en attente
+    (propsEnAttente || []).forEach(p => {
+      items.push(`
+        <div class="mission-item" onclick="location.href='apijob-annonce-detail.html?id=${p.annonces?.id}'">
+          <div class="mission-emoji">${catEmoji(p.annonces?.categorie)}</div>
+          <div class="mission-info">
+            <div class="mission-title">${escDash(p.annonces?.titre || '')}</div>
+            <div class="mission-meta">Proposition envoyée · ${formatDate(p.created_at)}</div>
+          </div>
+          <span class="mission-badge badge-attente">En attente</span>
+        </div>`);
+    });
+
+    // Missions en cours / terminées
+    (missions || []).forEach(m => {
+      const badge = m.statut === 'terminee'
+        ? '<span class="mission-badge badge-termine">Terminée ✓</span>'
+        : '<span class="mission-badge badge-cours">Acceptée ✅</span>';
+      const lien = m.statut === 'terminee' ? '#' : `apijob-messagerie.html?mission=${m.id}`;
+      items.push(`
+        <div class="mission-item" onclick="location.href='${lien}'">
+          <div class="mission-emoji">${catEmoji(m.annonces?.categorie)}</div>
+          <div class="mission-info">
+            <div class="mission-title">${escDash(m.annonces?.titre || '')}</div>
+            <div class="mission-meta">${formatDate(m.created_at)}</div>
+          </div>
+          ${badge}
+        </div>`);
+    });
+
+    if (items.length === 0) {
+      dataContent.innerHTML = '';
+      if (emptyContent) emptyContent.style.display = 'block';
+    } else {
+      if (emptyContent) emptyContent.style.display = 'none';
+      dataContent.innerHTML = items.join('');
     }
-    list.innerHTML = data.map(m => `
-      <div class="mission-item" onclick="location.href='apijob-messagerie.html?mission=${m.id}'">
-        <div class="mission-emoji">${catEmoji(m.annonces?.categorie)}</div>
-        <div class="mission-info">
-          <div class="mission-title">${m.annonces?.titre || ''}</div>
-          <div class="mission-meta">${formatDate(m.created_at)}</div>
-        </div>
-        <span class="mission-badge badge-cours">En cours</span>
-      </div>`).join('');
   }
 
   async function chargerAnnoncesClient() {
