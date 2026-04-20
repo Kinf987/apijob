@@ -791,12 +791,28 @@
     }
 
     await chargerMissions();
-    const mode = isPresta ? 'presta' : 'client';
-    setMode(mode);
 
-    const first = allMissions[mode][0];
-    if (first) {
-      await ouvrirMission(first);
+    // Détecter le mode selon le rôle et l'URL
+    const missionIdFromUrl = new URLSearchParams(window.location.search).get('mission');
+    let modeAuto = isPresta ? 'presta' : 'client';
+
+    // Si une mission est passée en URL, forcer le bon mode
+    if (missionIdFromUrl) {
+      const inClient = allMissions.client.find(m => m.id === missionIdFromUrl);
+      const inPresta = allMissions.presta.find(m => m.id === missionIdFromUrl);
+      if (inPresta) modeAuto = 'presta';
+      else if (inClient) modeAuto = 'client';
+    }
+
+    setMode(modeAuto);
+
+    // Ouvrir la mission de l'URL en priorité, sinon la première
+    const missionCible = missionIdFromUrl
+      ? allMissions[modeAuto].find(m => m.id === missionIdFromUrl) || allMissions[modeAuto][0]
+      : allMissions[modeAuto][0];
+
+    if (missionCible) {
+      await ouvrirMission(missionCible);
     } else {
       document.querySelector('.chat-header').style.visibility = 'hidden';
       document.querySelector('.chat-input-zone').style.display = 'none';
