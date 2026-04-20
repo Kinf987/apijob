@@ -772,6 +772,16 @@
     if (btn) { btn.disabled = true; btn.textContent = 'Traitement en cours...'; }
 
     try {
+      // 0. Anti-doublon : si une mission existe déjà pour cette proposition, rediriger directement
+      const { data: missionExist } = await db.from('missions')
+        .select('id')
+        .eq('proposition_id', propId)
+        .maybeSingle();
+      if (missionExist) {
+        window.location.href = 'apijob-messagerie.html?mission=' + missionExist.id;
+        return;
+      }
+
       // 1. Créer la mission
       const { data: mission, error: missionErr } = await db.from('missions').insert({
         annonce_id:     annonceId,
@@ -782,8 +792,9 @@
       }).select().single();
       if (missionErr) throw missionErr;
 
-      // 2. Marquer la proposition acceptée
-      await db.from('propositions').update({ statut: 'acceptee' }).eq('id', propId);
+      // 2. Marquer la proposition acceptée (nécessite la RLS "client_update_proposition")
+      const { error: propUpdErr } = await db.from('propositions').update({ statut: 'acceptee' }).eq('id', propId);
+      if (propUpdErr) console.error('propositions.update statut=acceptee:', propUpdErr);
 
       // 3. Passer l'annonce en_cours
       await db.from('annonces').update({ statut: 'en_cours' }).eq('id', annonceId);

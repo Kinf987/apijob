@@ -544,7 +544,7 @@
     const init   = other ? ((other.prenom||'?')[0]+(other.nom||'?')[0]).toUpperCase() : '??';
     const nom    = other ? `${other.prenom||''} ${other.nom||''}`.trim() : 'Utilisateur';
     const ann    = mission.annonces;
-    const svc    = ann ? `${catEmoji(ann.categorie)} ${ann.titre}` : 'Mission';
+    const svc = ann ? `${catEmoji(ann.categorie)} ${ann.titre}` : 'Mission';
     const dateS  = formatDate(mission.created_at);
     const statutTxt = { en_attente:'⏳ En attente', en_cours:'✅ En cours', terminee:'🏁 Terminée', annulee:'❌ Annulée' }[mission.statut] || mission.statut;
 
@@ -575,7 +575,7 @@
     const init  = other ? ((other.prenom||'?')[0]+(other.nom||'?')[0]).toUpperCase() : '??';
     const nom   = other ? `${other.prenom||''} ${other.nom||''}`.trim() : 'Utilisateur';
     const ann   = mission.annonces;
-    const svc   = ann ? `${catEmoji(ann.categorie)} ${ann.titre} · ${ann.localisation||''}` : 'Mission';
+    const svc   = ann ? `${catEmoji(ann.categorie)} ${ann.titre}` : 'Mission';
 
     document.querySelector('.chat-header-avatar').textContent = init;
     document.querySelector('.chat-header-name').textContent   = nom;
@@ -620,13 +620,16 @@
     const area = document.getElementById('messages-area');
     area.innerHTML = '<div style="text-align:center;padding:2rem;font-size:0.82rem;color:var(--muted);">Chargement…</div>';
 
+    // On ne joint pas profiles ici (la FK sender_id peut pointer auth.users et non profiles)
+    // Les profils sont récupérés depuis currentMission
     const { data: msgs, error } = await db.from('messages')
-      .select('*, profiles!sender_id(prenom, nom)')
+      .select('id, mission_id, sender_id, contenu, created_at')
       .eq('mission_id', missionId)
       .order('created_at', { ascending: true });
 
     if (error) {
-      area.innerHTML = '<div style="text-align:center;padding:2rem;font-size:0.82rem;color:var(--rouge);">Erreur de chargement</div>';
+      console.error('chargerMessages erreur:', JSON.stringify(error));
+      area.innerHTML = `<div style="text-align:center;padding:2rem;font-size:0.82rem;color:var(--rouge);">Erreur : ${error.message || error.code || 'inconnue'}</div>`;
       return;
     }
 
@@ -741,7 +744,12 @@
   function appendMessage(msg, area = null, scroll = true) {
     const zone  = area || document.getElementById('messages-area');
     const isMine = msg.sender_id === currentUser.id;
-    const p     = msg.profiles;
+    // Profil depuis le join (messages anciens) ou depuis currentMission (nouveau chemin sans join)
+    let p = msg.profiles;
+    if (!p) {
+      if (isMine) p = currentUser;
+      else if (currentMission) p = currentMode === 'client' ? currentMission.prestataire : currentMission.client;
+    }
     const init  = p ? ((p.prenom||'?')[0]+(p.nom||'?')[0]).toUpperCase() : '??';
     const time  = new Date(msg.created_at).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
 
@@ -776,18 +784,20 @@
 
   // ── CHARGER MISSIONS ──
   async function chargerMissions() {
-    const [{ data: mClient }, { data: mPresta }] = await Promise.all([
+    const [{ data: mClient, error: eClient }, { data: mPresta, error: ePresta }] = await Promise.all([
       db.from('missions')
-        .select('*, annonces(titre, categorie, localisation), prestataire:profiles!prestataire_id(prenom, nom)')
+        .select('*, annonces(titre, categorie), prestataire:profiles!prestataire_id(prenom, nom)')
         .eq('client_id', currentUser.id)
         .neq('statut', 'annulee')
         .order('created_at', { ascending: false }),
       db.from('missions')
-        .select('*, annonces(titre, categorie, localisation), client:profiles!client_id(prenom, nom)')
+        .select('*, annonces(titre, categorie), client:profiles!client_id(prenom, nom)')
         .eq('prestataire_id', currentUser.id)
         .neq('statut', 'annulee')
         .order('created_at', { ascending: false })
     ]);
+    if (eClient) console.error('chargerMissions client:', JSON.stringify(eClient));
+    if (ePresta) console.error('chargerMissions presta:', JSON.stringify(ePresta));
     allMissions.client = mClient || [];
     allMissions.presta = mPresta || [];
   }
