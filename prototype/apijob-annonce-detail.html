@@ -809,11 +809,12 @@
       }
 
       // 6. Débiter 1 jeton au prestataire accepté (via RPC pour contourner RLS)
-      await db.rpc('debit_jeton', { prestataire_uuid: prestaId }).catch(async () => {
-        // Fallback si la fonction RPC n'existe pas encore
+      const { error: rpcError } = await db.rpc('debit_jeton', { prestataire_uuid: prestaId });
+      if (rpcError) {
+        // Fallback si RPC indisponible
         const { data: p } = await db.from('profiles').select('tokens').eq('id', prestaId).single();
         if (p) await db.from('profiles').update({ tokens: Math.max(0, (p.tokens || 0) - 1) }).eq('id', prestaId);
-      });
+      }
 
       // Transaction jeton
       await db.from('transactions_jetons').insert({
