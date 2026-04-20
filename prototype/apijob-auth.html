@@ -510,6 +510,9 @@
         await db.storage.from('identites').upload(path, file, { upsert: true });
       }
 
+      // Déconnexion immédiate pour éviter session active pendant la confirmation
+      await db.auth.signOut();
+
       // Redirection vers confirmation email
       const param = role === 'client' ? 'client' : 'presta';
       sessionStorage.setItem('pending_email', email);
