@@ -746,7 +746,7 @@
         .eq('cible_id', currentUser.id)
         .order('created_at', { ascending: false })
         .limit(2);
-      const avisContainer = document.querySelector('#panel-prestataire .data-content');
+      const avisContainer = document.querySelectorAll('#panel-prestataire .section-card .data-content')[1];
       if (avisContainer) {
         if (!avisData || avisData.length === 0) {
           avisContainer.innerHTML = '';
@@ -895,8 +895,8 @@
   }
 
   async function chargerMissionsPresta() {
-    const dataContent  = document.querySelector('#panel-prestataire .section-card .data-content');
-    const emptyContent = document.querySelector('#panel-prestataire .section-card .empty-content');
+    const dataContent  = document.querySelector('#panel-prestataire .grid-3 .data-content');
+    const emptyContent = document.querySelector('#panel-prestataire .grid-3 .empty-content');
     if (!dataContent) return;
 
     // Propositions en attente (pas encore des missions)
