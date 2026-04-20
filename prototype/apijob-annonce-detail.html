@@ -691,24 +691,37 @@
       if (props && props.length > 0) {
         const propsCard = document.createElement('div');
         propsCard.className = 'card';
+        propsCard.id = 'props-card';
         propsCard.innerHTML = `
           <div class="section-label" style="margin-bottom:1rem;">Propositions reçues (${props.length})</div>
-          <div class="props-list">
+          <div class="props-list" id="props-list">
             ${props.map(p => {
               const pr = p.prestataire || {};
               const init = ((pr.prenom?.[0]||'')+(pr.nom?.[0]||'')).toUpperCase()||'?';
               const nom = `${pr.prenom||''} ${pr.nom||''}`.trim();
+              const isEnAttente = p.statut === 'en_attente';
+              const isAcceptee  = p.statut === 'acceptee';
+              const isRefusee   = p.statut === 'refusee';
               return `
-                <div class="prop-item">
+                <div class="prop-item" id="prop-${p.id}" style="${isRefusee ? 'opacity:0.45;' : ''}">
                   <div class="prop-avatar">${init}</div>
                   <div class="prop-body">
                     <div class="prop-top">
                       <span class="prop-name">${nom}</span>
                       ${pr.is_verified ? '<span class="prop-badge-verifie">✅ Vérifié</span>' : ''}
                       ${pr.is_pro ? '<span class="prop-badge-pro">⭐ Pro</span>' : ''}
+                      ${isAcceptee ? '<span class="prop-badge-verifie">✅ Acceptée</span>' : ''}
+                      ${isRefusee  ? '<span style="font-size:0.65rem;font-weight:700;padding:0.1rem 0.5rem;border-radius:50px;background:rgba(204,10,43,0.08);color:var(--rouge);">❌ Refusée</span>' : ''}
                     </div>
                     <p class="prop-text">${p.message || ''}</p>
                     <div class="prop-date">Tarif : ${p.tarif ? parseInt(p.tarif).toLocaleString('fr-FR') + ' XPF' : 'Non précisé'} · ${p.disponibilite || ''} · ${formatDate(p.created_at)}</div>
+                    ${isEnAttente ? `
+                      <div style="margin-top:0.8rem;">
+                        <button onclick="accepterProposition('${p.id}','${pr.id}','${nom}')"
+                          style="padding:0.5rem 1.2rem;background:var(--vert);color:white;border:none;border-radius:50px;font-family:inherit;font-size:0.82rem;font-weight:700;cursor:pointer;">
+                          ✅ Accepter cette proposition
+                        </button>
+                      </div>` : ''}
                   </div>
                 </div>
               `;
@@ -745,6 +758,84 @@
 
   window.addEventListener('error', () => { document.documentElement.style.visibility = 'visible'; });
   window.addEventListener('unhandledrejection', () => { document.documentElement.style.visibility = 'visible'; });
+
+  // ── ACCEPTER UNE PROPOSITION ──
+  async function accepterProposition(propId, prestaId, prestaPrenom) {
+    if (!confirm(`Accepter la proposition de ${prestaPrenom} ?\n\n1 jeton sera débité de son compte. Les autres propositions seront automatiquement refusées.`)) return;
+
+    const btn = document.querySelector(`#prop-${propId} button`);
+    if (btn) { btn.disabled = true; btn.textContent = 'Traitement en cours...'; }
+
+    try {
+      // 1. Créer la mission
+      const { data: mission, error: missionErr } = await db.from('missions').insert({
+        annonce_id:     annonceId,
+        proposition_id: propId,
+        client_id:      currentUser.id,
+        prestataire_id: prestaId,
+        statut:         'en_cours'
+      }).select().single();
+      if (missionErr) throw missionErr;
+
+      // 2. Marquer la proposition acceptée
+      await db.from('propositions').update({ statut: 'acceptee' }).eq('id', propId);
+
+      // 3. Passer l'annonce en_cours
+      await db.from('annonces').update({ statut: 'en_cours' }).eq('id', annonceId);
+
+      // 4. Récupérer les autres propositions en attente
+      const { data: autresProps } = await db.from('propositions')
+        .select('id, prestataire_id')
+        .eq('annonce_id', annonceId)
+        .eq('statut', 'en_attente')
+        .neq('id', propId);
+
+      // 5. Refuser les autres + notifier chaque prestataire refusé (aucun jeton débité)
+      if (autresProps && autresProps.length > 0) {
+        await db.from('propositions').update({ statut: 'refusee' }).in('id', autresProps.map(p => p.id));
+        for (const p of autresProps) {
+          await createNotification(
+            p.prestataire_id,
+            'proposition_refusee',
+            '❌ Mission attribuée à un autre prestataire',
+            `Votre proposition a été refusée. Le client a retenu un autre prestataire. Aucun jeton n'a été débité.`
+          );
+        }
+      }
+
+      // 6. Débiter 1 jeton au prestataire accepté (via RPC pour contourner RLS)
+      await db.rpc('debit_jeton', { prestataire_uuid: prestaId }).catch(async () => {
+        // Fallback si la fonction RPC n'existe pas encore
+        const { data: p } = await db.from('profiles').select('tokens').eq('id', prestaId).single();
+        if (p) await db.from('profiles').update({ tokens: Math.max(0, (p.tokens || 0) - 1) }).eq('id', prestaId);
+      });
+
+      // Transaction jeton
+      await db.from('transactions_jetons').insert({
+        user_id:    prestaId,
+        type:       'debit_mission',
+        quantite:   -1,
+        mission_id: mission.id
+      });
+
+      // 7. Notifier le prestataire accepté
+      await createNotification(
+        prestaId,
+        'proposition_acceptee',
+        '🎉 Votre proposition a été acceptée !',
+        `${currentUser.prenom || 'Le client'} a accepté votre proposition. 1 jeton a été débité. Vous pouvez maintenant échanger en messagerie.`,
+        'apijob-messagerie.html?mission=' + mission.id
+      );
+
+      // 8. Aller en messagerie
+      window.location.href = 'apijob-messagerie.html?mission=' + mission.id;
+
+    } catch (e) {
+      console.error(e);
+      alert('Erreur : ' + (e.message || 'Réessayez.'));
+      if (btn) { btn.disabled = false; btn.textContent = '✅ Accepter cette proposition'; }
+    }
+  }
 </script>
 
 </body>
