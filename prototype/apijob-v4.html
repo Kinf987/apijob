@@ -792,11 +792,28 @@
       return;
     }
     const initiales = (((user.prenom||'')[0]||'') + ((user.nom||'')[0]||'')).toUpperCase() || '?';
-    if (!btn) return;
-    btn.href = 'apijob-dashboard.html';
-    btn.textContent = '';
-    btn.style.cssText = 'visibility:visible;width:36px;height:36px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;font-family:"Syne",sans-serif;font-weight:800;font-size:0.85rem;background:var(--rouge);color:white;text-decoration:none;cursor:pointer;';
-    btn.textContent = initiales;
+    if (btn) {
+      btn.href = 'apijob-dashboard.html';
+      btn.textContent = '';
+      btn.style.cssText = 'visibility:visible;width:36px;height:36px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;font-family:"Syne",sans-serif;font-weight:800;font-size:0.85rem;background:var(--rouge);color:white;text-decoration:none;cursor:pointer;';
+      btn.textContent = initiales;
+    }
+
+    // Boutons "Je propose / Je cherche" → dashboard si déjà connecté
+    const role = user.role;
+    document.querySelectorAll('.split-btn').forEach(splitBtn => {
+      if (role === 'prestataire') {
+        splitBtn.href = splitBtn.classList.contains('split-btn-presta')
+          ? 'apijob-annonces.html'
+          : 'apijob-dashboard.html';
+      } else if (role === 'client') {
+        splitBtn.href = splitBtn.classList.contains('split-btn-client')
+          ? 'apijob-annonce.html'
+          : 'apijob-dashboard.html';
+      } else {
+        splitBtn.href = 'apijob-dashboard.html';
+      }
+    });
   })();
 </script>
 
