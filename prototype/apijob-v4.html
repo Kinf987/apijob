@@ -552,14 +552,14 @@
 
   <!-- LES 2 BOUTONS -->
   <div class="split-buttons">
-    <a href="apijob-auth.html" class="split-btn split-btn-presta">
+    <a href="apijob-auth.html" class="split-btn split-btn-presta" onclick="splitBtnClick(event, 'presta')">
       <span class="split-btn-icon">🛠️</span>
       <span class="split-btn-label">Particulier ou professionnel</span>
       <span class="split-btn-title">Je rends service</span>
       <span class="split-btn-sub">Tu es patenté, tu as un service à proposer ou une compétence à valoriser ? Inscris-toi et trouve tes premiers clients à Tahiti ou Moorea.</span>
       <span class="split-btn-cta">Créer mon profil →</span>
     </a>
-    <a href="apijob-auth.html" class="split-btn split-btn-client">
+    <a href="apijob-auth.html" class="split-btn split-btn-client" onclick="splitBtnClick(event, 'client')">
       <span class="split-btn-icon">🔍</span>
       <span class="split-btn-label">C'est gratuit pour toi</span>
       <span class="split-btn-title">J'ai besoin d'aide</span>
@@ -799,22 +799,21 @@
       btn.textContent = initiales;
     }
 
-    // Boutons "Je propose / Je cherche" → dashboard si déjà connecté
-    const role = user.role;
-    document.querySelectorAll('.split-btn').forEach(splitBtn => {
-      if (role === 'prestataire') {
-        splitBtn.href = splitBtn.classList.contains('split-btn-presta')
-          ? 'apijob-annonces.html'
-          : 'apijob-dashboard.html';
-      } else if (role === 'client') {
-        splitBtn.href = splitBtn.classList.contains('split-btn-client')
-          ? 'apijob-annonce.html'
-          : 'apijob-dashboard.html';
-      } else {
-        splitBtn.href = 'apijob-dashboard.html';
-      }
-    });
   })();
+
+  async function splitBtnClick(e, btnType) {
+    e.preventDefault();
+    const session = await getSession();
+    if (session) {
+      // Déjà connecté → dashboard directement
+      window.location.href = 'apijob-dashboard.html';
+    } else {
+      // Non connecté → auth avec pré-remplissage du rôle
+      window.location.href = btnType === 'presta'
+        ? 'apijob-auth.html?role=prestataire'
+        : 'apijob-auth.html?role=client';
+    }
+  }
 </script>
 
 </body>
