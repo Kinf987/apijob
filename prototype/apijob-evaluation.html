@@ -20,6 +20,7 @@
     --vert-light: rgba(26,122,74,0.08);
   }
 
+  html { visibility: hidden; }
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
     font-family:'DM Sans',sans-serif;
@@ -481,7 +482,11 @@
       `Votre évaluation a été publiée sur le profil de ${cibleNom}. Elle aide la communauté API JOB à faire les bons choix.`;
     document.querySelector('#comment').placeholder =
       `Décrivez votre expérience avec ${isClient ? 'ce prestataire' : 'ce client'}…`;
+
+    document.documentElement.style.visibility = 'visible';
   })();
+  window.addEventListener('error', () => { document.documentElement.style.visibility = 'visible'; });
+  window.addEventListener('unhandledrejection', () => { document.documentElement.style.visibility = 'visible'; });
 </script>
 
 </body>
