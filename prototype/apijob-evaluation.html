@@ -401,11 +401,28 @@
       });
       if (error) throw error;
 
-      // Marquer la mission comme terminée
-      await db.from('missions').update({ statut: 'terminee' }).eq('id', currentMission.id);
+      // Flux 2 étapes : premier → en_attente_cloture / second → terminee
+      const estPremier = currentMission.statut === 'en_cours';
+      if (estPremier) {
+        await db.from('missions').update({
+          statut:        'en_attente_cloture',
+          terminated_at: new Date().toISOString(),
+          terminated_by: currentUser.id
+        }).eq('id', currentMission.id);
+        // Notifier l'autre partie pour validation
+        await createNotification(
+          cibleId,
+          'validation_requise',
+          '✅ Mission déclarée terminée',
+          `${currentUser.prenom || 'Votre interlocuteur'} a déclaré la mission terminée. Validez dans les 48h ou la mission sera automatiquement clôturée.`,
+          `apijob-messagerie.html?mission=${currentMission.id}`
+        );
+      } else {
+        // Deuxième partie → clôture définitive
+        await db.from('missions').update({ statut: 'terminee' }).eq('id', currentMission.id);
+      }
 
-      // Notifier la cible
-      const cibleName = document.querySelector('.cible-name')?.textContent || 'vous';
+      // Notifier la cible de l'avis reçu
       await createNotification(
         cibleId, 'avis_recu',
         `Nouvel avis reçu — ${currentUser.prenom || ''} ${currentUser.nom || ''}`.trim(),

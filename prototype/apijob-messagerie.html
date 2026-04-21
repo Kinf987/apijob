@@ -581,7 +581,17 @@
     document.querySelector('.chat-header-name').textContent   = nom;
     document.querySelector('.chat-header-mission').textContent = svc;
 
-    // Bouton "Terminer" injecté dynamiquement dans les actions du header
+    // Auto-clôture 48h si en_attente_cloture
+    if (mission.statut === 'en_attente_cloture' && mission.terminated_at) {
+      const elapsed = Date.now() - new Date(mission.terminated_at).getTime();
+      if (elapsed > 48 * 60 * 60 * 1000) {
+        await db.from('missions').update({ statut: 'terminee' }).eq('id', mission.id);
+        mission.statut = 'terminee';
+        currentMission.statut = 'terminee';
+      }
+    }
+
+    // Bouton d'action injecté dynamiquement selon statut
     const actionsEl = document.querySelector('.chat-header-actions');
     if (actionsEl) {
       actionsEl.innerHTML = '';
@@ -591,13 +601,30 @@
         btnT.textContent = '✅ Terminer la mission';
         btnT.onclick = () => { window.location.href = `apijob-evaluation.html?mission=${mission.id}`; };
         actionsEl.appendChild(btnT);
+      } else if (mission.statut === 'en_attente_cloture') {
+        if (mission.terminated_by !== currentUser.id) {
+          // Je suis l'autre partie → bouton Valider
+          const btnV = document.createElement('button');
+          btnV.className = 'btn-terminer-chat';
+          btnV.style.cssText = 'background:rgba(240,165,0,0.12);color:#B07800;border-color:rgba(240,165,0,0.3);';
+          btnV.textContent = '⏳ Valider la fin de mission';
+          btnV.onclick = () => { window.location.href = `apijob-evaluation.html?mission=${mission.id}`; };
+          actionsEl.appendChild(btnV);
+        } else {
+          // J'ai déjà initié → message d'attente
+          const info = document.createElement('span');
+          info.style.cssText = 'font-size:0.75rem;color:var(--muted);padding:0.5rem 0.2rem;';
+          info.textContent = '⏳ En attente de validation (48h)';
+          actionsEl.appendChild(info);
+        }
       }
     }
 
     // Réactivité : désactiver input si mission terminée/annulée
     const inputZone = document.querySelector('.chat-input-zone');
-    inputZone.style.opacity = ['terminee','annulee'].includes(mission.statut) ? '0.5' : '1';
-    document.getElementById('chat-input').disabled = ['terminee','annulee'].includes(mission.statut);
+    const msgBloque = ['terminee','annulee'].includes(mission.statut);
+    inputZone.style.opacity = msgBloque ? '0.5' : '1';
+    document.getElementById('chat-input').disabled = msgBloque;
 
     await chargerMessages(mission.id);
 
@@ -638,7 +665,13 @@
     // Message système selon statut
     const sm = document.createElement('div');
     sm.className = 'msg-system';
-    sm.textContent = { en_attente:'🪙 Proposition envoyée — en attente d\'acceptation', en_cours:'✅ Mission en cours · jeton débité', terminee:'🏁 Mission terminée', annulee:'❌ Proposition refusée' }[currentMission.statut] || '';
+    sm.textContent = {
+      en_attente:          '🪙 Proposition envoyée — en attente d\'acceptation',
+      en_cours:            '✅ Mission en cours · jeton débité',
+      en_attente_cloture:  '⏳ Clôture demandée — validation de l\'autre partie requise sous 48h',
+      terminee:            '🏁 Mission terminée',
+      annulee:             '❌ Proposition refusée'
+    }[currentMission.statut] || '';
     area.appendChild(sm);
 
     // Carte proposition si en_attente
