@@ -458,7 +458,7 @@
       </div>
       <div class="stat-card">
         <div class="stat-icon">⭐</div>
-        <div class="stat-num rouge">—</div>
+        <div class="stat-num" id="stat-note" style="color:var(--muted); font-size:0.85rem; padding-top:0.3rem;">Pas encore de note</div>
         <div class="stat-label">Note moyenne</div>
       </div>
       <div class="stat-card">
@@ -511,13 +511,20 @@
           <span class="profil-stars">☆☆☆☆☆</span>
           <span class="profil-reviews">Pas encore d'avis</span>
         </div>
+        <div id="profil-vues-wrap" style="display:none; margin:0.6rem 0; padding:0.6rem 0.8rem; background:rgba(204,10,43,0.04); border-radius:10px; font-size:0.78rem; color:var(--muted); display:flex; align-items:center; justify-content:space-between;">
+          <span>👁️ Vues du profil (30 j)</span>
+          <span id="profil-vues-count" style="font-family:'Syne',sans-serif; font-weight:800; color:var(--night);">—</span>
+        </div>
         <div class="profil-completude">
           <div class="profil-completude-label">
             <span>Complétude du profil</span>
-            <span style="color:var(--rouge); font-weight:600;">0%</span>
+            <span id="completude-pct" style="color:var(--rouge); font-weight:600;">0%</span>
           </div>
           <div class="progress-bar">
-            <div class="progress-fill" style="width:0%"></div>
+            <div class="progress-fill" style="width:0%" id="completude-bar"></div>
+          </div>
+          <div id="completude-hint" style="font-size:0.72rem; color:var(--muted); margin-top:0.5rem; line-height:1.5;">
+            Complétez votre profil pour apparaître dans l'annuaire Pro et être contacté directement par les clients.
           </div>
         </div>
         <div class="profil-actions">
@@ -637,6 +644,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
+<script src="navbar-auth.js"></script>
 <script>
   // Déconnexion — appelée directement depuis le lien HTML
   async function seDeconnecter(e) {
@@ -736,6 +744,32 @@
       if (avatarEl) avatarEl.textContent = initiales;
       const nameEl = document.querySelector('.profil-name');
       if (nameEl) nameEl.textContent = prenom + ' ' + nom;
+
+      // Vues profil sur 30 jours
+      const since30j = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const { count: nbVues } = await db.from('profile_views')
+        .select('*', { count: 'exact', head: true })
+        .eq('profile_id', currentUser.id)
+        .gte('created_at', since30j);
+      const vuesWrap  = document.getElementById('profil-vues-wrap');
+      const vuesCount = document.getElementById('profil-vues-count');
+      if (vuesWrap)  vuesWrap.style.display  = 'flex';
+      if (vuesCount) vuesCount.textContent   = nbVues || 0;
+
+      // Calcul complétude : prenom, nom, bio, photo, localisation = 5 × 20%
+      const champsCom = [currentUser.prenom, currentUser.nom, currentUser.bio, currentUser.photo, currentUser.localisation];
+      const nbRemplis  = champsCom.filter(v => v && String(v).trim() !== '').length;
+      const pct        = Math.round((nbRemplis / champsCom.length) * 100);
+      const pctEl  = document.getElementById('completude-pct');
+      const barEl  = document.getElementById('completude-bar');
+      const hintEl = document.getElementById('completude-hint');
+      if (pctEl) {
+        pctEl.textContent = pct + '%';
+        pctEl.style.color = pct === 100 ? 'var(--vert)' : pct >= 60 ? 'var(--or)' : 'var(--rouge)';
+      }
+      if (barEl) barEl.style.width = pct + '%';
+      if (hintEl) hintEl.style.display = pct === 100 ? 'none' : 'block';
+
       // Lien profil public avec vrai ID
       document.querySelectorAll('a[href="apijob-profil-public.html"]').forEach(a => {
         a.href = `apijob-profil-public.html?id=${currentUser.id}`;
@@ -851,9 +885,14 @@
         const stats = document.querySelectorAll('.stat-num');
         if (stats[1]) stats[1].textContent = nbMissions || 0;
         if (stats[3]) stats[3].textContent = nbProps || 0;
-        if (stats[2] && evals && evals.length > 0) {
+        const noteEl = document.getElementById('stat-note');
+        if (noteEl && evals && evals.length > 0) {
           const moy = evals.reduce((s, e) => s + e.note_globale, 0) / evals.length;
-          stats[2].textContent = moy.toFixed(1);
+          noteEl.textContent = moy.toFixed(1) + ' / 5';
+          noteEl.style.color = 'var(--or)';
+          noteEl.style.fontSize = '';
+          noteEl.style.paddingTop = '';
+          noteEl.classList.add('vert');
         }
 
         // Charger les missions en cours
