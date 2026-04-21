@@ -745,16 +745,20 @@
       const nameEl = document.querySelector('.profil-name');
       if (nameEl) nameEl.textContent = prenom + ' ' + nom;
 
-      // Vues profil sur 30 jours
-      const since30j = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-      const { count: nbVues } = await db.from('profile_views')
-        .select('*', { count: 'exact', head: true })
-        .eq('profile_id', currentUser.id)
-        .gte('created_at', since30j);
-      const vuesWrap  = document.getElementById('profil-vues-wrap');
-      const vuesCount = document.getElementById('profil-vues-count');
-      if (vuesWrap)  vuesWrap.style.display  = 'flex';
-      if (vuesCount) vuesCount.textContent   = nbVues || 0;
+      // Vues profil sur 30 jours (silencieux si table pas encore créée)
+      try {
+        const since30j = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        const { count: nbVues, error: vErr } = await db.from('profile_views')
+          .select('*', { count: 'exact', head: true })
+          .eq('profile_id', currentUser.id)
+          .gte('created_at', since30j);
+        if (!vErr) {
+          const vuesWrap  = document.getElementById('profil-vues-wrap');
+          const vuesCount = document.getElementById('profil-vues-count');
+          if (vuesWrap)  vuesWrap.style.display  = 'flex';
+          if (vuesCount) vuesCount.textContent   = nbVues || 0;
+        }
+      } catch (_) {}
 
       // Calcul complétude : prenom, nom, bio, photo, localisation = 5 × 20%
       const champsCom = [currentUser.prenom, currentUser.nom, currentUser.bio, currentUser.photo, currentUser.localisation];

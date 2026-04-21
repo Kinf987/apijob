@@ -338,12 +338,12 @@
 
     if (!profileId) return; // mode démo
 
-    // Enregistrer la vue (ne pas compter ses propres vues)
+    // Enregistrer la vue — silencieux si table pas encore créée
     if (!currentUser || currentUser.id !== profileId) {
       db.from('profile_views').insert({
         profile_id: profileId,
         viewer_id: currentUser?.id || null
-      }).then(() => {}).catch(() => {});
+      }).catch(() => {});
     }
 
     // Charger le profil
