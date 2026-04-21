@@ -552,14 +552,14 @@
 
   <!-- LES 2 BOUTONS -->
   <div class="split-buttons">
-    <a href="apijob-auth.html" class="split-btn split-btn-presta" onclick="splitBtnClick(event, 'presta')">
+    <a href="apijob-auth.html" class="split-btn split-btn-presta" id="btn-presta">
       <span class="split-btn-icon">🛠️</span>
       <span class="split-btn-label">Particulier ou professionnel</span>
       <span class="split-btn-title">Je rends service</span>
       <span class="split-btn-sub">Tu es patenté, tu as un service à proposer ou une compétence à valoriser ? Inscris-toi et trouve tes premiers clients à Tahiti ou Moorea.</span>
       <span class="split-btn-cta">Créer mon profil →</span>
     </a>
-    <a href="apijob-auth.html" class="split-btn split-btn-client" onclick="splitBtnClick(event, 'client')">
+    <a href="apijob-auth.html" class="split-btn split-btn-client" id="btn-client">
       <span class="split-btn-icon">🔍</span>
       <span class="split-btn-label">C'est gratuit pour toi</span>
       <span class="split-btn-title">J'ai besoin d'aide</span>
@@ -780,40 +780,34 @@
 <script src="supabase-config.js"></script>
 <script>
   (async () => {
-    const btn = document.querySelector('.nav-cta');
-    const session = await getSession();
+    const navBtn   = document.querySelector('.nav-cta');
+    const btnPresta = document.getElementById('btn-presta');
+    const btnClient = document.getElementById('btn-client');
+    const session  = await getSession();
+
     if (!session) {
-      if (btn) btn.style.visibility = 'visible';
+      if (navBtn) navBtn.style.visibility = 'visible';
       return;
     }
+
+    // Connecté → les deux gros boutons vont au dashboard
+    if (btnPresta) btnPresta.href = 'apijob-dashboard.html';
+    if (btnClient) btnClient.href = 'apijob-dashboard.html';
+
     const user = await getCurrentUser();
     if (!user) {
-      if (btn) btn.style.visibility = 'visible';
+      if (navBtn) navBtn.style.visibility = 'visible';
       return;
     }
+
+    // Bouton nav → avatar + dashboard
     const initiales = (((user.prenom||'')[0]||'') + ((user.nom||'')[0]||'')).toUpperCase() || '?';
-    if (btn) {
-      btn.href = 'apijob-dashboard.html';
-      btn.textContent = '';
-      btn.style.cssText = 'visibility:visible;width:36px;height:36px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;font-family:"Syne",sans-serif;font-weight:800;font-size:0.85rem;background:var(--rouge);color:white;text-decoration:none;cursor:pointer;';
-      btn.textContent = initiales;
+    if (navBtn) {
+      navBtn.href = 'apijob-dashboard.html';
+      navBtn.style.cssText = 'visibility:visible;width:36px;height:36px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;font-family:"Syne",sans-serif;font-weight:800;font-size:0.85rem;background:var(--rouge);color:white;text-decoration:none;cursor:pointer;';
+      navBtn.textContent = initiales;
     }
-
   })();
-
-  async function splitBtnClick(e, btnType) {
-    e.preventDefault();
-    const session = await getSession();
-    if (session) {
-      // Déjà connecté → dashboard directement
-      window.location.href = 'apijob-dashboard.html';
-    } else {
-      // Non connecté → auth avec pré-remplissage du rôle
-      window.location.href = btnType === 'presta'
-        ? 'apijob-auth.html?role=prestataire'
-        : 'apijob-auth.html?role=client';
-    }
-  }
 </script>
 
 </body>
