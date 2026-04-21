@@ -125,9 +125,20 @@
 
   /* PACKS JETONS */
   .packs-grid {
-    display: grid; grid-template-columns: repeat(3,1fr);
+    display: grid; grid-template-columns: repeat(2,1fr);
     gap: 1rem; margin-bottom: 2.5rem;
   }
+  .pack-card.disabled {
+    opacity: 0.45; cursor: not-allowed; pointer-events: none;
+  }
+  .pack-card.disabled:hover {
+    border-color: var(--border); transform: none; box-shadow: none;
+  }
+  .pack-disabled-msg {
+    display: none; font-size: 0.72rem; color: var(--muted);
+    margin-top: 0.5rem; font-style: italic;
+  }
+  .pack-card.disabled .pack-disabled-msg { display: block; }
   .pack-card {
     background: var(--blanc);
     border-radius: 20px;
@@ -421,7 +432,7 @@
   <div class="solde-card">
     <div class="solde-label">Mon solde de jetons</div>
     <div class="solde-num"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="1.15em" height="1.15em" style="vertical-align:-0.18em;display:inline-block"><circle cx="16" cy="16" r="15.5" fill="#F0A500"/><circle cx="16" cy="16" r="13" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><g transform="translate(16,16)"><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(72)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(144)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(216)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(288)"/><circle cx="0" cy="0" r="2" fill="#F0A500"/><circle cx="0" cy="0" r="0.9" fill="#C8860A"/></g></svg> <span id="solde-num">5</span></div>
-    <div class="solde-sub">Jetons disponibles · Sans expiration · Non remboursables</div>
+    <div class="solde-sub" id="solde-sub">Jetons disponibles · Renouvelés tous les 30 jours · Non remboursables</div>
     <div class="solde-info">
       <div class="solde-stat">
         <div class="solde-stat-num">23</div>
@@ -440,36 +451,26 @@
 
   <!-- ACHETER DES JETONS -->
   <div class="section-title">Acheter des jetons</div>
-  <div class="section-sub">Choisissez votre pack. Les jetons n'expirent jamais et sont débités uniquement si le client accepte votre proposition.</div>
+  <div class="section-sub">3 jetons gratuits sont renouvelés chaque mois. Vous pouvez en ajouter 3 supplémentaires via le pack ponctuel — maximum 6 jetons au total (3 gratuits + 3 payants).</div>
 
   <div class="packs-grid">
-    <div class="pack-card" onclick="selectPack(this, 3, 900)">
+    <div class="pack-card selected" id="pack-ponctuel" onclick="selectPack(this, 3, 900)">
       <div class="pack-selected-check">✓</div>
       <div class="pack-emoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="1.26em" height="1.26em" style="vertical-align:-0.18em;display:inline-block"><circle cx="16" cy="16" r="15.5" fill="#F0A500"/><circle cx="16" cy="16" r="13" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><g transform="translate(16,16)"><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(72)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(144)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(216)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(288)"/><circle cx="0" cy="0" r="2" fill="#F0A500"/><circle cx="0" cy="0" r="0.9" fill="#C8860A"/></g></svg></div>
-      <div class="pack-name">Starter</div>
-      <div class="pack-who">Pour les occasionnels</div>
+      <div class="pack-name">Pack Ponctuel</div>
+      <div class="pack-who">En complément des jetons gratuits</div>
       <div class="pack-jetons">3</div>
       <div class="pack-jetons-label">jetons</div>
       <div class="pack-prix">900 XPF</div>
       <div class="pack-unit">300 XPF / jeton</div>
-    </div>
-
-    <div class="pack-card selected" onclick="selectPack(this, 9, 1900)">
-      <div class="pack-selected-check">✓</div>
-      <div class="pack-emoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="1.26em" height="1.26em" style="vertical-align:-0.18em;display:inline-block"><circle cx="16" cy="16" r="15.5" fill="#F0A500"/><circle cx="16" cy="16" r="13" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><g transform="translate(16,16)"><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(72)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(144)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(216)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(288)"/><circle cx="0" cy="0" r="2" fill="#F0A500"/><circle cx="0" cy="0" r="0.9" fill="#C8860A"/></g></svg></div>
-      <div class="pack-name">Standard</div>
-      <div class="pack-who">Pour les réguliers</div>
-      <div class="pack-jetons">9</div>
-      <div class="pack-jetons-label">jetons</div>
-      <div class="pack-prix">1 900 XPF</div>
-      <div class="pack-unit">211 XPF / jeton · -30%</div>
+      <div class="pack-disabled-msg">Vous avez déjà 3 jetons payants</div>
     </div>
 
     <div class="pack-card" onclick="selectPack(this, '∞', 2900)">
       <div class="pack-selected-check">✓</div>
       <div class="pack-emoji">∞</div>
       <div class="pack-name">Pro</div>
-      <div class="pack-who">Pour les professionnels</div>
+      <div class="pack-who">Pour les professionnels actifs</div>
       <div class="pack-jetons" style="font-size:1.6rem;">∞</div>
       <div class="pack-jetons-label">jetons / mois</div>
       <div class="pack-prix">2 900 XPF</div>
@@ -616,9 +617,9 @@
 <script src="supabase-config.js"></script>
 <script>
   let currentUser  = null;
-  let selectedJetons = 9;
-  let selectedPrix   = 2000;
-  let selectedNom    = 'Standard';
+  let selectedJetons = 3;
+  let selectedPrix   = 900;
+  let selectedNom    = 'Pack Ponctuel';
 
   // ── SÉLECTION PACK ──
   function selectPack(card, jetons, prix) {
@@ -637,7 +638,7 @@
       : `${selectedNom} — ${selectedJetons} jetons`;
     document.getElementById('recap-unitaire').textContent = isPro
       ? 'Abonnement mensuel'
-      : `${Math.round(selectedPrix / selectedJetons)} XPF / jeton`;
+      : '300 XPF / jeton';
     document.getElementById('recap-total').textContent = selectedPrix.toLocaleString('fr-FR') + ' XPF';
     document.getElementById('btn-prix').textContent    = selectedPrix.toLocaleString('fr-FR') + ' XPF';
   }
@@ -674,19 +675,33 @@
         nouveauSolde = '∞';
         currentUser.is_pro = true;
       } else {
-        // Ajout de jetons
-        const newTokens = (currentUser.tokens || 0) + selectedJetons;
-        await db.from('profiles').update({ tokens: newTokens }).eq('id', currentUser.id);
+        // Pack ponctuel — vérifier la limite de 3 jetons payants
+        const { data: fresh } = await db.from('profiles')
+          .select('tokens, tokens_payants')
+          .eq('id', currentUser.id).single();
+        if ((fresh?.tokens_payants || 0) >= 3) {
+          alert('Vous avez déjà 3 jetons payants. Utilisez-les avant d\'en racheter.');
+          return;
+        }
+        const newTokens         = (fresh?.tokens || 0) + 3;
+        const newTokensPayants  = 3;
+        await db.from('profiles').update({
+          tokens:         newTokens,
+          tokens_payants: newTokensPayants
+        }).eq('id', currentUser.id);
         await db.from('transactions_jetons').insert({
           user_id:  currentUser.id,
           type:     'achat',
-          quantite: selectedJetons
+          quantite: 3
         });
-        currentUser.tokens = newTokens;
+        currentUser.tokens         = newTokens;
+        currentUser.tokens_payants = newTokensPayants;
         nouveauSolde = newTokens;
 
         // Mettre à jour le solde affiché
         document.getElementById('solde-num').textContent = newTokens;
+        // Désactiver le pack si plafond atteint
+        document.getElementById('pack-ponctuel')?.classList.add('disabled');
       }
 
       // Modal succès
@@ -730,13 +745,16 @@
     const svgJeton = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="1em" height="1em" style="vertical-align:-0.12em"><circle cx="16" cy="16" r="15.5" fill="#F0A500"/><g transform="translate(16,16)"><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(72)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(144)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(216)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(288)"/><circle cx="0" cy="0" r="2" fill="#F0A500"/></g></svg>`;
 
     transactions.forEach(t => {
-      const isCredit = t.type === 'achat' || t.type === 'achat_pro' || t.type === 'inscription';
+      const isCredit = t.type === 'achat' || t.type === 'achat_pro' || t.type === 'inscription'
+        || t.type === 'bienvenue' || t.type === 'renouvellement' || t.type === 'restitution';
       const missionTitre = t.missions?.annonces?.titre;
-      const label = t.type === 'achat_pro'  ? 'Passage au statut Pro'
-        : t.type === 'achat'         ? `Achat pack — +${t.quantite} jetons`
-        : t.type === 'inscription'   ? `Jetons offerts à l'inscription`
-        : t.type === 'debit'         ? `Proposition acceptée${missionTitre ? ' — ' + missionTitre : ''}`
-        : t.type === 'restitution'   ? `Jeton restitué${missionTitre ? ' — ' + missionTitre : ''}`
+      const label = t.type === 'achat_pro'      ? 'Passage au statut Pro'
+        : t.type === 'achat'           ? `Pack ponctuel — +${t.quantite} jetons`
+        : t.type === 'inscription'     ? `Jetons offerts à l'inscription`
+        : t.type === 'bienvenue'       ? `3 jetons de bienvenue crédités`
+        : t.type === 'renouvellement'  ? `Renouvellement mensuel — +${t.quantite} jetons`
+        : t.type === 'debit'           ? `Proposition acceptée${missionTitre ? ' — ' + missionTitre : ''}`
+        : t.type === 'restitution'     ? `Jeton restitué${missionTitre ? ' — ' + missionTitre : ''}`
         : t.type;
       const montant  = isCredit ? `+${t.quantite}` : `-${t.quantite}`;
       const cls      = isCredit ? 'montant-plus' : 'montant-moins';
@@ -781,11 +799,24 @@
     if (stats[1]) stats[1].textContent = nbMissions || 0;
     if (stats[2]) stats[2].textContent = tauxAccept + '%';
 
-    // Si déjà Pro : masquer les packs Starter/Standard, mettre Pro en avant
+    // Si déjà Pro : sélectionner la carte Pro, cacher achat pack
     if (currentUser.is_pro) {
-      document.querySelectorAll('.pack-card')[2]?.classList.add('selected');
+      document.getElementById('pack-ponctuel')?.classList.add('disabled');
+      document.querySelectorAll('.pack-card').forEach(c => c.classList.remove('selected'));
+      document.querySelectorAll('.pack-card')[1]?.classList.add('selected');
+      selectedJetons = '∞'; selectedPrix = 2900; selectedNom = 'Pro';
       const sub = document.querySelector('.section-sub');
-      if (sub) sub.textContent = 'Vous êtes Pro — jetons illimités actifs.';
+      if (sub) sub.textContent = 'Vous êtes Pro — jetons illimités actifs. Le pack ponctuel n\'est pas disponible avec l\'abonnement Pro.';
+      document.getElementById('solde-sub').textContent = 'Jetons illimités · Abonnement mensuel actif';
+    } else {
+      // Désactiver le pack si 3 jetons payants déjà présents
+      const tokensPayants = currentUser.tokens_payants || 0;
+      if (tokensPayants >= 3) {
+        document.getElementById('pack-ponctuel')?.classList.add('disabled');
+        document.querySelectorAll('.pack-card').forEach(c => c.classList.remove('selected'));
+        document.querySelectorAll('.pack-card')[1]?.classList.add('selected');
+        selectedJetons = '∞'; selectedPrix = 2900; selectedNom = 'Pro';
+      }
     }
 
     // Historique

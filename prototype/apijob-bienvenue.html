@@ -210,8 +210,8 @@
         <a href="apijob-jetons.html" class="step-row">
           <div class="step-icon-wrap bg-or">🪙</div>
           <div class="step-text">
-            <div class="step-label">Acheter des jetons</div>
-            <div class="step-desc">À partir de 900 XPF — débités uniquement si accepté</div>
+            <div class="step-label">Mes jetons</div>
+            <div class="step-desc">3 jetons gratuits crédités · Pack ponctuel disponible à 900 XPF</div>
           </div>
           <div class="step-arrow">›</div>
         </a>
@@ -318,7 +318,10 @@
         .single();
 
       if (tokenData && (tokenData.tokens === 0 || tokenData.tokens === null)) {
-        await db.from('profiles').update({ tokens: 3 }).eq('id', sess.user.id);
+        await db.from('profiles').update({
+          tokens: 3,
+          cycle_start: new Date().toISOString()
+        }).eq('id', sess.user.id);
         await db.from('transactions_jetons').insert({
           user_id: sess.user.id,
           type: 'bienvenue',
