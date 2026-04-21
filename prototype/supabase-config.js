@@ -42,15 +42,6 @@ async function requireAuth() {
   const user = await getCurrentUser();
   if (!user) { window.location.href = 'apijob-auth.html'; return null; }
   if (user.is_banned) { await db.auth.signOut(); window.location.href = 'apijob-auth.html'; return null; }
-  // Renouvellement mensuel automatique pour les prestataires non-Pro
-  if (user.role === 'prestataire' && !user.is_pro) {
-    const reset = await checkCycleReset(user.id);
-    if (reset) {
-      // Recharger le profil mis à jour
-      const { data: fresh } = await db.from('profiles').select('*').eq('id', user.id).single();
-      if (fresh) return fresh;
-    }
-  }
   return user;
 }
 
@@ -81,33 +72,8 @@ async function getNbNotifNonLues(userId) {
 // ============================================================
 
 async function getTokens(userId) {
-  const { data } = await db.from('profiles').select('tokens, tokens_payants, cycle_start, is_pro, pro_expires_at').eq('id', userId).single();
+  const { data } = await db.from('profiles').select('tokens, is_pro, pro_expires_at').eq('id', userId).single();
   return data;
-}
-
-// Vérifie et renouvelle les 3 jetons gratuits si le cycle de 30 jours est écoulé
-async function checkCycleReset(userId) {
-  const { data } = await db.from('profiles')
-    .select('tokens, tokens_payants, cycle_start, is_pro')
-    .eq('id', userId).single();
-  if (!data || data.is_pro) return false;
-
-  const cycleStart = data.cycle_start ? new Date(data.cycle_start) : new Date(0);
-  const daysSince  = (Date.now() - cycleStart.getTime()) / (1000 * 60 * 60 * 24);
-  if (daysSince < 30) return false;
-
-  // Reset : 3 gratuits + jetons payants restants (non cumulables)
-  const newTokens = (data.tokens_payants || 0) + 3;
-  await db.from('profiles').update({
-    tokens:      newTokens,
-    cycle_start: new Date().toISOString()
-  }).eq('id', userId);
-  await db.from('transactions_jetons').insert({
-    user_id:  userId,
-    type:     'renouvellement',
-    quantite: 3
-  });
-  return true;
 }
 
 // ============================================================

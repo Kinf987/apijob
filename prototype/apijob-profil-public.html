@@ -338,14 +338,6 @@
 
     if (!profileId) return; // mode démo
 
-    // Enregistrer la vue — silencieux si table pas encore créée
-    if (!currentUser || currentUser.id !== profileId) {
-      db.from('profile_views').insert({
-        profile_id: profileId,
-        viewer_id: currentUser?.id || null
-      }).catch(() => {});
-    }
-
     // Charger le profil
     const { data: profile, error } = await db.from('profiles').select('*').eq('id', profileId).single();
     if (error || !profile) return;

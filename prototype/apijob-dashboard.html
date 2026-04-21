@@ -488,7 +488,7 @@
       <div class="section-card">
         <div class="section-card-header">
           <div class="section-card-title">📋 Mes missions</div>
-          <a href="apijob-messagerie.html" class="section-card-link">Tout voir</a>
+          <a href="apijob-missions.html" class="section-card-link">Tout voir</a>
         </div>
         <div class="section-card-body">
           <div class="data-content"></div>
@@ -627,7 +627,7 @@
     <div class="section-card">
       <div class="section-card-header">
         <div class="section-card-title">🕐 Missions passées</div>
-        <a href="apijob-messagerie.html" class="section-card-link">Tout voir</a>
+        <a href="apijob-missions.html" class="section-card-link">Tout voir</a>
       </div>
       <div class="section-card-body"></div>
     </div>
@@ -736,7 +736,6 @@
       if (avatarEl) avatarEl.textContent = initiales;
       const nameEl = document.querySelector('.profil-name');
       if (nameEl) nameEl.textContent = prenom + ' ' + nom;
-
       // Lien profil public avec vrai ID
       document.querySelectorAll('a[href="apijob-profil-public.html"]').forEach(a => {
         a.href = `apijob-profil-public.html?id=${currentUser.id}`;

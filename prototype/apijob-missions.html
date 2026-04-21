@@ -20,7 +20,6 @@
     --vert-light: rgba(26,122,74,0.08);
   }
 
-  html { visibility: hidden; }
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'DM Sans',sans-serif; background:var(--gris); color:var(--night); min-height:100vh; }
 
@@ -296,11 +295,10 @@
 
   function statutInfo(statut) {
     return {
-      en_cours:            { css: 'en-cours',   badge: 'badge-encours',  label: '⏳ En cours'            },
-      en_attente:          { css: 'en-attente', badge: 'badge-attente',  label: '🕐 En attente'          },
-      en_attente_cloture:  { css: 'en-cours',   badge: 'badge-encours',  label: '⏳ Validation requise'  },
-      terminee:            { css: 'terminee',   badge: 'badge-terminee', label: '✅ Terminée'            },
-      annulee:             { css: 'terminee',   badge: 'badge-attente',  label: '❌ Annulée'             },
+      en_cours:   { css: 'en-cours',   badge: 'badge-encours',  label: '⏳ En cours'   },
+      en_attente: { css: 'en-attente', badge: 'badge-attente',  label: '🕐 En attente' },
+      terminee:   { css: 'terminee',   badge: 'badge-terminee', label: '✅ Terminée'   },
+      annulee:    { css: 'terminee',   badge: 'badge-attente',  label: '❌ Annulée'    },
     }[statut] || { css: 'en-attente', badge: 'badge-attente', label: statut };
   }
 
@@ -310,7 +308,7 @@
     const init   = other ? ((other.prenom||'?')[0]+(other.nom||'?')[0]).toUpperCase() : '??';
     const nom    = other ? `${other.prenom||''} ${other.nom||''}`.trim() : 'Utilisateur';
     const ann    = mission.annonces;
-    const titre  = ann ? escHTML(ann.titre) : 'Mission';
+    const titre  = ann ? `${escHTML(ann.titre)}${ann.localisation ? ' — '+escHTML(ann.localisation) : ''}` : 'Mission';
     const emoji  = ann ? catEmoji(ann.categorie) : '✨';
     const dateS  = new Date(mission.created_at).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
     const s      = statutInfo(mission.statut);
@@ -321,27 +319,16 @@
     if (mission.statut === 'en_cours') {
       const btnEval = role === 'prestataire'
         ? `<a href="apijob-evaluation.html?mission=${mission.id}" class="btn-action btn-rouge">✅ Terminer</a>`
-        : `<a href="apijob-evaluation.html?mission=${mission.id}" class="btn-action btn-rouge">✅ Terminer</a>`;
+        : `<a href="apijob-evaluation.html?mission=${mission.id}" class="btn-action btn-rouge">⭐ Laisser un avis</a>`;
       footer = `
-        <div class="mission-footer-left">Mission en cours</div>
+        <div class="mission-footer-left">📍 ${escHTML(ann?.localisation||'')}</div>
         <div class="mission-actions">
           <a href="apijob-messagerie.html?mission=${mission.id}" class="btn-action btn-outline">💬 Message</a>
           ${btnEval}
         </div>`;
-    } else if (mission.statut === 'en_attente_cloture') {
-      const isInitiateur = mission.terminated_by === currentUser.id;
-      const btnCloture = isInitiateur
-        ? `<span style="font-size:0.78rem;color:var(--muted);">⏳ En attente (48h)</span>`
-        : `<a href="apijob-evaluation.html?mission=${mission.id}" class="btn-action btn-rouge">⏳ Valider la fin</a>`;
-      footer = `
-        <div class="mission-footer-left">Validation requise</div>
-        <div class="mission-actions">
-          <a href="apijob-messagerie.html?mission=${mission.id}" class="btn-action btn-outline">💬 Message</a>
-          ${btnCloture}
-        </div>`;
     } else if (mission.statut === 'en_attente') {
       footer = `
-        <div class="mission-footer-left">En attente de confirmation</div>
+        <div class="mission-footer-left">📍 ${escHTML(ann?.localisation||'')} · En attente de confirmation</div>
         <div class="mission-actions">
           <a href="apijob-messagerie.html?mission=${mission.id}" class="btn-action btn-outline">💬 Voir la proposition</a>
         </div>`;
@@ -427,11 +414,11 @@
     // Charger missions + évaluations reçues
     const [{ data: mPresta }, { data: mClient }] = await Promise.all([
       db.from('missions')
-        .select('*, annonces(titre,categorie), client:profiles!client_id(prenom,nom), eval_recu:evaluations!mission_id(note_globale,commentaire,auteur_id)')
+        .select('*, annonces(titre,categorie,localisation), client:profiles!client_id(prenom,nom), eval_recu:evaluations!mission_id(note_globale,commentaire,auteur_id)')
         .eq('prestataire_id', currentUser.id)
         .order('created_at', { ascending: false }),
       db.from('missions')
-        .select('*, annonces(titre,categorie), prestataire:profiles!prestataire_id(prenom,nom), eval_recu:evaluations!mission_id(note_globale,commentaire,auteur_id)')
+        .select('*, annonces(titre,categorie,localisation), prestataire:profiles!prestataire_id(prenom,nom), eval_recu:evaluations!mission_id(note_globale,commentaire,auteur_id)')
         .eq('client_id', currentUser.id)
         .order('created_at', { ascending: false })
     ]);
@@ -459,11 +446,7 @@
       ? document.querySelectorAll('.mode-btn')[1]
       : document.querySelectorAll('.mode-btn')[0];
     setMode(defaultMode, btnDefault);
-
-    document.documentElement.style.visibility = 'visible';
   })();
-  window.addEventListener('error', () => { document.documentElement.style.visibility = 'visible'; });
-  window.addEventListener('unhandledrejection', () => { document.documentElement.style.visibility = 'visible'; });
 </script>
 
 </body>

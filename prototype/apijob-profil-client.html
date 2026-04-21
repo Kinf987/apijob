@@ -254,7 +254,7 @@
 
     // Étape 1 : annonces du client
     const [{ data: annonces }, { count: nbAnnonces }] = await Promise.all([
-      db.from('annonces').select('id, titre, categorie, statut, created_at')
+      db.from('annonces').select('id, titre, categorie, localisation, statut, created_at')
         .eq('client_id', profileId).order('created_at', { ascending: false }).limit(5),
       db.from('annonces').select('id', { count: 'exact', head: true }).eq('client_id', profileId)
     ]);
@@ -334,7 +334,7 @@
                 <div class="annonce-emoji">${catEmoji(a.categorie)}</div>
                 <div class="annonce-info">
                   <div class="annonce-title">${a.titre || ''}</div>
-                  <div class="annonce-meta">${formatDate(a.created_at)}</div>
+                  <div class="annonce-meta">📍 ${a.localisation || 'Tahiti'} · ${formatDate(a.created_at)}</div>
                 </div>
                 <span class="annonce-statut ${cls}">${label}</span>
               </div>`;
