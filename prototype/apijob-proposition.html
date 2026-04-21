@@ -418,7 +418,7 @@
     if (!propositionId) return; // mode démo
 
     const { data: prop, error } = await db.from('propositions')
-      .select('*, prestataire:profiles!prestataire_id(id, prenom, nom, tokens, is_pro, is_verified), annonce:annonces!annonce_id(id, titre, categorie, localisation, created_at)')
+      .select('*, prestataire:profiles!prestataire_id(id, prenom, nom, tokens, is_pro, is_verified), annonce:annonces!annonce_id(id, titre, categorie, created_at)')
       .eq('id', propositionId)
       .single();
 
@@ -447,7 +447,7 @@
     const titleEl = document.querySelector('.annonce-ref-title');
     if (titleEl) titleEl.textContent = annonce.titre || '';
     const metaEl = document.querySelector('.annonce-ref-meta');
-    if (metaEl) metaEl.textContent = `📍 ${annonce.localisation || 'Tahiti'} · ${formatDate(annonce.created_at)} · ${annonce.categorie || ''}`;
+    if (metaEl) metaEl.textContent = `${formatDate(annonce.created_at)} · ${annonce.categorie || ''}`;
 
     // --- Prestataire ---
     const av = document.querySelector('.presta-avatar');

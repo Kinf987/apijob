@@ -21,6 +21,7 @@
     --vert-light: rgba(26,122,74,0.08);
   }
 
+  html { visibility: hidden; }
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
     font-family: 'DM Sans', sans-serif;
@@ -790,7 +791,10 @@
     // Historique
     await chargerHistorique();
     updateRecap();
+    document.documentElement.style.visibility = 'visible';
   })();
+  window.addEventListener('error', () => { document.documentElement.style.visibility = 'visible'; });
+  window.addEventListener('unhandledrejection', () => { document.documentElement.style.visibility = 'visible'; });
 </script>
 
 </body>

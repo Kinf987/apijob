@@ -664,7 +664,7 @@
       db.from('missions').select('id', { count: 'exact', head: true }).eq('statut', 'terminee'),
       db.from('annonces').select('id', { count: 'exact', head: true }),
       db.from('profiles').select('id, prenom, nom, email, role, is_pro, tokens, created_at').order('created_at', { ascending: false }).limit(10),
-      db.from('annonces').select('id, titre, categorie, localisation, statut, created_at, client:profiles!client_id(prenom, nom)').order('created_at', { ascending: false }).limit(10),
+      db.from('annonces').select('id, titre, categorie, statut, created_at, client:profiles!client_id(prenom, nom)').order('created_at', { ascending: false }).limit(10),
       db.from('transactions_jetons').select('id, type, quantite, created_at, user:profiles!user_id(prenom, nom)').order('created_at', { ascending: false }).limit(10)
     ]);
 
@@ -740,7 +740,7 @@
         const date = new Date(a.created_at).toLocaleDateString('fr-FR');
         return `
           <tr>
-            <td><div style="font-weight:600;font-size:0.85rem;">${catEmoji(a.categorie)} ${a.titre || ''}</div><div style="font-size:0.72rem;color:var(--muted);">${a.localisation || 'Tahiti'}</div></td>
+            <td><div style="font-weight:600;font-size:0.85rem;">${catEmoji(a.categorie)} ${a.titre || ''}</div><div style="font-size:0.72rem;color:var(--muted);">${a.categorie || ''}</div></td>
             <td>${nomClient}</td>
             <td>${date}</td>
             <td>—</td>
