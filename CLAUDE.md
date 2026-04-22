@@ -33,15 +33,16 @@ apijob-contact.html, apijob-404.html
 - Clients : accès gratuit, aucun paiement
 - Prestataires : système de jetons (tokens)
   - Inscription : 3 jetons offerts
-  - Pack Petit : 3 jetons
-  - Pack Moyen : 9 jetons (~25% réduction)
-  - Pack Pro : illimité + visibilité annuaire
+  - Découverte : gratuit
+  - Starter : 900 XPF
+  - Standard : 1 900 XPF/mois (-30%)
+  - Pro : 2 900 XPF/mois
 - Débit du jeton : uniquement quand le client ACCEPTE une proposition
-- Paiement : Stripe (carte) + virement + cash relais
+- Paiement : Stripe (carte) + virement + cash relais (Stripe différé)
 - Jetons non remboursables
 
 ## Tables Supabase (déjà créées)
-- profiles (id, email, role, prenom, nom, photo, localisation, bio, tokens, is_pro, created_at)
+- profiles (id, email, role, prenom, nom, photo text [URL bucket identites], localisation, bio, tokens, is_pro, metadata jsonb [titre, experience, services, zones, disponibilites], created_at)
 - annonces (id, client_id, titre, description, categorie, localisation, statut, created_at)
 - propositions (id, annonce_id, prestataire_id, message, tarif, disponibilite, statut, created_at)
 - missions (id, annonce_id, proposition_id, client_id, prestataire_id, statut, created_at)
@@ -57,28 +58,54 @@ apijob-contact.html, apijob-404.html
 - Admin credentials : à changer avant mise en ligne
 - Déclaration CPS cochée à l'inscription
 
-## Pages déjà connectées au backend
+## Pages connectées au backend — TOUTES FAITES ✅
 - apijob-auth.html — inscription + connexion + emailRedirectTo bienvenue
+- apijob-dashboard.html — stats réelles, vrai prénom, déconnexion
 - apijob-annonce.html — publication d'annonce en base
 - apijob-annonces.html — liste dynamique + filtres + envoi de propositions
-- apijob-dashboard.html — stats réelles, vrai prénom, déconnexion
 - apijob-confirmation-email.html — vrai email, renvoi Supabase
 - apijob-bienvenue.html — token après confirmation, vrai prénom, rôle réel
+- apijob-profil-edit.html — édition profil + photo (bucket identites)
+- apijob-messagerie.html — messagerie temps réel
+- apijob-missions.html — suivi des missions
+- apijob-notifications.html — centre de notifications
+- apijob-evaluation.html — système d'avis
+- apijob-jetons.html — affichage jetons + forfaits
+- apijob-pros.html — annuaire des Pro
+- apijob-annonce-detail.html — détail annonce
+- apijob-profil-public.html — profil public prestataire
+- apijob-proposition.html — envoi proposition + accepter → crée mission + débite jeton + notifie
+- apijob-parametres.html — paramètres compte
+- apijob-motdepasse.html — réinitialisation mot de passe (détecte PASSWORD_RECOVERY)
+- apijob-profil-client.html — profil client
+- apijob-pro.html — page prestataire
+- apijob-admin.html — tableau de bord admin
+- apijob-admin-login.html — connexion admin (credentials hardcodés — à changer avant prod)
+- apijob-devenir-pro.html — upgrade Pro
 
-## Pages restantes à connecter (par priorité)
-1. apijob-profil-edit.html — édition profil
-2. apijob-messagerie.html — messagerie temps réel
-3. apijob-missions.html — suivi des missions
-4. apijob-notifications.html — centre de notifications
-5. apijob-evaluation.html — système d'avis
-6. apijob-jetons.html — achat de jetons (Stripe)
-7. apijob-pros.html — annuaire des Pro
+## Pages statiques (rien à faire)
+- apijob-cgu.html, apijob-mentions.html, apijob-confidentialite.html, apijob-contact.html, apijob-404.html
+
+## Ce qui reste avant mise en prod
+1. **Tests flux complet** — créer compte client + prestataire, publier annonce → proposition → mission → évaluation → vérifier notifications, messagerie, jetons débités
+2. **Stripe** — intégration paiement jetons (différé volontairement)
+3. **Changer credentials admin** — dans apijob-admin-login.html avant mise en ligne
+4. **Nom de domaine** — pointer apijob.pf vers Netlify
 
 ## Supabase
 - Project ID : douncwfmczjpnwcpfsah
 - Project URL : https://douncwfmczjpnwcpfsah.supabase.co
 - Dashboard : https://supabase.com/dashboard/project/douncwfmczjpnwcpfsah
 - Clés dans : sauvegarde-terminal/cles-supabase.md (exclu GitHub)
+
+## Notes techniques importantes
+- `metadata` JSONB dans `profiles` : titre, experience, services, zones, disponibilites
+- `photo text` dans `profiles` : URL publique du bucket Storage `identites`
+- FK disambiguation Supabase : `profiles!prestataire_id(...)` pour tables avec deux FK vers profiles
+- `apijob-proposition.html` accepter() → crée mission + débite jeton prestataire + notifie
+- `apijob-motdepasse.html` détecte `onAuthStateChange('PASSWORD_RECOVERY')` pour sauter à l'étape 3
+- Admin login : credentials hardcodés dans apijob-admin-login.html (à changer avant prod)
+- Déconnexion : lien logout → `onclick="seDeconnecter(event)"`, signOut() dans supabase-config.js avec `?logout=1`, auth page appelle `db.auth.signOut()` côté client au retour
 
 ## Règles de travail
 - Ne jamais toucher au HTML/CSS
