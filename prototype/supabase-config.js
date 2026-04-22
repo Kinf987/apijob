@@ -117,30 +117,57 @@ function formatDate(dateStr) {
 
 function catEmoji(cat) {
   const map = {
-    'Jardinage': '🌿', 'Ménage': '🏠', 'Plomberie': '🔧', 'Électricité': '⚡',
-    'Bricolage': '🛠️', 'Déménagement': '📦', 'Baby-sitting': '👶',
-    'Gardiennage': '🏡', 'Animaux': '🐾', 'Peinture': '🎨',
-    'Transports': '🚗', 'Mécanique': '🔩', 'Aide à la personne': '🤝',
-    'Informatique': '💻', 'Cours particuliers': '🎓', 'Enseignement': '📚',
-    'Démarches & administratif': '📋', 'Aménagement & déco': '🛋️',
-    'Événementiel': '🎉', 'Bureautique & administratif': '💼',
-    'Bien-être': '🧘', 'Pisciniste': '🏊', 'Climatisation': '❄️', 'Artisanat': '🗿',
-    'Maçonnerie': '🧱', 'Menuiserie': '🪵', 'Carrelage & faïence': '🪟', 'Toiture': '🏗️',
-    'Entretien de bateau': '⛵', 'Services nautiques': '🎣', 'Coiffure à domicile': '✂️',
-    'Traiteur & chef à domicile': '👨‍🍳', 'Massage à domicile': '💆', 'Photographie': '📷',
-    'Graphisme & design': '🖌️', 'Création de contenu': '📱', 'Couture & retouches': '🧵',
-    'Sécurité & surveillance': '🔐', 'Autre': '✨'
+    'Maçonnerie': '🧱',
+    'Toiture': '🏗️',
+    'Plomberie': '🔧',
+    'Électricité': '⚡',
+    'Menuiserie': '🪵',
+    'Carrelage & faïence': '🪟',
+    'Peinture': '🎨',
+    'Bricolage': '🛠️',
+    'Climatisation': '❄️',
+    'Pisciniste': '🏊',
+    'Ménage': '🏠',
+    'Jardinage': '🌿',
+    'Aménagement & déco': '🛋️',
+    'Déménagement': '📦',
+    'Transports': '🚗',
+    'Coursier': '🛵',
+    'Entretien de bateau': '⛵',
+    'Services nautiques': '🎣',
+    'Mécanique': '🔩',
+    'Aide à la personne': '🤝',
+    'Baby-sitting': '👶',
+    'Gardiennage': '🏡',
+    'Animaux': '🐾',
+    'Coiffure à domicile': '✂️',
+    'Bien-être': '🧘',
+    'Traiteur': '👨‍🍳',
+    'Artisanat': '🗿',
+    'Couture & retouches': '🧵',
+    'Sécurité & surveillance': '🔐',
+    'Cours particuliers': '🎓',
+    'Enseignement': '📚',
+    'Coach (divers)': '🎯',
+    'Démarches & administratif': '📋',
+    'Bureautique & administratif': '💼',
+    'Événementiel': '🎉',
+    'Photographie': '📷',
+    'Informatique': '💻',
+    'Graphisme & design': '🖌️',
+    'Création de contenu': '📱',
+    'Autre': '✨'
   };
   return map[cat] || '✨';
 }
 
 function urgenceBadge(urgence) {
   const map = {
-    'Dès que possible': { cls: 'badge-urgent',   label: '⚡ Urgent'      },
-    'Cette semaine':    { cls: 'badge-semaine',   label: '📅 Cette semaine'},
-    'Ce weekend':       { cls: 'badge-weekend',   label: '🌴 Ce weekend'  },
-    'Date précise':     { cls: 'badge-flexible',  label: '🗓️ Date précise' },
-    'flexible':         { cls: 'badge-flexible',  label: '🕐 Flexible'    }
+    'Dès que possible': { cls: 'badge-urgent',   label: '⚡ Urgent'        },
+    'Cette semaine':    { cls: 'badge-semaine',   label: '📅 Cette semaine' },
+    'Ce mois-ci':       { cls: 'badge-mois',      label: '🗓️ Ce mois'      },
+    'Flexible':         { cls: 'badge-flexible',  label: '🕐 Flexible'     },
+    'À définir':        { cls: 'badge-flexible',  label: '🕐 À définir'    },
   };
   return map[urgence] || { cls: 'badge-flexible', label: urgence };
 }
