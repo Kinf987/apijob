@@ -124,7 +124,12 @@ function catEmoji(cat) {
     'Informatique': '💻', 'Cours particuliers': '🎓', 'Enseignement': '📚',
     'Démarches & administratif': '📋', 'Aménagement & déco': '🛋️',
     'Événementiel': '🎉', 'Bureautique & administratif': '💼',
-    'Bien-être': '🧘', 'Pisciniste': '🏊', 'Climatisation': '❄️', 'Artisanat': '🗿', 'Autre': '✨'
+    'Bien-être': '🧘', 'Pisciniste': '🏊', 'Climatisation': '❄️', 'Artisanat': '🗿',
+    'Maçonnerie': '🧱', 'Menuiserie': '🪵', 'Carrelage & faïence': '🪟', 'Toiture': '🏗️',
+    'Entretien de bateau': '⛵', 'Services nautiques': '🎣', 'Coiffure à domicile': '✂️',
+    'Traiteur & chef à domicile': '👨‍🍳', 'Massage à domicile': '💆', 'Photographie': '📷',
+    'Graphisme & design': '🖌️', 'Création de contenu': '📱', 'Couture & retouches': '🧵',
+    'Sécurité & surveillance': '🔐', 'Autre': '✨'
   };
   return map[cat] || '✨';
 }
