@@ -789,8 +789,15 @@
     if (!btn) return;
     btn.href = 'apijob-dashboard.html';
     btn.textContent = '';
-    btn.style.cssText = 'visibility:visible;width:36px;height:36px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;font-family:"Syne",sans-serif;font-weight:800;font-size:0.85rem;background:var(--rouge);color:white;text-decoration:none;cursor:pointer;';
-    btn.textContent = initiales;
+    btn.style.cssText = 'visibility:visible;width:36px;height:36px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;font-family:"Syne",sans-serif;font-weight:800;font-size:0.85rem;background:var(--rouge);color:white;text-decoration:none;cursor:pointer;overflow:hidden;';
+    if (user.photo) {
+      const img = document.createElement('img');
+      img.src = user.photo;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+      btn.appendChild(img);
+    } else {
+      btn.textContent = initiales;
+    }
   })();
 </script>
 

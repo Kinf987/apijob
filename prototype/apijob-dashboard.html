@@ -689,9 +689,15 @@
 
     const avatarEl = document.querySelector('.nav-avatar');
     if (avatarEl) {
-      // Conserver l'onclick toggleMenu, juste remplacer le texte (premier nœud texte)
       const textNode = Array.from(avatarEl.childNodes).find(n => n.nodeType === 3);
-      if (textNode) textNode.textContent = initiales;
+      if (currentUser.photo) {
+        avatarEl.style.backgroundImage = `url(${currentUser.photo})`;
+        avatarEl.style.backgroundSize = 'cover';
+        avatarEl.style.backgroundPosition = 'center';
+        if (textNode) textNode.textContent = '';
+      } else {
+        if (textNode) textNode.textContent = initiales;
+      }
     }
 
     // Date actuelle
@@ -733,7 +739,16 @@
     // Mettre à jour la profil card prestataire avec de vraies données
     if (role === 'prestataire') {
       const avatarEl = document.querySelector('.profil-avatar');
-      if (avatarEl) avatarEl.textContent = initiales;
+      if (avatarEl) {
+        if (currentUser.photo) {
+          avatarEl.style.backgroundImage = `url(${currentUser.photo})`;
+          avatarEl.style.backgroundSize = 'cover';
+          avatarEl.style.backgroundPosition = 'center';
+          avatarEl.textContent = '';
+        } else {
+          avatarEl.textContent = initiales;
+        }
+      }
       const nameEl = document.querySelector('.profil-name');
       if (nameEl) nameEl.textContent = prenom + ' ' + nom;
       // Lien profil public avec vrai ID
