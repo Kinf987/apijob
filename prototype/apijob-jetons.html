@@ -423,15 +423,15 @@
     <div class="solde-sub">Jetons disponibles · Sans expiration · Non remboursables</div>
     <div class="solde-info">
       <div class="solde-stat">
-        <div class="solde-stat-num">23</div>
+        <div class="solde-stat-num" id="stat-debits">—</div>
         <div class="solde-stat-label">Jetons utilisés au total</div>
       </div>
       <div class="solde-stat">
-        <div class="solde-stat-num">18</div>
+        <div class="solde-stat-num" id="stat-missions">—</div>
         <div class="solde-stat-label">Missions décrochées</div>
       </div>
       <div class="solde-stat">
-        <div class="solde-stat-num">78%</div>
+        <div class="solde-stat-num" id="stat-taux">—</div>
         <div class="solde-stat-label">Taux d'acceptation</div>
       </div>
     </div>
@@ -446,8 +446,8 @@
     </div>
   </div>
 
-  <!-- ACHETER DES JETONS (masqué si is_pro) -->
-  <div id="section-achat">
+  <!-- ACHETER DES JETONS (masqué par défaut, révélé si non Pro) -->
+  <div id="section-achat" style="display:none;">
   <div class="section-title">Acheter des jetons</div>
   <div class="section-sub">Choisissez votre pack. Les jetons n'expirent jamais et sont débités uniquement si le client accepte votre proposition.</div>
 
@@ -789,22 +789,21 @@
     const totalDebits = txDebits?.reduce((s, t) => s + (t.quantite || 0), 0) || 0;
     const tauxAccept  = nbProps > 0 ? Math.round((nbMissions / nbProps) * 100) : 0;
 
-    const stats = document.querySelectorAll('.solde-stat-num');
-    if (stats[0]) stats[0].textContent = totalDebits;
-    if (stats[1]) stats[1].textContent = nbMissions || 0;
-    if (stats[2]) stats[2].textContent = tauxAccept + '%';
+    const statDebits  = document.getElementById('stat-debits');
+    const statMissions = document.getElementById('stat-missions');
+    const statTaux    = document.getElementById('stat-taux');
+    if (statDebits)   statDebits.textContent  = totalDebits;
+    if (statMissions) statMissions.textContent = nbMissions || 0;
+    if (statTaux)     statTaux.textContent     = tauxAccept + '%';
 
-    // Si Pro : masquer section achat, afficher statut Pro + résiliation
+    // Révéler la bonne section selon le statut Pro
     if (currentUser.is_pro) {
-      const sectionAchat = document.getElementById('section-achat');
-      if (sectionAchat) sectionAchat.style.display = 'none';
-      const sectionStatus = document.getElementById('section-pro-status');
-      if (sectionStatus) sectionStatus.style.display = 'block';
-      const sectionResil = document.getElementById('section-resiliation');
-      if (sectionResil) sectionResil.style.display = 'block';
-      // Adapter le solde-sub
+      document.getElementById('section-pro-status').style.display = 'block';
+      document.getElementById('section-resiliation').style.display = 'block';
       const soldeSub = document.querySelector('.solde-sub');
       if (soldeSub) soldeSub.textContent = 'Abonnement Pro actif · Jetons illimités';
+    } else {
+      document.getElementById('section-achat').style.display = 'block';
     }
 
     // Historique
