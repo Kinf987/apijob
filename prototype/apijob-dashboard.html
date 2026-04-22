@@ -506,7 +506,7 @@
         <div class="jetons-sub">Utilisables sur toutes les annonces</div>
       </div>
       <div class="jetons-right">
-        <a href="apijob-jetons.html" class="btn-jetons btn-jetons-or">+ Acheter des jetons</a>
+        <a href="apijob-jetons.html" class="btn-jetons btn-jetons-or" id="btn-acheter-jetons">+ Acheter des jetons</a>
         <a href="apijob-jetons.html#historique" class="btn-jetons btn-jetons-outline">Historique</a>
       </div>
     </div>
@@ -769,6 +769,13 @@
         const svgEl = jetonsNum.querySelector('svg');
         jetonsNum.textContent = ' ' + tokens;
         if (svgEl) jetonsNum.prepend(svgEl);
+      }
+      // Si Pro : masquer "Acheter des jetons", garder uniquement "Historique"
+      if (currentUser.is_pro) {
+        const btnAcheter = document.getElementById('btn-acheter-jetons');
+        if (btnAcheter) btnAcheter.style.display = 'none';
+        const jetonsSub = document.querySelector('.jetons-sub');
+        if (jetonsSub) jetonsSub.textContent = 'Abonnement Pro actif · Jetons illimités';
       }
     }
 
