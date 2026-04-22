@@ -628,6 +628,7 @@
 <script>
   let currentUser    = null;
   let selectedJetons = '∞';
+  let proRenewalDate = null; // date de renouvellement Pro (souscription + 1 mois)
   let selectedPrix   = 2900;
   let selectedNom    = 'Pro';
 
@@ -796,12 +797,51 @@
     if (statMissions) statMissions.textContent = nbMissions || 0;
     if (statTaux)     statTaux.textContent     = tauxAccept + '%';
 
+    // Vérifier si une résiliation planifiée est passée → finaliser
+    await verifierAnnulationPro();
+
     // Révéler la bonne section selon le statut Pro
     if (currentUser.is_pro) {
-      document.getElementById('section-pro-status').style.display = 'block';
+      // Dates de facturation
+      const { data: proTx } = await db.from('transactions_jetons')
+        .select('created_at')
+        .eq('user_id', currentUser.id)
+        .eq('type', 'achat_pro')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const dateOpts = { day: 'numeric', month: 'long', year: 'numeric' };
+      const cancelDate = currentUser.metadata?.pro_cancel_scheduled;
+      // Renouvellement = date de souscription + 1 mois
+      if (proTx) {
+        proRenewalDate = new Date(proTx.created_at);
+        proRenewalDate.setMonth(proRenewalDate.getMonth() + 1);
+      } else {
+        proRenewalDate = new Date(); proRenewalDate.setMonth(proRenewalDate.getMonth() + 1);
+      }
+      const periodeStr = proTx ? new Date(proTx.created_at).toLocaleDateString('fr-FR', dateOpts) : '—';
+      const finStr = (cancelDate ? new Date(cancelDate) : proRenewalDate).toLocaleDateString('fr-FR', dateOpts);
+
+      // Bannière statut Pro avec dates
+      const statusDiv = document.getElementById('section-pro-status');
+      statusDiv.style.display = 'block';
+      statusDiv.querySelector('div').innerHTML = `
+        <div style="font-size:2.5rem;margin-bottom:0.6rem;">⭐</div>
+        <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:0.4rem;">${cancelDate ? 'Résiliation planifiée' : 'Abonnement Pro actif'}</div>
+        <div style="font-size:0.85rem;color:var(--muted);line-height:1.6;">
+          ${cancelDate
+            ? `Accès Pro maintenu jusqu'au <strong>${finStr}</strong><br>Après cette date, retour au mode standard.`
+            : `Payé le ${periodeStr}<br>Renouvellement le <strong>${finStr}</strong> · 2 900 XPF`}
+        </div>`;
+
       document.getElementById('section-resiliation').style.display = 'block';
+      afficherBoutonResiliation(cancelDate, finStr);
+
       const soldeSub = document.querySelector('.solde-sub');
-      if (soldeSub) soldeSub.textContent = 'Abonnement Pro actif · Jetons illimités';
+      if (soldeSub) soldeSub.textContent = cancelDate
+        ? `Accès Pro jusqu'au ${finStr}`
+        : 'Abonnement Pro actif · Jetons illimités';
     } else {
       document.getElementById('section-achat').style.display = 'block';
     }
@@ -811,34 +851,96 @@
     updateRecap();
   })();
 
-  // ── ANNULER ABONNEMENT PRO ──
+  // ── AFFICHER BOUTON RÉSILIATION ──
+  function afficherBoutonResiliation(cancelDate, finStr) {
+    const container = document.querySelector('#section-resiliation div');
+    if (!container) return;
+    if (cancelDate) {
+      container.innerHTML = `
+        <div style="font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:800;margin-bottom:0.5rem;color:var(--night);">Résiliation planifiée</div>
+        <p style="font-size:0.82rem;color:var(--muted);line-height:1.6;margin-bottom:1.2rem;">
+          Votre abonnement se terminera le <strong>${finStr}</strong>. Vous conservez l'accès Pro jusqu'à cette date.
+        </p>
+        <button onclick="annulerResiliation()" style="padding:0.65rem 1.4rem;background:transparent;color:var(--vert);border:1.5px solid rgba(26,122,74,0.3);border-radius:50px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;" onmouseover="this.style.borderColor='var(--vert)'" onmouseout="this.style.borderColor='rgba(26,122,74,0.3)'">↩ Annuler la résiliation</button>`;
+    } else {
+      container.innerHTML = `
+        <div style="font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:800;margin-bottom:0.5rem;color:var(--night);">Gérer mon abonnement</div>
+        <p style="font-size:0.82rem;color:var(--muted);line-height:1.6;margin-bottom:1.2rem;">En résiliant, vous conservez l'accès Pro jusqu'à la fin du mois en cours. Vos jetons achetés sont conservés (3 jetons minimum au retour).</p>
+        <button onclick="annulerPro()" id="btn-resilier" style="padding:0.65rem 1.4rem;background:transparent;color:var(--rouge);border:1.5px solid rgba(204,10,43,0.3);border-radius:50px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--rouge)'" onmouseout="this.style.borderColor='rgba(204,10,43,0.3)'">Résilier mon abonnement Pro</button>`;
+    }
+  }
+
+  // ── PLANIFIER RÉSILIATION (fin de mois) ──
   async function annulerPro() {
-    if (!confirm('Résilier votre abonnement Pro ?\n\nVos jetons achetés seront conservés (3 jetons minimum). La résiliation est immédiate.')) return;
+    // Utilise la date de renouvellement (souscription + 1 mois) comme date de fin d'accès
+    const renewalDate = proRenewalDate || (() => { const d = new Date(); d.setMonth(d.getMonth() + 1); return d; })();
+    const finStr = renewalDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    if (!confirm(`Résilier votre abonnement Pro ?\n\nVous conserverez l'accès jusqu'au ${finStr}. Vos jetons achetés seront conservés (3 minimum).`)) return;
 
     const btn = document.getElementById('btn-resilier');
-    if (btn) { btn.disabled = true; btn.textContent = 'Résiliation en cours…'; }
+    if (btn) { btn.disabled = true; btn.textContent = 'En cours…'; }
 
     try {
-      // Calculer les jetons à restituer : crédits achetés - débits (hors Pro)
-      const [{ data: txCredits }, { data: txDebits }] = await Promise.all([
-        db.from('transactions_jetons').select('quantite').eq('user_id', currentUser.id)
-          .in('type', ['achat', 'inscription', 'bienvenue', 'restitution']),
-        db.from('transactions_jetons').select('quantite').eq('user_id', currentUser.id)
-          .eq('type', 'debit')
-      ]);
-      const totalCredits = txCredits?.reduce((s, t) => s + (t.quantite || 0), 0) || 0;
-      const totalDebits  = txDebits?.reduce((s, t) => s + (t.quantite || 0), 0) || 0;
-      const tokensRestants = Math.max(3, totalCredits - totalDebits);
-
-      await db.from('profiles').update({ is_pro: false, tokens: tokensRestants }).eq('id', currentUser.id);
+      const endStr = renewalDate.toISOString().split('T')[0];
+      const newMeta = { ...(currentUser.metadata || {}), pro_cancel_scheduled: endStr };
+      await db.from('profiles').update({ metadata: newMeta }).eq('id', currentUser.id);
       await db.from('transactions_jetons').insert({ user_id: currentUser.id, type: 'annulation_pro', quantite: 0 });
-
-      window.location.reload();
+      currentUser.metadata = newMeta;
+      afficherBoutonResiliation(endStr, finStr);
+      // Mettre à jour la bannière statut
+      const statusInner = document.querySelector('#section-pro-status div');
+      if (statusInner) statusInner.innerHTML = `
+        <div style="font-size:2.5rem;margin-bottom:0.6rem;">⭐</div>
+        <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:0.4rem;">Résiliation planifiée</div>
+        <div style="font-size:0.85rem;color:var(--muted);line-height:1.6;">Accès Pro maintenu jusqu'au <strong>${finStr}</strong><br>Après cette date, retour au mode standard.</div>`;
+      const soldeSub = document.querySelector('.solde-sub');
+      if (soldeSub) soldeSub.textContent = `Accès Pro jusqu'au ${finStr}`;
     } catch(e) {
       console.error('Erreur résiliation:', e);
-      alert('Erreur lors de la résiliation. Veuillez réessayer.');
+      alert('Erreur. Veuillez réessayer.');
       if (btn) { btn.disabled = false; btn.textContent = 'Résilier mon abonnement Pro'; }
     }
+  }
+
+  // ── ANNULER LA RÉSILIATION ──
+  async function annulerResiliation() {
+    try {
+      const newMeta = { ...(currentUser.metadata || {}) };
+      delete newMeta.pro_cancel_scheduled;
+      await db.from('profiles').update({ metadata: newMeta }).eq('id', currentUser.id);
+      currentUser.metadata = newMeta;
+      window.location.reload();
+    } catch(e) {
+      alert('Erreur. Veuillez réessayer.');
+    }
+  }
+
+  // ── VÉRIFIER SI UNE RÉSILIATION PLANIFIÉE EST ÉCHUE ──
+  async function verifierAnnulationPro() {
+    if (!currentUser.is_pro) return;
+    const cancelDate = currentUser.metadata?.pro_cancel_scheduled;
+    if (!cancelDate) return;
+    const today = new Date();
+    const fin = new Date(cancelDate);
+    fin.setHours(23, 59, 59, 999);
+    if (today <= fin) return; // pas encore échue
+
+    // Fin de mois passée → finaliser l'annulation
+    const [{ data: txCredits }, { data: txDebits }] = await Promise.all([
+      db.from('transactions_jetons').select('quantite').eq('user_id', currentUser.id)
+        .in('type', ['achat', 'inscription', 'bienvenue', 'restitution']),
+      db.from('transactions_jetons').select('quantite').eq('user_id', currentUser.id).eq('type', 'debit')
+    ]);
+    const totalCredits = txCredits?.reduce((s, t) => s + (t.quantite || 0), 0) || 0;
+    const totalDebits  = txDebits?.reduce((s, t) => s + (t.quantite || 0), 0) || 0;
+    const tokensRestants = Math.max(3, totalCredits - totalDebits);
+    const newMeta = { ...(currentUser.metadata || {}) };
+    delete newMeta.pro_cancel_scheduled;
+    await db.from('profiles').update({ is_pro: false, tokens: tokensRestants, metadata: newMeta }).eq('id', currentUser.id);
+    currentUser.is_pro = false;
+    currentUser.tokens = tokensRestants;
+    currentUser.metadata = newMeta;
   }
 </script>
 

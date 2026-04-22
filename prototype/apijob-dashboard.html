@@ -503,7 +503,8 @@
       <div class="jetons-left">
         <div class="jetons-label">Mes jetons</div>
         <div class="jetons-num"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="1.15em" height="1.15em" style="vertical-align:-0.18em;display:inline-block"><circle cx="16" cy="16" r="15.5" fill="#F0A500"/><circle cx="16" cy="16" r="13" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><g transform="translate(16,16)"><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(72)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(144)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(216)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(288)"/><circle cx="0" cy="0" r="2" fill="#F0A500"/><circle cx="0" cy="0" r="0.9" fill="#C8860A"/></g></svg> —</div>
-        <div class="jetons-sub">Utilisables sur toutes les annonces</div>
+        <div class="jetons-sub" id="jetons-sub">Utilisables sur toutes les annonces</div>
+        <div id="jetons-billing-info" style="display:none;font-size:0.75rem;color:rgba(255,255,255,0.35);margin-top:0.25rem;line-height:1.4;"></div>
       </div>
       <div class="jetons-right">
         <a href="apijob-jetons.html" class="btn-jetons btn-jetons-or" id="btn-acheter-jetons">+ Acheter des jetons</a>
@@ -770,12 +771,36 @@
         jetonsNum.textContent = ' ' + tokens;
         if (svgEl) jetonsNum.prepend(svgEl);
       }
-      // Si Pro : masquer "Acheter des jetons", garder uniquement "Historique"
+      // Si Pro : masquer "Acheter des jetons", afficher infos période
       if (currentUser.is_pro) {
         const btnAcheter = document.getElementById('btn-acheter-jetons');
         if (btnAcheter) btnAcheter.style.display = 'none';
-        const jetonsSub = document.querySelector('.jetons-sub');
-        if (jetonsSub) jetonsSub.textContent = 'Abonnement Pro actif · Jetons illimités';
+        document.getElementById('jetons-sub').textContent = 'Abonnement Pro actif · Jetons illimités';
+
+        // Charger les dates de facturation
+        const { data: proTx } = await db.from('transactions_jetons')
+          .select('created_at')
+          .eq('user_id', currentUser.id)
+          .eq('type', 'achat_pro')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        const billingEl = document.getElementById('jetons-billing-info');
+        if (billingEl) {
+          const cancelDate = currentUser.metadata?.pro_cancel_scheduled;
+          const dateOpts = { day: 'numeric', month: 'long', year: 'numeric' };
+          // Renouvellement = date de souscription + 1 mois
+          const renewalDate = proTx ? (() => { const d = new Date(proTx.created_at); d.setMonth(d.getMonth() + 1); return d; })() : (() => { const d = new Date(); d.setMonth(d.getMonth() + 1); return d; })();
+          const periodeStr = proTx
+            ? new Date(proTx.created_at).toLocaleDateString('fr-FR', dateOpts)
+            : new Date().toLocaleDateString('fr-FR', dateOpts);
+          const finStr = (cancelDate ? new Date(cancelDate) : renewalDate).toLocaleDateString('fr-FR', dateOpts);
+          billingEl.innerHTML = cancelDate
+            ? `⚠️ Résiliation prévue le ${finStr}<br>Accès Pro maintenu jusqu\'à cette date`
+            : `Payé le ${periodeStr} · Renouvellement le ${finStr}`;
+          billingEl.style.display = 'block';
+        }
       }
     }
 
