@@ -47,7 +47,7 @@ async function requireAuth() {
 
 async function signOut() {
   await db.auth.signOut();
-  window.location.href = 'apijob-auth.html?logout=1';
+  window.location.href = 'apijob-v4.html';
 }
 
 // ============================================================

@@ -682,14 +682,14 @@
   async function seDeconnecter(e) {
     if (e) e.preventDefault();
     await db.auth.signOut({ scope: 'global' });
-    window.location.replace('apijob-auth.html?logout=1');
+    window.location.replace('apijob-v4.html');
   }
 
   // Désactiver le bfcache (évite que le dashboard s'affiche après déconnexion)
   window.addEventListener('pageshow', async (e) => {
     if (e.persisted) {
       const { data: { session } } = await db.auth.getSession();
-      if (!session) window.location.replace('apijob-auth.html?logout=1');
+      if (!session) window.location.replace('apijob-v4.html');
     }
   });
 
