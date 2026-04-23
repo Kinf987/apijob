@@ -336,7 +336,8 @@
       currentUser = data;
     }
 
-    if (!profileId) return; // mode démo
+    if (!profileId && session?.user?.id) { window.location.replace(`apijob-profil-public.html?id=${session.user.id}`); return; }
+    if (!profileId) return;
 
     // Charger le profil
     const { data: profile, error } = await db.from('profiles').select('*').eq('id', profileId).single();

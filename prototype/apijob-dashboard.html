@@ -809,6 +809,19 @@
     chargerNotifications();
 
 
+    // Créditer 3 jetons si prestataire sans transaction bienvenue
+    if (role === 'prestataire' && (currentUser.tokens === 0 || currentUser.tokens === null)) {
+      const { count } = await db.from('transactions_jetons')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', currentUser.id)
+        .eq('type', 'bienvenue');
+      if (count === 0) {
+        await db.from('profiles').update({ tokens: 3 }).eq('id', currentUser.id);
+        await db.from('transactions_jetons').insert({ user_id: currentUser.id, type: 'bienvenue', quantite: 3 });
+        currentUser.tokens = 3;
+      }
+    }
+
     // Mettre à jour la profil card prestataire avec de vraies données
     if (role === 'prestataire') {
       const avatarEl = document.querySelector('.profil-avatar');
@@ -881,6 +894,19 @@
         if (starsEl) starsEl.textContent = '☆☆☆☆☆';
         if (reviewsEl) reviewsEl.textContent = 'Pas encore d\'avis';
       }
+
+      // Calcul complétude
+      const metaC = currentUser.metadata || {};
+      let score = 0;
+      if (metaC.titre) score += 20;
+      if ((currentUser.bio || '').length > 50) score += 25;
+      if (Array.isArray(metaC.services) && metaC.services.length > 0) score += 20;
+      if (Array.isArray(metaC.zones) && metaC.zones.length > 0) score += 20;
+      if (Array.isArray(metaC.disponibilites) && metaC.disponibilites.length > 0) score += 15;
+      const pctEl = document.querySelector('.profil-completude-label span:last-child');
+      const fillEl = document.querySelector('.progress-fill');
+      if (pctEl) pctEl.textContent = score + '%';
+      if (fillEl) fillEl.style.width = score + '%';
     }
 
     } catch(e) { console.error('Dashboard init error:', e); }
