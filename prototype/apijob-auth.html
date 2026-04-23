@@ -313,6 +313,8 @@
         </div>
       </div>
 
+      <div id="form-fields" style="display:none">
+
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Prénom <span class="required">*</span></label>
@@ -364,9 +366,9 @@
         </div>
       </div>
 
-      <div class="cps-block">
+      <div class="cps-block" id="cps-block" style="display:none">
         <div class="cgu" style="margin-bottom:0;">
-          <input type="checkbox" id="cps" required>
+          <input type="checkbox" id="cps">
           <label for="cps">Je suis responsable de mes obligations légales et sociales, notamment vis-à-vis de la <strong>Caisse de Prévoyance Sociale (CPS)</strong> de Polynésie française.</label>
         </div>
       </div>
@@ -382,6 +384,8 @@
       <div class="auth-note">
         Déjà membre ? <a href="#" onclick="switchTab('connexion'); return false;">Se connecter</a>
       </div>
+
+      </div><!-- /form-fields -->
     </div>
 
     <!-- ── CONNEXION ── -->
@@ -439,8 +443,10 @@
   function selectRole(card, role) {
     document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
-    const presta = document.getElementById('presta-fields');
-    presta.classList.toggle('visible', role === 'prestataire');
+    document.getElementById('form-fields').style.display = 'block';
+    document.getElementById('presta-fields').classList.toggle('visible', role === 'prestataire');
+    document.getElementById('cps-block').style.display = role === 'prestataire' ? 'block' : 'none';
+    if (role === 'client') document.getElementById('cps').checked = false;
   }
 
   // Upload label update
@@ -469,7 +475,7 @@
     if (!nom)      return showMsg('msg-inscription', 'Veuillez saisir votre nom.');
     if (!email)    return showMsg('msg-inscription', 'Veuillez saisir votre email.');
     if (!password || password.length < 8) return showMsg('msg-inscription', 'Le mot de passe doit contenir au moins 8 caractères.');
-    if (!cps)      return showMsg('msg-inscription', 'Vous devez cocher la déclaration CPS.');
+    if (role === 'prestataire' && !cps) return showMsg('msg-inscription', 'Vous devez cocher la déclaration CPS.');
     if (!cgu)      return showMsg('msg-inscription', 'Vous devez accepter les conditions générales.');
 
     // Prestataire : champs supplémentaires
