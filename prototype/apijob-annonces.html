@@ -706,7 +706,7 @@
         annonce_id:     currentAnnonceId,
         prestataire_id: currentUser.id,
         message:        message,
-        tarif:          prix ? prix + ' XPF' : null,
+        tarif:          prix ? parseFloat(prix) : null,
         statut:         'en_attente'
       });
 
