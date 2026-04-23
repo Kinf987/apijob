@@ -220,16 +220,14 @@
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script>
-  // ⚠️ IMPORTANT : Changer ces identifiants avant la mise en ligne !
-  const ADMIN_EMAIL = 'admin@apijob.pf';
-  const ADMIN_PASSWORD = 'ApiJob2025!';
-
   let attempts = 0;
   const MAX_ATTEMPTS = 3;
   let lockTimer = null;
 
-  function login() {
+  async function login() {
     const email = document.getElementById('admin-email').value.trim();
     const pwd = document.getElementById('admin-pwd').value;
     const btn = document.getElementById('btn-login');
@@ -237,30 +235,44 @@
     btn.disabled = true;
     btn.textContent = '⏳ Vérification...';
 
-    setTimeout(() => {
-      if (email === ADMIN_EMAIL && pwd === ADMIN_PASSWORD) {
-        // Succès
-        sessionStorage.setItem('apijob_admin', 'true');
-        btn.textContent = '✅ Accès autorisé !';
-        btn.style.background = '#1A7A4A';
-        setTimeout(() => { window.location.href = 'apijob-admin.html'; }, 800);
-      } else {
-        // Échec
-        attempts++;
-        const remaining = MAX_ATTEMPTS - attempts;
+    try {
+      // Connexion via Supabase Auth
+      const { data, error } = await db.auth.signInWithPassword({ email, password: pwd });
+      if (error) throw error;
 
-        document.getElementById('error-msg').classList.add('show');
-        btn.disabled = false;
-        btn.textContent = '🔐 Accéder au panneau admin';
+      // Vérifier que le compte a bien le rôle admin
+      const { data: profile, error: profErr } = await db
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .single();
 
-        if (remaining <= 0) {
-          startLockout();
-        } else {
-          document.getElementById('attempts-left').style.display = 'block';
-          document.getElementById('attempts-num').textContent = remaining;
-        }
+      if (profErr || profile?.role !== 'admin') {
+        await db.auth.signOut();
+        throw new Error('Accès non autorisé');
       }
-    }, 800);
+
+      // Succès
+      sessionStorage.setItem('apijob_admin', 'true');
+      btn.textContent = '✅ Accès autorisé !';
+      btn.style.background = '#1A7A4A';
+      setTimeout(() => { window.location.href = 'apijob-admin.html'; }, 800);
+
+    } catch (err) {
+      attempts++;
+      const remaining = MAX_ATTEMPTS - attempts;
+
+      document.getElementById('error-msg').classList.add('show');
+      btn.disabled = false;
+      btn.textContent = '🔐 Accéder au panneau admin';
+
+      if (remaining <= 0) {
+        startLockout();
+      } else {
+        document.getElementById('attempts-left').style.display = 'block';
+        document.getElementById('attempts-num').textContent = remaining;
+      }
+    }
   }
 
   function startLockout() {
