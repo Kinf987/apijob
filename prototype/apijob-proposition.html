@@ -487,11 +487,7 @@
     if (propItems[1]) propItems[1].querySelector('.prop-val').textContent = prop.tarif ? parseInt(prop.tarif).toLocaleString('fr-FR') + ' XPF' : '—';
 
     let msgText = prop.message || '';
-    let experience = '—';
-    const expMatch = msgText.match(/\[Expérience\s*:\s*([^\]]+)\]/);
-    if (expMatch) { experience = expMatch[1]; msgText = msgText.replace(expMatch[0], '').trim().replace(/^\n+/, ''); }
-    if (propItems[2]) propItems[2].querySelector('.prop-val').textContent = experience;
-    if (propItems[3]) propItems[3].querySelector('.prop-val').textContent = formatDate(prop.created_at);
+    if (propItems[2]) propItems[2].querySelector('.prop-val').textContent = formatDate(prop.created_at);
 
     const accroche = document.querySelector('.prop-accroche');
     if (accroche && msgText) accroche.textContent = `"${msgText}"`;

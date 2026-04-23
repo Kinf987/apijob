@@ -767,6 +767,23 @@
       await createNotification(user.id, 'annonce_publiee', '✅ Annonce publiée !',
         `Votre annonce "${titre}" est en ligne. Les prestataires vont bientôt vous contacter.`);
 
+      // Notifier les prestataires dont les services correspondent à la catégorie
+      const { data: prestas } = await db
+        .from('profiles')
+        .select('id, metadata')
+        .eq('role', 'prestataire');
+      if (prestas) {
+        for (const p of prestas) {
+          const services = p.metadata?.services || [];
+          if (services.includes(selectedCat)) {
+            await createNotification(p.id, 'nouvelle_annonce',
+              `🔔 Nouvelle annonce : ${selectedCat}`,
+              `Une annonce "${titre}" vient d'être publiée dans votre domaine.`
+            );
+          }
+        }
+      }
+
       // Afficher le succès
       document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
       document.getElementById('step-success').classList.add('active');

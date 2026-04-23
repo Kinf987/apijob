@@ -316,16 +316,6 @@
         <textarea class="form-textarea" id="description" placeholder="Présentez-vous : votre expérience, vos compétences, ce qui vous différencie..." maxlength="500" oninput="updateCount(); updateCompletude()"></textarea>
         <div class="char-count"><span id="char-count">0</span>/500</div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Expérience</label>
-        <select class="form-select" id="experience" onchange="updateCompletude()">
-          <option value="">Choisir</option>
-          <option>Moins d'1 an</option>
-          <option>1 à 2 ans</option>
-          <option>3 à 5 ans</option>
-          <option>Plus de 5 ans</option>
-        </select>
-      </div>
     </div>
   </div>
 
@@ -673,9 +663,6 @@
       updateCount();
     }
 
-    // Expérience
-    const expSelect = document.getElementById('experience');
-    if (expSelect && meta.experience) expSelect.value = meta.experience;
 
     // Services cochés — toujours tout réinitialiser d'abord
     document.querySelectorAll('.service-check').forEach(label => {
@@ -767,12 +754,11 @@
 
       const titre        = document.getElementById('titre').value.trim();
       const bio          = document.getElementById('description').value.trim();
-      const experience   = document.getElementById('experience')?.value || '';
       const localisation = zones[0] || currentUser.localisation || '';
 
       const metadata = {
         ...(currentUser.metadata || {}),
-        titre, experience, services, zones, disponibilites
+        titre, services, zones, disponibilites
       };
 
       const updates = { bio, localisation, metadata };

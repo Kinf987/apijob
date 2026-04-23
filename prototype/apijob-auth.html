@@ -431,6 +431,9 @@
     const s = await getSession();
     if (s) window.location.href = 'apijob-dashboard.html';
 
+    // Basculer sur l'onglet connexion si ?tab=connexion
+    if (params.get('tab') === 'connexion') switchTab('connexion');
+
     // Pré-sélection du rôle via ?role=
     const role = params.get('role');
     if (role === 'client' || role === 'prestataire') {

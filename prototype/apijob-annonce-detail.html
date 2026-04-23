@@ -407,15 +407,6 @@
         <span style="font-size:0.82rem;color:var(--muted);white-space:nowrap;">XPF</span>
       </div>
 
-      <label class="form-label">Expérience dans ce domaine <span style="color:var(--rouge)">*</span></label>
-      <select class="form-input" id="experience" style="cursor:pointer;appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%231A0008' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 1rem center;padding-right:2.2rem;">
-        <option value="">Sélectionner...</option>
-        <option>Moins d'1 an</option>
-        <option>1 à 3 ans</option>
-        <option>3 à 5 ans</option>
-        <option>Plus de 5 ans</option>
-      </select>
-
       <label class="form-label">Accroche <span style="font-size:0.75rem;color:var(--muted);font-weight:400;">(200 caractères max)</span></label>
       <textarea class="form-textarea" id="accroche" maxlength="200" placeholder="Ex : Jardinier sérieux avec 8 ans d'expérience, matériel pro, travail soigné garanti." style="min-height:80px;margin-bottom:0.3rem;"></textarea>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
@@ -470,10 +461,9 @@
   async function envoyer() {
     const dispo = document.getElementById('dispo').value;
     const tarif = document.getElementById('tarif').value.trim();
-    const exp = document.getElementById('experience').value;
     let ok = true;
 
-    [['dispo', dispo], ['tarif', tarif], ['experience', exp]].forEach(([id, val]) => {
+    [['dispo', dispo], ['tarif', tarif]].forEach(([id, val]) => {
       const el = document.getElementById(id);
       if (!val) { el.style.borderColor = 'var(--rouge)'; ok = false; }
       else { el.style.borderColor = ''; }
@@ -521,7 +511,7 @@
     const btn = document.querySelector('.btn-proposer');
     if (btn) { btn.disabled = true; btn.textContent = 'Envoi en cours...'; }
 
-    const messageText = exp ? `[Expérience : ${exp}]\n${accroche}` : accroche;
+    const messageText = accroche;
 
     const { error } = await db.from('propositions').insert({
       annonce_id: annonceId,
