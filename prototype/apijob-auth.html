@@ -423,12 +423,20 @@
 <script>
   // ── Si déjà connecté, rediriger vers le dashboard ──
   (async () => {
-    if (new URLSearchParams(window.location.search).get('logout')) {
-      await db.auth.signOut(); // S'assure que la session locale est bien effacée
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('logout')) {
+      await db.auth.signOut();
       return;
     }
     const s = await getSession();
     if (s) window.location.href = 'apijob-dashboard.html';
+
+    // Pré-sélection du rôle via ?role=
+    const role = params.get('role');
+    if (role === 'client' || role === 'prestataire') {
+      const card = document.querySelector(`.role-card[data-role="${role}"]`);
+      if (card) selectRole(card, role);
+    }
   })();
 
   // ── TABS ──
