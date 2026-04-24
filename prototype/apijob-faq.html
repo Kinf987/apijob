@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAQ — API JOB</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rouge: #CC0A2B;
+    --rouge-dark: #A00822;
+    --or: #F0A500;
+    --or-light: #FDD87A;
+    --night: #1A0008;
+    --blanc: #FFFFFF;
+    --gris: #F7F3F0;
+    --muted: rgba(26,0,8,0.45);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; color: var(--night); background: var(--blanc); overflow-x: hidden; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 5%;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 2px solid var(--rouge);
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem; font-weight: 800;
+    color: var(--rouge); letter-spacing: -0.5px;
+    display: flex; align-items: center; gap: 0.25rem;
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--or); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    text-decoration: none; color: var(--night);
+    font-size: 0.88rem; font-weight: 500;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover, .nav-links a.active { color: var(--rouge); }
+  .nav-cta {
+    background: var(--rouge); color: var(--blanc);
+    border: none; padding: 0.6rem 1.4rem;
+    border-radius: 50px; font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem; font-weight: 600; cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .nav-cta:hover { background: var(--rouge-dark); transform: translateY(-1px); }
+
+  /* ── HERO PAGE ── */
+  .page-hero {
+    padding: 8rem 5% 4rem;
+    background: var(--gris);
+    border-bottom: 1px solid rgba(204,10,43,0.08);
+    position: relative; overflow: hidden;
+  }
+  .page-hero::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--rouge) 0%, var(--or) 50%, var(--rouge) 100%);
+  }
+  .page-hero-inner { max-width: 700px; }
+  .page-hero-label {
+    font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--rouge); margin-bottom: 0.7rem;
+  }
+  .page-hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800; letter-spacing: -1.5px;
+    line-height: 1.1; margin-bottom: 0.8rem;
+  }
+  .page-hero-desc {
+    font-size: 1rem; color: var(--muted);
+    line-height: 1.7; font-weight: 300;
+  }
+
+  /* ── FAQ ── */
+  .faq-wrap {
+    max-width: 760px; margin: 0 auto;
+    padding: 4rem 5% 6rem;
+  }
+
+  .faq-group { margin-bottom: 3rem; }
+  .faq-group-title {
+    font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--rouge);
+    padding-bottom: 0.8rem;
+    border-bottom: 2px solid rgba(204,10,43,0.1);
+    margin-bottom: 0.5rem;
+  }
+
+  .faq-item {
+    border-bottom: 1px solid rgba(204,10,43,0.08);
+    padding: 1.1rem 0;
+    cursor: pointer;
+  }
+  .faq-item:last-child { border-bottom: none; }
+  .faq-question {
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.98rem; font-weight: 700;
+    color: var(--night);
+    gap: 1rem;
+    user-select: none;
+  }
+  .faq-icon {
+    font-size: 1.2rem; color: var(--rouge);
+    transition: transform 0.3s; flex-shrink: 0;
+    font-style: normal;
+  }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+  .faq-answer {
+    font-size: 0.9rem; color: var(--muted);
+    line-height: 1.75; font-weight: 300;
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.35s ease, padding 0.3s ease;
+  }
+  .faq-item.open .faq-answer {
+    max-height: 300px;
+    padding-top: 0.75rem;
+  }
+
+  /* ── CTA BOTTOM ── */
+  .faq-cta {
+    background: var(--night);
+    border-radius: 20px;
+    padding: 2rem 2.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1.5rem; flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  .faq-cta-text h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem; font-weight: 800;
+    color: white; margin-bottom: 0.3rem;
+  }
+  .faq-cta-text p {
+    font-size: 0.85rem; color: rgba(255,255,255,0.5);
+  }
+  .faq-cta-btn {
+    display: inline-block;
+    background: var(--or); color: var(--night);
+    padding: 0.7rem 1.6rem; border-radius: 50px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.88rem; font-weight: 800;
+    text-decoration: none; white-space: nowrap;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .faq-cta-btn:hover { background: var(--or-light); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: #110005;
+    padding: 2.5rem 5%;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 1rem;
+  }
+  .footer-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem; font-weight: 800; color: var(--blanc);
+  }
+  .footer-logo span { color: var(--or); }
+  .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .footer-links a {
+    font-size: 0.82rem; color: rgba(255,255,255,0.35);
+    text-decoration: none; transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--or); }
+  .footer-copy { font-size: 0.78rem; color: rgba(255,255,255,0.2); }
+
+  @media (max-width: 900px) { .nav-links { display: none; } }
+  @media (max-width: 600px) {
+    .faq-wrap { padding: 3rem 5% 4rem; }
+    .faq-cta { flex-direction: column; }
+    footer { flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="apijob-v4.html" class="nav-logo">
+    <svg width="24" height="24" viewBox="0 0 28 28" style="border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.15);flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="c"><circle cx="14" cy="14" r="14"/></clipPath></defs><g clip-path="url(#c)"><circle cx="14" cy="14" r="14" fill="white"/><g stroke="#F0A500" stroke-width="1.3" stroke-linecap="round"><line x1="14" y1="17" x2="2.2" y2="14.9"/><line x1="14" y1="17" x2="3.4" y2="11.4"/><line x1="14" y1="17" x2="5.7" y2="8.4"/><line x1="14" y1="17" x2="8.5" y2="6.3"/><line x1="14" y1="17" x2="12.1" y2="5.2"/><line x1="14" y1="17" x2="15.9" y2="5.2"/><line x1="14" y1="17" x2="19.5" y2="6.3"/><line x1="14" y1="17" x2="22.3" y2="8.4"/><line x1="14" y1="17" x2="24.6" y2="11.4"/><line x1="14" y1="17" x2="25.8" y2="14.9"/></g><rect x="0" y="17" width="28" height="11" fill="#1E7FC2"/><path d="M7,17.5 Q14,15.5 21,17.5 L20.5,18.5 Q14,16.8 7.5,18.5 Z" fill="#CE1126"/><path d="M3,19.5 Q7,18.5 11,19.5 Q14,20.5 17,19.5 Q21,18.5 25,19.5" fill="none" stroke="white" stroke-width="0.6" opacity="0.8"/><path d="M3,21.5 Q7,20.5 11,21.5 Q14,22.5 17,21.5 Q21,20.5 25,21.5" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/><path d="M3,23.5 Q7,22.5 11,23.5 Q14,24.5 17,23.5 Q21,22.5 25,23.5" fill="none" stroke="white" stroke-width="0.4" opacity="0.4"/></g></svg>
+    API<span>JOB</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="apijob-faq.html" class="active">FAQ</a></li>
+    <li><a href="apijob-jetons.html">Tarifs</a></li>
+    <li><a href="apijob-pros.html">Nos pros</a></li>
+  </ul>
+  <a href="apijob-auth.html?tab=connexion" class="nav-cta">Se connecter</a>
+</nav>
+
+<!-- HERO PAGE -->
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <div class="page-hero-label">Aide & Informations</div>
+    <h1>Questions fréquentes</h1>
+    <p class="page-hero-desc">Tout ce que vous devez savoir avant de vous lancer sur API JOB.</p>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq-wrap">
+
+  <!-- CLIENTS -->
+  <div class="faq-group">
+    <div class="faq-group-title">Pour les clients</div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-question">C'est gratuit pour les clients ?<i class="faq-icon">+</i></div>
+      <div class="faq-answer">Oui, totalement gratuit et sans limite. Vous publiez vos annonces, recevez des propositions et choisissez votre prestataire sans payer quoi que ce soit.</div>
+    </div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-question">Le paiement passe-t-il par API JOB ?<i class="faq-icon">+</i></div>
+      <div class="faq-answer">Non. Le paiement des prestations se fait directement entre vous et le prestataire (espèces, virement, chèque). API JOB ne prend aucune commission sur les missions.</div>
+    </div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-question">Que se passe-t-il si je dois annuler une mission ?<i class="faq-icon">+</i></div>
+      <div class="faq-answer">Si vous acceptez une proposition puis abandonnez la mission sans raison valable, le jeton est rendu au prestataire. En cas de récidive, le compte est définitivement banni.</div>
+    </div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-question">Comment laisser un avis sur un prestataire ?<i class="faq-icon">+</i></div>
+      <div class="faq-answer">Une fois la mission terminée, vous recevez une notification pour noter votre prestataire de 1 à 5 étoiles. Un seul avis est possible par mission pour garantir leur authenticité.</div>
+    </div>
+  </div>
+
+  <!-- PRESTATAIRES -->
+  <div class="faq-group">
+    <div class="faq-group-title">Pour les prestataires</div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-question">Comment fonctionnent les jetons ?<i class="faq-icon">+</i></div>
+      <div class="faq-answer">Les jetons permettent de répondre aux annonces. Un jeton est débité uniquement lorsque le client accepte votre proposition — pas à l'envoi. Formule Découverte : 3 jetons gratuits/mois. Formule Pro : jetons illimités à 2 900 XPF/mois.</div>
+    </div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-question">Comment sont vérifiés les prestataires ?<i class="faq-icon">+</i></div>
+      <div class="faq-answer">À l'inscription, chaque prestataire doit fournir un numéro Tahiti, une pièce d'identité valide et un numéro de téléphone actif. Une fois ces éléments validés, le profil est activé.</div>
+    </div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-question">Comment augmenter ma visibilité ?<i class="faq-icon">+</i></div>
+      <div class="faq-answer">Complétez votre profil à 100 %, répondez rapidement aux annonces et accumulez les bons avis. Le forfait Pro vous place en tête des résultats et dans la section Nos professionnels, consultable directement par les clients.</div>
+    </div>
+  </div>
+
+  <!-- GÉNÉRAL -->
+  <div class="faq-group">
+    <div class="faq-group-title">Général</div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-question">La plateforme est disponible sur Moorea aussi ?<i class="faq-icon">+</i></div>
+      <div class="faq-answer">Oui. API JOB couvre toute l'île de Tahiti et toute l'île de Moorea. D'autres îles comme Bora Bora et Huahine seront ajoutées prochainement.</div>
+    </div>
+  </div>
+
+  <!-- CTA BOTTOM -->
+  <div class="faq-cta">
+    <div class="faq-cta-text">
+      <h3>Vous n'avez pas trouvé votre réponse ?</h3>
+      <p>Contactez-nous directement, on vous répond rapidement.</p>
+    </div>
+    <a href="apijob-contact.html" class="faq-cta-btn">Nous contacter →</a>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">API<span>JOB</span></div>
+  <div class="footer-links">
+    <a href="apijob-mentions.html">Mentions légales</a>
+    <a href="apijob-confidentialite.html">Confidentialité</a>
+    <a href="apijob-contact.html">Contact</a>
+    <a href="apijob-faq.html">FAQ</a>
+  </div>
+  <div class="footer-copy">© 2025 API JOB · Tahiti & Moorea 🌺</div>
+</footer>
+
+<script>
+  function toggleFaq(el) {
+    const isOpen = el.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) el.classList.add('open');
+  }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+  (async () => {
+    const btn = document.querySelector('.nav-cta');
+    const session = await getSession();
+    if (!session) return;
+    const user = await getCurrentUser();
+    if (!user) return;
+    const initiales = (((user.prenom||'')[0]||'') + ((user.nom||'')[0]||'')).toUpperCase() || '?';
+    if (!btn) return;
+    btn.href = 'apijob-dashboard.html';
+    btn.textContent = '';
+    btn.style.cssText = 'width:36px;height:36px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;font-family:"Syne",sans-serif;font-weight:800;font-size:0.85rem;background:var(--rouge);color:white;text-decoration:none;cursor:pointer;overflow:hidden;';
+    if (user.photo) {
+      const img = document.createElement('img');
+      img.src = user.photo;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+      btn.appendChild(img);
+    } else {
+      btn.textContent = initiales;
+    }
+  })();
+</script>
+
+</body>
+</html>

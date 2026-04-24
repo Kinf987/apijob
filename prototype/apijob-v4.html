@@ -429,37 +429,6 @@
     padding: 0.2rem 0.6rem; border-radius: 50px;
   }
 
-  /* ── FAQ ── */
-  .faq-list { max-width: 720px; }
-  .faq-item {
-    border-bottom: 1px solid rgba(204,10,43,0.1);
-    padding: 1.2rem 0;
-    cursor: pointer;
-  }
-  .faq-item:last-child { border-bottom: none; }
-  .faq-question {
-    display: flex; justify-content: space-between; align-items: center;
-    font-family: 'Syne', sans-serif;
-    font-size: 1rem; font-weight: 700;
-    color: var(--night);
-    gap: 1rem;
-  }
-  .faq-icon {
-    font-size: 1.2rem; color: var(--rouge);
-    transition: transform 0.3s; flex-shrink: 0;
-    font-style: normal;
-  }
-  .faq-item.open .faq-icon { transform: rotate(45deg); }
-  .faq-answer {
-    font-size: 0.9rem; color: var(--muted);
-    line-height: 1.7; font-weight: 300;
-    max-height: 0; overflow: hidden;
-    transition: max-height 0.35s ease, padding 0.3s ease;
-  }
-  .faq-item.open .faq-answer {
-    max-height: 200px;
-    padding-top: 0.8rem;
-  }
 
   /* ── FOOTER ── */
   footer {
@@ -510,7 +479,7 @@
     API<span>JOB</span>
   </div>
   <ul class="nav-links">
-    <li><a href="#faq">FAQ</a></li>
+    <li><a href="apijob-faq.html">FAQ</a></li>
     <li><a href="apijob-jetons.html">Tarifs</a></li>
     <li><a href="apijob-pro.html">Nos pros</a></li>
   </ul>
@@ -612,54 +581,15 @@
 </section>
 
 
-<!-- ── FAQ ── -->
-<section class="section" id="faq">
-  <div class="section-label">Questions fréquentes (FAQ)</div>
-  <h2 class="section-title">Tout ce que vous devez savoir</h2>
-  <p class="section-sub">Vous avez une question ? La réponse est sûrement ici.</p>
-
-  <div class="faq-list">
-
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-question">C'est gratuit pour les clients ?<i class="faq-icon">+</i></div>
-      <div class="faq-answer">Oui, totalement gratuit et sans limite pour les clients. Vous publiez vos annonces, recevez des propositions et choisissez votre prestataire sans payer quoi que ce soit.</div>
+<!-- ── BLOC QUESTION ── -->
+<section class="section section-alt">
+  <div style="max-width:780px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:2rem;flex-wrap:wrap;">
+    <div>
+      <div class="section-label">Aide</div>
+      <h2 class="section-title" style="margin-bottom:0.4rem;">Une question ?</h2>
+      <p style="font-size:0.95rem;color:var(--muted);font-weight:300;">Toutes les réponses sont dans notre FAQ.</p>
     </div>
-
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-question">Comment fonctionnent les jetons ?<i class="faq-icon">+</i></div>
-      <div class="faq-answer">Les jetons permettent aux prestataires de répondre aux annonces. Un jeton est débité uniquement lorsque le client accepte votre proposition. 2 formules : Découverte (3 jetons gratuits/mois non cumulables) et Pro (jetons illimités · 2 900 XPF/mois).</div>
-    </div>
-
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-question">Comment sont vérifiés les prestataires ?<i class="faq-icon">+</i></div>
-      <div class="faq-answer">À l'inscription, chaque prestataire doit fournir un numéro Tahiti, une pièce d'identité valide et un numéro de téléphone actif. Une fois ces éléments validés, le profil est activé.</div>
-    </div>
-
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-question">Le paiement passe-t-il par API JOB ?<i class="faq-icon">+</i></div>
-      <div class="faq-answer">Non. Le paiement des prestations se fait directement entre le client et le prestataire (espèces, virement, chèque). API JOB ne prend aucune commission sur les missions.</div>
-    </div>
-
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-question">Que se passe-t-il si un client abandonne ?<i class="faq-icon">+</i></div>
-      <div class="faq-answer">Si un client accepte une proposition puis abandonne la mission sans raison valable, le jeton est rendu au prestataire. En cas de récidive, le compte est définitivement banni.</div>
-    </div>
-
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-question">La plateforme est disponible sur Moorea aussi ?<i class="faq-icon">+</i></div>
-      <div class="faq-answer">Oui ! API JOB couvre toute l'île de Tahiti et toute l'île de Moorea. D'autres îles comme Bora Bora et Huahine seront ajoutées prochainement.</div>
-    </div>
-
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-question">Comment laisser un avis sur un prestataire ?<i class="faq-icon">+</i></div>
-      <div class="faq-answer">Une fois la mission terminée, vous recevez une notification pour noter votre prestataire de 1 à 5 étoiles. Un seul avis est possible par mission pour garantir leur authenticité.</div>
-    </div>
-
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-question">Je suis prestataire, comment augmenter ma visibilité ?<i class="faq-icon">+</i></div>
-      <div class="faq-answer">Complétez votre profil à 100%, répondez rapidement aux annonces et accumulez les bons avis. Le forfait Pro vous place en tête des résultats et dans la section Professionnels.</div>
-    </div>
-
+    <a href="apijob-faq.html" style="display:inline-block;background:var(--rouge);color:white;padding:0.85rem 2rem;border-radius:50px;font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:800;text-decoration:none;white-space:nowrap;transition:background 0.2s;" onmouseover="this.style.background='#A00822'" onmouseout="this.style.background='#CC0A2B'">Voir la FAQ →</a>
   </div>
 </section>
 
@@ -670,26 +600,12 @@
     <a href="apijob-mentions.html">Mentions légales</a>
     <a href="apijob-confidentialite.html">Confidentialité</a>
     <a href="apijob-contact.html">Contact</a>
-    <a href="#faq">FAQ</a>
+    <a href="apijob-faq.html">FAQ</a>
   </div>
   <div class="footer-copy">© 2025 API JOB · Tahiti & Moorea 🌺</div>
 </footer>
 
 <script>
-  function showTab(tab) {
-    document.getElementById('panel-jetons').style.display = tab === 'jetons' ? 'block' : 'none';
-    document.getElementById('panel-abonnement').style.display = tab === 'abonnement' ? 'block' : 'none';
-    document.getElementById('tab-jetons').style.background = tab === 'jetons' ? 'var(--rouge)' : 'transparent';
-    document.getElementById('tab-jetons').style.color = tab === 'jetons' ? 'white' : 'var(--muted)';
-    document.getElementById('tab-abonnement').style.background = tab === 'abonnement' ? 'var(--rouge)' : 'transparent';
-    document.getElementById('tab-abonnement').style.color = tab === 'abonnement' ? 'white' : 'var(--muted)';
-  }
-
-  function toggleFaq(el) {
-    const isOpen = el.classList.contains('open');
-    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
-    if (!isOpen) el.classList.add('open');
-  }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
