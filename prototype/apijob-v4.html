@@ -239,33 +239,42 @@
   .pros-promo {
     display: flex; align-items: center; justify-content: space-between;
     gap: 1.2rem;
-    background: linear-gradient(120deg, var(--rouge) 0%, #E8103A 60%, #C8001F 100%);
+    background: linear-gradient(135deg, #1A0008 0%, #2E0012 50%, #1A0008 100%);
     border-radius: 20px;
     padding: 1.4rem 1.8rem;
     text-decoration: none;
     transition: transform 0.2s, box-shadow 0.2s;
     position: relative; overflow: hidden;
+    border: 1px solid rgba(204,10,43,0.25);
   }
   .pros-promo::before {
     content: '';
-    position: absolute; top: -30px; right: 60px;
-    width: 160px; height: 160px;
-    background: rgba(255,255,255,0.06);
+    position: absolute; top: -40px; right: -20px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(204,10,43,0.18) 0%, transparent 70%);
     border-radius: 50%;
     pointer-events: none;
   }
+  .pros-promo::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--rouge), var(--or), var(--rouge), transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
   .pros-promo:hover {
     transform: translateY(-2px);
-    box-shadow: 0 14px 36px rgba(204,10,43,0.35);
+    box-shadow: 0 14px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(204,10,43,0.4);
   }
+  .pros-promo:hover::after { opacity: 1; }
   .pros-promo-left { flex: 1; min-width: 200px; }
   .pros-promo-badge {
     display: inline-block;
-    background: rgba(255,255,255,0.18);
-    color: white;
+    background: rgba(204,10,43,0.2);
+    border: 1px solid rgba(204,10,43,0.4);
+    color: rgba(255,255,255,0.75);
     padding: 0.2rem 0.75rem; border-radius: 50px;
-    font-size: 0.72rem; font-weight: 700;
-    margin-bottom: 0.5rem; letter-spacing: 0.06em;
+    font-size: 0.7rem; font-weight: 700;
+    margin-bottom: 0.5rem; letter-spacing: 0.1em;
     text-transform: uppercase;
   }
   .pros-promo-title {
@@ -277,14 +286,15 @@
   .pros-promo-right { flex-shrink: 0; }
   .pros-promo-cta {
     display: inline-flex; align-items: center; gap: 0.4rem;
-    background: white; color: var(--rouge);
+    background: var(--or); color: var(--night);
     padding: 0.65rem 1.4rem; border-radius: 50px;
     font-family: 'Syne', sans-serif;
     font-size: 0.88rem; font-weight: 800;
     white-space: nowrap;
-    transition: background 0.2s;
+    transition: background 0.2s, transform 0.2s;
+    box-shadow: 0 4px 14px rgba(240,165,0,0.3);
   }
-  .pros-promo:hover .pros-promo-cta { background: var(--or); color: var(--night); }
+  .pros-promo:hover .pros-promo-cta { background: var(--or-light); transform: translateX(3px); }
 
   .section { padding: 5.5rem 5%; }
   .section-alt { background: var(--gris); }
