@@ -493,6 +493,7 @@
   let allAnnonces   = [];
   let filtreActif   = 'Toutes';
   let searchTerm    = '';
+  let mesPropositions = new Set(); // annonce_ids déjà proposés par ce prestataire
 
   // ── INIT ──
   (async () => {
@@ -507,6 +508,13 @@
       // Cacher le badge jetons pour les clients
       const badge = document.getElementById('jetons-badge');
       if (badge) badge.style.display = 'none';
+    }
+
+    if (currentUser.role === 'prestataire') {
+      const { data: props } = await db.from('propositions')
+        .select('annonce_id')
+        .eq('prestataire_id', currentUser.id);
+      if (props) props.forEach(p => mesPropositions.add(p.annonce_id));
     }
 
     await chargerAnnonces();
@@ -580,10 +588,13 @@
       const badge = urgenceBadge(a.urgence);
       const isUrgent = a.urgence === 'Dès que possible';
       const lieu = [a.commune, a.ile].filter(Boolean).join(', ');
+      const dejaPropose = mesPropositions.has(a.id);
       const btnProposer = isPresta
-        ? `<button class="btn-proposer" onclick="ouvrirModal('${a.id}'); event.stopPropagation();">
-             Proposer mes services <span class="jeton">${jeton_svg} 1</span>
-           </button>`
+        ? dejaPropose
+          ? `<button class="btn-proposer" disabled style="background:var(--muted);cursor:default;opacity:0.75;">⏳ Proposition envoyée</button>`
+          : `<button class="btn-proposer" onclick="ouvrirModal('${a.id}'); event.stopPropagation();">
+               Proposer mes services <span class="jeton">${jeton_svg} 1</span>
+             </button>`
         : `<a class="btn-proposer" href="apijob-annonce-detail.html?id=${a.id}" style="text-decoration:none;">
              Voir le détail →
            </a>`;
@@ -729,7 +740,8 @@
         );
       }
 
-      // Succès
+      // Succès — marquer comme déjà proposé et mettre à jour l'affichage
+      mesPropositions.add(currentAnnonceId);
       btn.textContent = '✅ Proposition envoyée !';
       btn.style.background = '#1A7A4A';
       setTimeout(() => {
@@ -737,6 +749,7 @@
         btn.textContent = 'Envoyer ma proposition →';
         btn.style.background = '';
         btn.disabled = false;
+        renderAnnonces();
       }, 2000);
 
     } catch (e) {
