@@ -265,18 +265,23 @@
     <div class="page-sub">Complétez votre profil pour inspirer confiance aux clients.</div>
   </div>
 
-  <div id="presta-only">
-  <!-- COMPLÉTUDE -->
-  <div class="completude-bar">
-    <div class="completude-info">
-      <div class="completude-label">
-        <span>Complétude du profil</span>
-        <span class="completude-pct" id="pct">0%</span>
+  <!-- NOM / PRÉNOM -->
+  <div class="section-card">
+    <div class="section-header">
+      <span class="section-icon">👤</span>
+      <span class="section-title">Identité</span>
+    </div>
+    <div class="section-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Prénom</label>
+          <input type="text" class="form-input" id="input-prenom" placeholder="Teiva">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Nom</label>
+          <input type="text" class="form-input" id="input-nom" placeholder="Manutahi">
+        </div>
       </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
-      </div>
-      <div class="completude-note">💡 Un profil complet à 100% reçoit 3x plus de missions</div>
     </div>
   </div>
 
@@ -298,6 +303,21 @@
           <button class="btn-photo" onclick="document.getElementById('photo-input').click()">📷 Choisir une photo</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div id="presta-only">
+  <!-- COMPLÉTUDE -->
+  <div class="completude-bar">
+    <div class="completude-info">
+      <div class="completude-label">
+        <span>Complétude du profil</span>
+        <span class="completude-pct" id="pct">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+      <div class="completude-note">💡 Un profil complet à 100% reçoit 3x plus de missions</div>
     </div>
   </div>
 
@@ -640,6 +660,10 @@
   async function chargerProfil() {
     const meta = currentUser.metadata || {};
 
+    // Nom / prénom
+    if (currentUser.prenom) document.getElementById('input-prenom').value = currentUser.prenom;
+    if (currentUser.nom) document.getElementById('input-nom').value = currentUser.nom;
+
     // Photo ou initiales
     const preview = document.querySelector('.photo-preview');
     if (currentUser.photo) {
@@ -763,7 +787,11 @@
         titre, services, zones, disponibilites
       };
 
+      const prenom = document.getElementById('input-prenom').value.trim();
+      const nom    = document.getElementById('input-nom').value.trim();
       const updates = { bio, localisation, metadata };
+      if (prenom) updates.prenom = prenom;
+      if (nom)    updates.nom    = nom;
       if (photoUrl !== currentUser.photo) updates.photo = photoUrl;
 
       const { error } = await db.from('profiles').update(updates).eq('id', currentUser.id);
