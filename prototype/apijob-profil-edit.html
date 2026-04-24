@@ -765,7 +765,7 @@
 
       // Services cochés
       const services = Array.from(document.querySelectorAll('.service-check.checked'))
-        .map(l => l.textContent.replace(/\s+/g, ' ').trim())
+        .map(l => l.textContent.replace(/\s+/g, ' ').trim().replace(/^[^a-zA-ZÀ-ÿ]+/, '').trim())
         .filter(Boolean);
 
       // Zones

@@ -791,7 +791,7 @@
         for (const p of prestas) {
           const services = p.metadata?.services || [];
           const catLow = selectedCat.toLowerCase();
-          if (services.some(s => s.toLowerCase() === catLow)) {
+          if (services.some(s => s.replace(/^[^a-zA-ZÀ-ÿ]+/, '').toLowerCase() === catLow)) {
             await createNotification(p.id, 'nouvelle_annonce',
               `🔔 Nouvelle annonce : ${selectedCat}`,
               `Une annonce "${titre}" vient d'être publiée dans votre domaine.`
