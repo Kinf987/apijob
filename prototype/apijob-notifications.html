@@ -146,6 +146,23 @@
   .empty-title { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:800; margin-bottom:0.5rem; }
   .empty-sub { font-size:0.85rem; color:var(--muted); }
 
+  /* DELETE BUTTON */
+  .btn-delete-notif {
+    position:absolute; top:0.6rem; right:0.7rem;
+    width:22px; height:22px; border-radius:50%;
+    background:transparent; border:none;
+    color:rgba(26,0,8,0.25); font-size:1rem; line-height:1;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition:all 0.2s; font-family:'DM Sans',sans-serif;
+  }
+  .notif-card:hover .btn-delete-notif { color:var(--rouge); background:rgba(204,10,43,0.07); }
+  .btn-tout-suppr {
+    font-size:0.82rem; color:var(--muted); background:none;
+    border:none; cursor:pointer; font-family:'DM Sans',sans-serif;
+    font-weight:600; text-decoration:underline;
+  }
+  .btn-tout-suppr:hover { color:var(--rouge); }
+
   @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
   .notif-card { animation:fadeUp 0.3s ease both; }
 </style>
@@ -157,6 +174,7 @@
   <div class="nav-right">
     <a href="apijob-dashboard.html" class="nav-back">← Tableau de bord</a>
     <button class="btn-tout-lu" onclick="toutMarquerLu()">Tout marquer lu</button>
+    <button class="btn-tout-suppr" onclick="toutSupprimer()">Tout supprimer</button>
   </div>
 </nav>
 
@@ -224,6 +242,37 @@
     el.style.display = 'none';
   }
 
+  // ── SUPPRIMER UNE NOTIF ──
+  async function supprimerNotif(id, card) {
+    await db.from('notifications').delete().eq('id', id);
+    allNotifs = allNotifs.filter(n => n.id !== id);
+    card.remove();
+    // Supprimer les groupes vides
+    document.querySelectorAll('.notif-groupe').forEach(g => {
+      if (!g.querySelectorAll('.notif-card').length) g.remove();
+    });
+    // Vérifier si tout est vide
+    document.getElementById('empty-state').style.display = allNotifs.length === 0 ? 'block' : 'none';
+    // Badge
+    const unread = allNotifs.filter(n => !n.lu).length;
+    const el = document.getElementById('notif-count');
+    el.textContent = unread;
+    el.style.display = unread > 0 ? '' : 'none';
+  }
+
+  // ── TOUT SUPPRIMER ──
+  async function toutSupprimer() {
+    if (!currentUser || allNotifs.length === 0) return;
+    if (!confirm('Supprimer toutes les notifications ?')) return;
+    await db.from('notifications').delete().eq('user_id', currentUser.id);
+    allNotifs = [];
+    document.querySelectorAll('.notif-groupe').forEach(g => g.remove());
+    document.getElementById('empty-state').style.display = 'block';
+    const el = document.getElementById('notif-count');
+    el.textContent = '0';
+    el.style.display = 'none';
+  }
+
   // ── MARQUER UNE NOTIF LUE ──
   async function marquerLu(id, card) {
     if (!card.classList.contains('unread')) return;
@@ -274,6 +323,13 @@
       </div>
       ${unread ? '<div class="unread-dot"></div>' : ''}`;
     card.onclick = () => marquerLu(notif.id, card);
+    // Bouton supprimer individuel
+    const btnDel = document.createElement('button');
+    btnDel.className = 'btn-delete-notif';
+    btnDel.title = 'Supprimer';
+    btnDel.textContent = '×';
+    btnDel.onclick = (e) => { e.stopPropagation(); supprimerNotif(notif.id, card); };
+    card.appendChild(btnDel);
     return card;
   }
 
