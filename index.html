@@ -189,28 +189,6 @@
     background: var(--rouge); color: var(--blanc);
   }
 
-  /* ── HERO ACTIONS ── */
-  .hero-actions {
-    display: flex; flex-direction: column; align-items: center; gap: 1rem;
-    margin-top: 2.5rem;
-    animation: fadeUp 0.6s ease 0.3s both;
-  }
-  .btn-hero-primary {
-    display: inline-block;
-    background: var(--rouge); color: var(--blanc);
-    padding: 0.9rem 2.4rem; border-radius: 50px;
-    font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600;
-    text-decoration: none; transition: all 0.2s;
-    box-shadow: 0 4px 20px rgba(204,10,43,0.25);
-  }
-  .btn-hero-primary:hover { background: var(--rouge-dark); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(204,10,43,0.35); }
-  .link-hero-secondary {
-    font-size: 0.85rem; color: var(--muted); text-decoration: none;
-    font-weight: 500; transition: color 0.2s;
-  }
-  .link-hero-secondary:hover { color: var(--rouge); }
-  .link-hero-secondary span { color: var(--rouge); font-weight: 600; }
-
   /* ── TICKER SERVICES ── */
   .ticker-wrap {
     width: 100%; overflow: hidden;
@@ -517,15 +495,28 @@
 <!-- ── HERO INTRO ── -->
 <section class="hero">
   <div class="hero-badge">🌺 Polynésie française</div>
-  <h1>Besoin d'un coup de main<br><span>à Tahiti ?</span></h1>
+  <h1>Le service qu'il te faut,<br><span>à deux pas de chez toi.</span></h1>
   <p class="hero-desc">
-    Publie ta demande gratuitement et reçois des propositions rapidement.
+    API JOB connecte les habitants de Tahiti et Moorea. particuliers et professionnels — propose tes services et trouve des clients près de chez toi.
   </p>
+  <p class="hero-sub">100% local · Gratuit pour les clients</p>
 
-  <!-- ACTIONS HERO -->
-  <div class="hero-actions">
-    <a href="prototype/apijob-annonce.html" class="btn-hero-primary">Publier une demande →</a>
-    <a href="prototype/apijob-auth.html?role=prestataire" class="link-hero-secondary">Tu es prestataire ? <span>Rejoins-nous</span></a>
+  <!-- LES 2 BOUTONS -->
+  <div class="split-buttons">
+    <a href="apijob-auth.html" class="split-btn split-btn-presta">
+      <span class="split-btn-icon">🛠️</span>
+      <span class="split-btn-label">Particulier ou professionnel</span>
+      <span class="split-btn-title">Je rends service</span>
+      <span class="split-btn-sub">Tu as un talent, une compétence ou juste de la bonne volonté ? Trouve des clients et gagne de l'argent.</span>
+      <span class="split-btn-cta">Créer mon profil →</span>
+    </a>
+    <a href="apijob-auth.html" class="split-btn split-btn-client">
+      <span class="split-btn-icon">🔍</span>
+      <span class="split-btn-label">C'est gratuit pour toi</span>
+      <span class="split-btn-title">J'ai besoin d'aide</span>
+      <span class="split-btn-sub">Trouve rapidement quelqu'un de confiance près de chez toi à Tahiti ou Moorea.</span>
+      <span class="split-btn-cta">Trouver de l'aide →</span>
+    </a>
   </div>
 
   <!-- TICKER SERVICES -->
