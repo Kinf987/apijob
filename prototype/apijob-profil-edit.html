@@ -265,6 +265,7 @@
     <div class="page-sub">Complétez votre profil pour inspirer confiance aux clients.</div>
   </div>
 
+  <div id="presta-only">
   <!-- COMPLÉTUDE -->
   <div class="completude-bar">
     <div class="completude-info">
@@ -534,6 +535,7 @@
       <p style="font-size:0.75rem; color:var(--muted); margin-top:1rem;">Cliquez sur un jour pour activer ou désactiver votre disponibilité.</p>
     </div>
   </div>
+  </div><!-- /presta-only -->
 
   <!-- SAVE BAR -->
   <div class="save-bar">
@@ -782,6 +784,10 @@
   (async () => {
     currentUser = await requireAuth();
     if (!currentUser) return;
+    if (currentUser.role === 'client') {
+      document.getElementById('presta-only').style.display = 'none';
+      document.querySelector('.page-sub').textContent = 'Mettez à jour votre nom, prénom et photo de profil.';
+    }
     await chargerProfil();
     document.documentElement.style.visibility = 'visible';
   })();
