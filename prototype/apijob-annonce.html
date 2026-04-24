@@ -480,6 +480,14 @@
         <div style="font-size:0.78rem; color:var(--muted); margin-top:0.4rem;">Indiquez le montant maximum que vous êtes prêt à payer pour cette mission.</div>
       </div>
 
+      <label style="display:flex;align-items:center;gap:0.75rem;padding:0.9rem 1rem;background:rgba(240,165,0,0.06);border:1.5px solid rgba(240,165,0,0.25);border-radius:12px;cursor:pointer;margin-bottom:1rem;">
+        <input type="checkbox" id="input-devis" style="width:18px;height:18px;accent-color:var(--rouge);flex-shrink:0;">
+        <div>
+          <div style="font-size:0.88rem;font-weight:600;color:var(--night);">Besoin d'un devis</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:0.1rem;">Le prestataire sera informé que vous souhaitez recevoir un devis détaillé.</div>
+        </div>
+      </label>
+
       <div style="background:rgba(204,10,43,0.05); border:1.5px solid rgba(204,10,43,0.2); border-radius:12px; padding:1rem 1.2rem; margin-bottom:1rem; display:flex; gap:0.7rem; align-items:flex-start;">
         <span style="font-size:1.1rem; flex-shrink:0;">⚠️</span>
         <div style="font-size:0.8rem; color:var(--rouge); line-height:1.6;">
@@ -564,6 +572,10 @@
         <div class="recap-row" id="recap-budget-row" style="display:none;">
           <span class="recap-key">Budget max</span>
           <span class="recap-val" id="recap-budget">—</span>
+        </div>
+        <div class="recap-row" id="recap-devis-row" style="display:none;">
+          <span class="recap-key">Devis</span>
+          <span class="recap-val" style="color:var(--or);font-weight:700;">📋 Devis demandé</span>
         </div>
       </div>
 
@@ -716,6 +728,8 @@
     } else {
       budgetRow.style.display = 'none';
     }
+    const devisRow = document.getElementById('recap-devis-row');
+    if (devisRow) devisRow.style.display = document.getElementById('input-devis').checked ? 'flex' : 'none';
   }
 
   async function publier() {
@@ -758,6 +772,7 @@
         urgence:       urgence,
         date_souhaitee: (urgence === 'Date précise' && dateEl) ? dateEl : null,
         budget:        budget ? parseInt(budget) : null,
+        devis:         document.getElementById('input-devis').checked,
         statut:        'active'
       }).select().single();
 
@@ -809,6 +824,7 @@
     document.getElementById('input-ile').value = '';
     document.getElementById('input-commune').value = '';
     document.getElementById('input-budget').value = '';
+    document.getElementById('input-devis').checked = false;
     document.getElementById('btn-next-1').disabled = true;
     goStep(1);
   }
