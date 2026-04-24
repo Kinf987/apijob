@@ -326,49 +326,6 @@
   .section-rouge .section-sub { color: rgba(255,255,255,0.6); }
   .section-night .section-sub { color: rgba(255,255,255,0.5); }
 
-  /* ── TARIFS ── */
-  .plans-grid {
-    display: grid; grid-template-columns: repeat(2,1fr);
-    gap: 1.2rem; margin-top: 2rem; max-width: 600px;
-  }
-  .plan-card {
-    background: var(--blanc); border-radius: 20px;
-    padding: 1.8rem; border: 2px solid rgba(204,10,43,0.1);
-    position: relative; transition: all 0.25s;
-    display: flex; flex-direction: column;
-  }
-  .plan-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(204,10,43,0.1); }
-  .plan-card-featured { border-color: var(--rouge); box-shadow: 0 12px 40px rgba(204,10,43,0.15); }
-  .plan-card-dark { background: var(--night); border-color: transparent; }
-  .plan-badge-top {
-    position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
-    background: var(--rouge); color: white;
-    font-size: 0.7rem; font-weight: 700;
-    padding: 0.25rem 1rem; border-radius: 50px; white-space: nowrap;
-  }
-  .plan-name { font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 0.3rem; }
-  .plan-who { font-size: 0.78rem; color: var(--muted); margin-bottom: 1rem; }
-  .plan-price-block { display: flex; align-items: baseline; gap: 0.4rem; margin-bottom: 0.5rem; }
-  .plan-price-num { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; line-height: 1; }
-  .plan-price-unit { font-size: 0.82rem; color: var(--muted); }
-  .plan-promo { display: inline-block; background: rgba(204,10,43,0.07); color: var(--rouge); font-size: 0.72rem; font-weight: 600; padding: 0.22rem 0.7rem; border-radius: 50px; margin-bottom: 1.3rem; }
-  .plan-features { list-style: none; margin-bottom: 1.6rem; flex: 1; }
-  .plan-features li { font-size: 0.85rem; padding: 0.38rem 0; border-bottom: 1px solid rgba(26,0,8,0.06); display: flex; align-items: center; gap: 0.5rem; color: var(--muted); }
-  .plan-features li:last-child { border-bottom: none; }
-  .plan-features li.ok::before { content: '✓'; color: var(--rouge); font-weight: 700; flex-shrink: 0; }
-  .plan-features li.no::before { content: '✕'; color: rgba(26,0,8,0.2); font-weight: 700; flex-shrink: 0; }
-  .plan-features li.no { color: rgba(26,0,8,0.25); }
-  .plan-features-dark li { border-bottom-color: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); }
-  .plan-features-dark li.ok::before { color: var(--or); }
-  .plan-features-dark li.no { color: rgba(255,255,255,0.25); }
-  .plan-btn { width: 100%; padding: 0.85rem; border-radius: 50px; border: none; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-  .plan-btn-light { background: transparent; color: var(--rouge); border: 1.5px solid rgba(204,10,43,0.25); }
-  .plan-btn-light:hover { background: rgba(204,10,43,0.05); border-color: var(--rouge); }
-  .plan-btn-rouge { background: var(--rouge); color: white; }
-  .plan-btn-rouge:hover { background: var(--rouge-dark); }
-  .plan-btn-gold { background: var(--or); color: var(--night); font-weight: 700; }
-  .plan-btn-gold:hover { background: var(--or-light); }
-  @media (max-width: 540px) { .plans-grid { grid-template-columns: 1fr; } }
 
   /* ── PRESTATAIRES MIS EN AVANT ── */
   .presta-grid {
@@ -554,7 +511,7 @@
   </div>
   <ul class="nav-links">
     <li><a href="#faq">FAQ</a></li>
-    <li><a href="#tarifs">Tarifs</a></li>
+    <li><a href="apijob-jetons.html">Tarifs</a></li>
     <li><a href="apijob-pro.html">Nos pros</a></li>
   </ul>
   <a href="apijob-auth.html?tab=connexion" class="nav-cta">Se connecter</a>
@@ -576,6 +533,7 @@
       <span class="split-btn-label">Professionnel / Patenté</span>
       <span class="split-btn-title">Je rends service</span>
       <span class="split-btn-sub">Tu es patenté, tu as un service à proposer ? Inscris-toi et trouve tes premiers clients à Tahiti ou Moorea.</span>
+      <span style="font-size:0.75rem;opacity:0.55;margin-top:-0.2rem;">3 jetons offerts · Sans engagement</span>
       <span class="split-btn-cta">Créer mon profil →</span>
     </a>
     <a href="apijob-auth.html?role=client" class="split-btn split-btn-client" id="btn-client">
@@ -653,52 +611,6 @@
 
 </section>
 
-<!-- ── TARIFS ── -->
-<section class="section section-alt" id="tarifs">
-  <div class="section-label" style="text-align:center;">Prestataires</div>
-  <h2 class="section-title" style="text-align:center;">Choisissez votre formule</h2>
-  <p class="section-sub" style="margin:0 auto 0; text-align:center;">Gratuit pour débuter, Pro pour développer votre activité.</p>
-  <!-- FORMULES JETONS -->
-  <div class="plans-grid" style="margin:2rem auto 0;">
-
-    <!-- GRATUIT -->
-    <div class="plan-card">
-      <div class="plan-name">Découverte</div>
-      <div class="plan-who">Pour débuter</div>
-      <div class="plan-price-block">
-        <span class="plan-price-num">Gratuit</span>
-      </div>
-      <div class="plan-promo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="1.15em" height="1.15em" style="vertical-align:-0.18em;display:inline-block"><circle cx="16" cy="16" r="15.5" fill="#F0A500"/><circle cx="16" cy="16" r="13" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><g transform="translate(16,16)"><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(72)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(144)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(216)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(288)"/><circle cx="0" cy="0" r="2" fill="#F0A500"/><circle cx="0" cy="0" r="0.9" fill="#C8860A"/></g></svg> 3 jetons offerts / mois</div>
-      <ul class="plan-features">
-        <li class="ok">3 jetons offerts chaque mois <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="1.15em" height="1.15em" style="vertical-align:-0.18em;display:inline-block"><circle cx="16" cy="16" r="15.5" fill="#F0A500"/><circle cx="16" cy="16" r="13" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><g transform="translate(16,16)"><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(72)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(144)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(216)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(288)"/><circle cx="0" cy="0" r="2" fill="#F0A500"/><circle cx="0" cy="0" r="0.9" fill="#C8860A"/></g></svg></li>
-        <li class="ok">Jetons non cumulables</li>
-        <li class="ok">1 photo de profil</li>
-      </ul>
-    </div>
-
-    <!-- PRO -->
-    <div class="plan-card plan-card-dark">
-      <div class="plan-name" style="color:var(--or)">Pro</div>
-      <div class="plan-who" style="color:rgba(255,255,255,0.45)">Pour les professionnels</div>
-      <div class="plan-price-block">
-        <span class="plan-price-num" style="color:white;white-space:nowrap">2 900</span>
-        <span class="plan-price-unit" style="color:rgba(255,255,255,0.4)">XPF / mois</span>
-      </div>
-      <div class="plan-promo" style="background:rgba(240,165,0,0.15);color:var(--or)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="1.15em" height="1.15em" style="vertical-align:-0.18em;display:inline-block"><circle cx="16" cy="16" r="15.5" fill="#F0A500"/><circle cx="16" cy="16" r="13" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><g transform="translate(16,16)"><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(72)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(144)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(216)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(288)"/><circle cx="0" cy="0" r="2" fill="#F0A500"/><circle cx="0" cy="0" r="0.9" fill="#C8860A"/></g></svg> Jetons illimités / mois</div>
-      <ul class="plan-features plan-features-dark">
-        <li class="ok">Jetons illimités <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="1.15em" height="1.15em" style="vertical-align:-0.18em;display:inline-block"><circle cx="16" cy="16" r="15.5" fill="#F0A500"/><circle cx="16" cy="16" r="13" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><g transform="translate(16,16)"><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(72)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(144)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(216)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(288)"/><circle cx="0" cy="0" r="2" fill="#F0A500"/><circle cx="0" cy="0" r="0.9" fill="#C8860A"/></g></svg></li>
-        <li class="ok">5 photos de profil</li>
-        <li class="ok">Badge "Pro"</li>
-        <li class="ok">Profil consultable directement par les clients dans la section Pro</li>
-      </ul>
-    </div>
-
-  </div>
-
-  <p style="text-align:center; margin-top:2rem; font-size:0.82rem; color:var(--muted);">
-    ✅ Sans engagement · Jetons sans expiration · Résiliation abonnement à tout moment
-  </p>
-</section>
 
 <!-- ── FAQ ── -->
 <section class="section" id="faq">
