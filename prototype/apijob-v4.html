@@ -238,47 +238,53 @@
   }
   .pros-promo {
     display: flex; align-items: center; justify-content: space-between;
-    gap: 1.5rem;
-    background: linear-gradient(135deg, var(--night) 0%, #3A0018 100%);
+    gap: 1.2rem;
+    background: linear-gradient(120deg, var(--rouge) 0%, #E8103A 60%, #C8001F 100%);
     border-radius: 20px;
-    padding: 1.6rem 2rem;
+    padding: 1.4rem 1.8rem;
     text-decoration: none;
     transition: transform 0.2s, box-shadow 0.2s;
-    flex-wrap: wrap;
+    position: relative; overflow: hidden;
+  }
+  .pros-promo::before {
+    content: '';
+    position: absolute; top: -30px; right: 60px;
+    width: 160px; height: 160px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+    pointer-events: none;
   }
   .pros-promo:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(26,0,8,0.2);
+    box-shadow: 0 14px 36px rgba(204,10,43,0.35);
   }
   .pros-promo-left { flex: 1; min-width: 200px; }
   .pros-promo-badge {
     display: inline-block;
-    background: rgba(240,165,0,0.15);
-    border: 1px solid rgba(240,165,0,0.3);
-    color: var(--or);
+    background: rgba(255,255,255,0.18);
+    color: white;
     padding: 0.2rem 0.75rem; border-radius: 50px;
-    font-size: 0.72rem; font-weight: 600;
-    margin-bottom: 0.6rem; letter-spacing: 0.03em;
+    font-size: 0.72rem; font-weight: 700;
+    margin-bottom: 0.5rem; letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
   .pros-promo-title {
     font-family: 'Syne', sans-serif;
-    font-size: 1.05rem; font-weight: 800;
-    color: white; margin-bottom: 0.35rem;
-    letter-spacing: -0.3px;
-  }
-  .pros-promo-sub {
-    font-size: 0.82rem; color: rgba(255,255,255,0.55);
-    line-height: 1.55;
+    font-size: 1rem; font-weight: 800;
+    color: white;
+    letter-spacing: -0.2px;
   }
   .pros-promo-right { flex-shrink: 0; }
   .pros-promo-cta {
-    display: inline-block;
-    background: var(--or); color: var(--night);
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: white; color: var(--rouge);
     padding: 0.65rem 1.4rem; border-radius: 50px;
     font-family: 'Syne', sans-serif;
     font-size: 0.88rem; font-weight: 800;
     white-space: nowrap;
+    transition: background 0.2s;
   }
+  .pros-promo:hover .pros-promo-cta { background: var(--or); color: var(--night); }
 
   .section { padding: 5.5rem 5%; }
   .section-alt { background: var(--gris); }
@@ -624,14 +630,13 @@
 
   <!-- BLOC NOS PROS -->
   <div class="pros-promo-wrap">
-    <a href="apijob-pro.html" class="pros-promo">
+    <a href="apijob-pros.html" class="pros-promo">
       <div class="pros-promo-left">
-        <div class="pros-promo-badge">⭐ Professionnels Pro</div>
-        <div class="pros-promo-title">Trouvez directement un pro près de chez vous</div>
-        <div class="pros-promo-sub">Consultez notre annuaire de prestataires qualifiés à Tahiti & Moorea — sans avoir à publier une annonce.</div>
+        <div class="pros-promo-badge">Nos professionnels</div>
+        <div class="pros-promo-title">Consulte la liste de nos professionnels, c'est par ici.</div>
       </div>
       <div class="pros-promo-right">
-        <span class="pros-promo-cta">Voir les pros →</span>
+        <span class="pros-promo-cta">Voir la liste →</span>
       </div>
     </a>
   </div>
