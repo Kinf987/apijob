@@ -5,7 +5,6 @@ node_modules/
 *.log
 *.rtf
 sauvegarde-terminal/
-index.html
 package.json
 package-lock.json
 .netlify/
