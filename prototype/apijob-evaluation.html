@@ -295,7 +295,7 @@
           id="comment"
           rows="4"
           maxlength="300"
-          placeholder="Décrivez votre expérience avec ce prestataire..."
+          placeholder="Décris ton expérience avec ce prestataire..."
           oninput="onComment()"
         ></textarea>
         <div class="textarea-footer">
@@ -308,7 +308,7 @@
       </div>
 
       <button class="btn-submit" id="btn-valider" disabled onclick="soumettre()">
-        Sélectionnez une note pour continuer
+        Donne une note pour continuer
       </button>
 
     </div>
@@ -363,8 +363,8 @@
     const ok = noteGlobale > 0 && !hasContact;
     btn.disabled = !ok;
     btn.textContent = noteGlobale === 0
-      ? 'Sélectionnez une note pour continuer'
-      : hasContact ? 'Retirez les coordonnées du commentaire'
+      ? 'Donne une note pour continuer'
+      : hasContact ? 'Retire les coordonnées du commentaire'
       : 'Publier mon évaluation →';
   }
 
@@ -457,7 +457,7 @@
         <div style="text-align:center;padding:2rem;">
           <div style="font-size:2.5rem;margin-bottom:1rem;">✅</div>
           <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:0.5rem;">Déjà évalué</div>
-          <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1.5rem;">Vous avez déjà laissé un avis pour cette mission.</div>
+          <div style="font-size:0.85rem;color:var(--muted);margin-bottom:1.5rem;">Tu as déjà laissé un avis pour cette mission.</div>
           <button class="btn-submit" onclick="location.href='apijob-missions.html'">Retour aux missions →</button>
         </div>`;
       return;
@@ -486,9 +486,9 @@
     document.querySelector('.cible-name').textContent    = cibleNom;
     document.querySelector('.cible-role').textContent    = `Prestataire · ${ann?.categorie || ''}`;
     document.querySelector('.success-sub').textContent   =
-      `Votre évaluation a été publiée sur le profil de ${cibleNom}. Elle aide la communauté API JOB à faire les bons choix.`;
+      `Ton évaluation a été publiée sur le profil de ${cibleNom}. Elle aide la communauté API JOB à faire les bons choix.`;
     document.querySelector('#comment').placeholder =
-      `Décrivez votre expérience avec ce prestataire…`;
+      `Décris ton expérience avec ce prestataire…`;
 
     document.documentElement.style.visibility = 'visible';
   })();

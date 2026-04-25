@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>API JOB — Confirmez votre email</title>
+<title>API JOB — Confirme ton email</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -169,11 +169,11 @@
       <span class="icon-badge">✉️</span>
     </div>
 
-    <h1>Vérifiez votre <span>boite mail</span></h1>
+    <h1>Vérifie ta <span>boite mail</span></h1>
     <p class="sub">
       On a envoyé un lien de confirmation à<br>
       <strong id="email-display">teiva.m@gmail.com</strong><br>
-      Cliquez dessus pour activer votre compte.
+      Clique dessus pour activer ton compte.
     </p>
 
     <div class="actions">
@@ -183,7 +183,7 @@
     </div>
 
     <p class="help-text">
-      Vous ne trouvez pas l'email ? Vérifiez vos spams.<br>
+      Tu ne trouves pas l'email ? Vérifie tes spams.<br>
       <a href="apijob-contact.html">Contacter le support</a>
     </p>
 
@@ -199,7 +199,7 @@
   const role = params.get('role') || 'presta';
 
   // Affiche le vrai email stocké lors de l'inscription
-  const pendingEmail = sessionStorage.getItem('pending_email') || 'votre@email.com';
+  const pendingEmail = sessionStorage.getItem('pending_email') || 'ton@email.com';
   document.getElementById('email-display').textContent = pendingEmail;
 
   // Supabase envoie le vrai email — ce bouton n'est plus nécessaire

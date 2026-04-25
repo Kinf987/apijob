@@ -262,7 +262,7 @@
 
   <div class="page-header">
     <div class="page-title">✏️ Mon profil</div>
-    <div class="page-sub">Complétez votre profil pour inspirer confiance aux clients.</div>
+    <div class="page-sub">Complète ton profil pour inspirer confiance aux clients.</div>
   </div>
 
   <!-- NOM / PRÉNOM -->
@@ -297,7 +297,7 @@
           <div class="photo-overlay">📷</div>
         </div>
         <div class="photo-info">
-          <div class="photo-title">Votre photo de profil</div>
+          <div class="photo-title">Ta photo de profil</div>
           <div class="photo-sub">Une vraie photo inspire confiance. Évitez les logos ou photos floues. Format JPG ou PNG, max 5MB.</div>
           <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="previewPhoto(this)">
           <button class="btn-photo" onclick="document.getElementById('photo-input').click()">📷 Choisir une photo</button>
@@ -329,12 +329,12 @@
     </div>
     <div class="section-body">
       <div class="form-group">
-        <label class="form-label">Titre de votre profil <span>*</span></label>
+        <label class="form-label">Titre de ton profil <span>*</span></label>
         <input type="text" class="form-input" id="titre" placeholder="Ex : Jardinier expérimenté à Tahiti" maxlength="60" oninput="updateCompletude()">
       </div>
       <div class="form-group">
         <label class="form-label">Description <span>*</span></label>
-        <textarea class="form-textarea" id="description" placeholder="Présentez-vous : votre expérience, vos compétences, ce qui vous différencie..." maxlength="500" oninput="updateCount(); updateCompletude()"></textarea>
+        <textarea class="form-textarea" id="description" placeholder="Présente-toi : ton expérience, tes compétences, ce qui te différencie..." maxlength="500" oninput="updateCount(); updateCompletude()"></textarea>
         <div class="char-count"><span id="char-count">0</span>/500</div>
       </div>
     </div>
@@ -552,7 +552,7 @@
           <div class="dispo-toggle">✕</div>
         </div>
       </div>
-      <p style="font-size:0.75rem; color:var(--muted); margin-top:1rem;">Cliquez sur un jour pour activer ou désactiver votre disponibilité.</p>
+      <p style="font-size:0.75rem; color:var(--muted); margin-top:1rem;">Clique sur un jour pour activer ou désactiver ta disponibilité.</p>
     </div>
   </div>
   </div><!-- /presta-only -->
@@ -814,7 +814,7 @@
     if (!currentUser) return;
     if (currentUser.role === 'client') {
       document.getElementById('presta-only').style.display = 'none';
-      document.querySelector('.page-sub').textContent = 'Mettez à jour votre nom, prénom et photo de profil.';
+      document.querySelector('.page-sub').textContent = 'Mets à jour ton nom, prénom et photo de profil.';
     }
     await chargerProfil();
     document.documentElement.style.visibility = 'visible';

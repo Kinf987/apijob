@@ -649,7 +649,7 @@
     if (msgs.length === 0) {
       const em = document.createElement('div');
       em.style.cssText = 'text-align:center;padding:1.5rem;font-size:0.82rem;color:var(--muted);';
-      em.textContent = 'Commencez la conversation…';
+      em.textContent = 'Lance la conversation…';
       area.appendChild(em);
     } else {
       msgs.forEach(m => { renderedMsgIds.add(m.id); appendMessage(m, area, false); });
@@ -701,7 +701,7 @@
         await db.from('profiles').update({ tokens: presta.tokens - 1 }).eq('id', prestataireId);
         await db.from('transactions_jetons').insert({ user_id: prestataireId, type: 'debit', quantite: 1, mission_id: currentMission.id });
       }
-      await createNotification(prestataireId, 'mission_acceptee', 'Proposition acceptée !', 'Votre proposition a été acceptée. La mission commence !');
+      await createNotification(prestataireId, 'mission_acceptee', 'Proposition acceptée !', 'Ta proposition a été acceptée. La mission commence !');
 
       btns.innerHTML = '<span style="color:var(--vert);font-weight:600;">✅ Acceptée</span>';
       const sysDiv = document.createElement('div');
@@ -732,7 +732,7 @@
   async function refuserProp(propositionId) {
     await db.from('propositions').update({ statut: 'refusee' }).eq('id', propositionId);
     await db.from('missions').update({ statut: 'annulee' }).eq('id', currentMission.id);
-    await createNotification(currentMission.prestataire_id, 'mission_refusee', 'Proposition refusée', 'Votre proposition n\'a pas été retenue.');
+    await createNotification(currentMission.prestataire_id, 'mission_refusee', 'Proposition refusée', 'Ta proposition n\'a pas été retenue.');
     document.getElementById('prop-btns').innerHTML = '<span style="color:var(--rouge);font-weight:600;">❌ Refusée</span>';
     currentMission.statut = 'annulee';
     const actElR = document.querySelector('.chat-header-actions');

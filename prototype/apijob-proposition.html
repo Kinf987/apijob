@@ -333,7 +333,7 @@
   <div class="success-modal">
     <div class="success-icon">🤝</div>
     <div class="success-title">Mission acceptée !</div>
-    <p class="success-sub">Vous êtes maintenant en contact avec ce prestataire. Vous pouvez échanger directement via la messagerie pour organiser la mission.</p>
+    <p class="success-sub">Tu es maintenant en contact avec ce prestataire. Vous pouvez échanger directement via la messagerie pour organiser la mission.</p>
     <button class="btn-success" onclick="location.href='apijob-messagerie.html'">Aller à la messagerie →</button>
   </div>
 </div>
@@ -384,7 +384,7 @@
     const nomClient = `${currentUser.prenom || ''} ${currentUser.nom || ''}`.trim() || 'Le client';
     await createNotification(proposition.prestataire_id, 'proposition_acceptee',
       'Proposition acceptée !',
-      `${nomClient} a accepté votre proposition. Échangez via la messagerie.`
+      `${nomClient} a accepté ta proposition. Lance la conversation en messagerie !`
     );
 
     // Lien messagerie → bonne mission
@@ -403,7 +403,7 @@
     const titre = proposition.annonce?.titre || 'cette annonce';
     await createNotification(proposition.prestataire_id, 'proposition_refusee',
       'Proposition non retenue',
-      `${nomClient} n'a pas retenu votre proposition pour "${titre}".`
+      `${nomClient} n'a pas retenu ta proposition pour "${titre}".`
     );
 
     window.location.href = 'apijob-dashboard.html';
@@ -497,7 +497,7 @@
     if (refusModalSub) refusModalSub.textContent = `${nomAbrege} sera informé·e que sa proposition n'a pas été retenue. Aucun jeton ne sera débité.`;
 
     const successSub = document.querySelector('#success-accepter .success-sub');
-    if (successSub) successSub.textContent = `Vous êtes maintenant en contact avec ${nomAbrege}. Échangez via la messagerie pour organiser la mission.`;
+    if (successSub) successSub.textContent = `Tu es maintenant en contact avec ${nomAbrege}. Lance la conversation en messagerie pour organiser la mission.`;
 
     // Override le bouton "Refuser" dans la modale
     const btnRefuserConfirm = document.querySelector('.btn-modal-confirm');

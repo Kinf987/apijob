@@ -377,7 +377,7 @@
       </div>
 
       <div class="section-label">Description</div>
-      <p class="annonce-desc">Jardin de 400m² à Punaauia, herbe très haute. Besoin d'un jardinier disponible ce weekend avec son propre matériel (tondeuse, débroussailleuse). Accès facile par le portail principal, parking disponible sur place. Travail sérieux demandé, merci de préciser votre tarif dans votre proposition.</p>
+      <p class="annonce-desc">Jardin de 400m² à Punaauia, herbe très haute. Besoin d'un jardinier disponible ce weekend avec son propre matériel (tondeuse, débroussailleuse). Accès facile par le portail principal, parking disponible sur place. Travail sérieux demandé, merci de préciser ton tarif dans ta proposition.</p>
 
       <div class="budget-block">
         <span class="budget-label">Budget indicatif</span>
@@ -389,7 +389,7 @@
     <!-- FORMULAIRE RÉPONSE -->
     <div class="form-card">
       <div class="form-card-title">Proposer mes services</div>
-      <div class="form-card-sub">Renseignez votre proposition — le client vous contactera via la messagerie si il vous choisit.</div>
+      <div class="form-card-sub">Renseigne ta proposition — le client te contactera via la messagerie si il te choisit.</div>
 
       <label class="form-label">Disponibilité <span style="color:var(--rouge)">*</span></label>
       <select class="form-input" id="dispo" style="cursor:pointer;appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%231A0008' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 1rem center;padding-right:2.2rem;">
@@ -401,7 +401,7 @@
         <option>À convenir</option>
       </select>
 
-      <label class="form-label">Votre tarif estimé <span style="color:var(--rouge)">*</span></label>
+      <label class="form-label">Ton tarif estimé <span style="color:var(--rouge)">*</span></label>
       <div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:1rem;">
         <input type="number" class="form-input" id="tarif" placeholder="8 000" style="margin-bottom:0;flex:1;">
         <span style="font-size:0.82rem;color:var(--muted);white-space:nowrap;">XPF</span>
@@ -413,12 +413,12 @@
         <span style="font-size:0.72rem;color:var(--muted);" id="charCount">0 / 200</span>
       </div>
       <div style="font-size:0.73rem;color:var(--muted);background:var(--gris);border-radius:8px;padding:0.5rem 0.75rem;margin-bottom:1rem;line-height:1.5;">
-        🚫 Le partage de numéro de téléphone ou d'adresse email est interdit avant acceptation de votre proposition par le client.
+        🚫 Le partage de numéro de téléphone ou d'adresse email est interdit avant acceptation de ta proposition par le client.
       </div>
 
       <div class="jeton-info">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="1.15em" height="1.15em" style="vertical-align:-0.18em;display:inline-block;flex-shrink:0"><circle cx="16" cy="16" r="15.5" fill="#F0A500"/><circle cx="16" cy="16" r="13" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><g transform="translate(16,16)"><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(72)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(144)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(216)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(288)"/><circle cx="0" cy="0" r="2" fill="#F0A500"/><circle cx="0" cy="0" r="0.9" fill="#C8860A"/></g></svg>
-        <span>1 jeton sera débité si le client accepte votre proposition. Il vous restera <strong>5 jetons</strong>.</span>
+        <span>1 jeton sera débité si le client accepte ta proposition. Il te restera <strong>5 jetons</strong>.</span>
       </div>
 
       <button class="btn-proposer" onclick="envoyer()">
@@ -435,7 +435,7 @@
   <div class="modal">
     <div class="modal-icon">✅</div>
     <div class="modal-title">Proposition envoyée !</div>
-    <p class="modal-sub">Le client a été notifié. Si votre proposition est acceptée, 1 jeton sera débité et vous pourrez échanger directement en messagerie.</p>
+    <p class="modal-sub">Le client a été notifié. Si ta proposition est acceptée, 1 jeton sera débité et vous pourrez échanger directement en messagerie.</p>
     <a href="apijob-annonces.html" class="btn-modal">Voir les autres annonces</a>
   </div>
 </div>
@@ -495,7 +495,7 @@
     // Vérifier les jetons (rechargement depuis la base pour éviter les données périmées)
     const { data: freshProfile } = await db.from('profiles').select('tokens, is_pro').eq('id', currentUser.id).single();
     if (freshProfile && !freshProfile.is_pro && (freshProfile.tokens === 0 || freshProfile.tokens === null || freshProfile.tokens < 1)) {
-      alert('Vous n\'avez plus de jetons. Rechargez votre compte pour continuer.');
+      alert('Tu n\'as plus de jetons. Recharge ton compte pour continuer.');
       window.location.href = 'apijob-jetons.html';
       return;
     }
@@ -504,7 +504,7 @@
     const { data: existing } = await db.from('propositions')
       .select('id').eq('annonce_id', annonceId).eq('prestataire_id', currentUser.id).maybeSingle();
     if (existing) {
-      alert('Vous avez déjà envoyé une proposition pour cette annonce.');
+      alert('Tu as déjà envoyé une proposition pour cette annonce.');
       return;
     }
 
@@ -525,7 +525,7 @@
     if (error) {
       console.error('Erreur envoi proposition :', error);
       if (btn) { btn.disabled = false; btn.textContent = 'Envoyer ma proposition'; }
-      alert('Erreur lors de l\'envoi. Veuillez réessayer.');
+      alert('Erreur lors de l\'envoi. Réessaie.');
       return;
     }
 
@@ -534,7 +534,7 @@
       const nomPresta = `${currentUser.prenom || ''} ${currentUser.nom || ''}`.trim() || 'Un prestataire';
       await createNotification(annonce.client_id, 'proposition_recue',
         'Nouvelle proposition',
-        `${nomPresta} a répondu à votre annonce "${annonce.titre || ''}".`
+        `${nomPresta} a répondu à ton annonce "${annonce.titre || ''}".`
       );
     }
 
@@ -567,7 +567,7 @@
         const remaining = tokens - 1;
         const jetonInfoSpan = document.querySelector('.jeton-info span');
         if (jetonInfoSpan) {
-          jetonInfoSpan.innerHTML = `1 jeton sera débité si le client accepte votre proposition. Il vous restera <strong>${remaining} jeton${remaining !== 1 ? 's' : ''}</strong>.`;
+          jetonInfoSpan.innerHTML = `1 jeton sera débité si le client accepte ta proposition. Il te restera <strong>${remaining} jeton${remaining !== 1 ? 's' : ''}</strong>.`;
         }
       } else {
         tokenBadge.style.display = 'none';
@@ -653,7 +653,7 @@
     // --- Texte du modal ---
     const modalSub = document.querySelector('#modalConfirm .modal-sub');
     if (modalSub) {
-      modalSub.innerHTML = `<strong>${client.prenom || 'Le client'}</strong> a été notifié·e. Si il/elle accepte votre proposition, 1 jeton sera débité et vous pourrez échanger directement en messagerie.`;
+      modalSub.innerHTML = `<strong>${client.prenom || 'Le client'}</strong> a été notifié·e. Si il/elle accepte ta proposition, 1 jeton sera débité et vous pourrez échanger directement en messagerie.`;
     }
 
     // Si le client est l'auteur de l'annonce → masquer le formulaire, afficher les props + bouton supprimer
@@ -807,7 +807,7 @@
             p.prestataire_id,
             'proposition_refusee',
             '❌ Mission attribuée à un autre prestataire',
-            `Votre proposition a été refusée. Le client a retenu un autre prestataire. Aucun jeton n'a été débité.`
+            `Ta proposition a été refusée. Le client a retenu un autre prestataire. Aucun jeton n'a été débité.`
           );
         }
       }
@@ -832,8 +832,8 @@
       await createNotification(
         prestaId,
         'proposition_acceptee',
-        '🎉 Votre proposition a été acceptée !',
-        `${currentUser.prenom || 'Le client'} a accepté votre proposition. 1 jeton a été débité. Vous pouvez maintenant échanger en messagerie.`,
+        '🎉 Ta proposition a été acceptée !',
+        `${currentUser.prenom || 'Le client'} a accepté ta proposition. 1 jeton a été débité. Tu peux maintenant échanger en messagerie.`,
         'apijob-messagerie.html?mission=' + mission.id
       );
 

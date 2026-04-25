@@ -449,7 +449,7 @@
   <!-- ACHETER DES JETONS (masqué par défaut, révélé si non Pro) -->
   <div id="section-achat" style="display:none;">
   <div class="section-title">Acheter des jetons</div>
-  <div class="section-sub">Choisissez votre pack. Les jetons n'expirent jamais et sont débités uniquement si le client accepte votre proposition.</div>
+  <div class="section-sub">Choisis ton pack. Les jetons n'expirent jamais et sont débités uniquement si le client accepte ta proposition.</div>
 
   <div class="packs-grid" style="grid-template-columns:repeat(2,1fr);max-width:580px;">
 
@@ -535,7 +535,7 @@
           <div style="font-family:'Syne',sans-serif; font-weight:700; color:var(--night); margin-bottom:0.5rem;">🏦 Informations de virement</div>
           <div><strong>Bénéficiaire :</strong> API JOB SAS</div>
           <div><strong>IBAN :</strong> PF00 0000 0000 0000 0000 000</div>
-          <div><strong>Référence :</strong> Indiquez votre numéro de compte API JOB</div>
+          <div><strong>Référence :</strong> Indique ton numéro de compte API JOB</div>
           <div style="margin-top:0.8rem; padding-top:0.8rem; border-top:1px solid var(--border); font-size:0.78rem;">
             ⏱️ Les jetons sont crédités sous 24-48h après réception du virement.
           </div>
@@ -577,7 +577,7 @@
   <div id="section-resiliation" style="display:none;margin-top:2.5rem;animation:fadeUp 0.4s ease both;">
     <div style="background:var(--blanc);border-radius:20px;border:1px solid var(--border);padding:1.5rem;">
       <div style="font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:800;margin-bottom:0.5rem;color:var(--night);">Gérer mon abonnement</div>
-      <p style="font-size:0.82rem;color:var(--muted);line-height:1.6;margin-bottom:1.2rem;">En résiliant, vous repassez en mode standard. Vos jetons achetés sont conservés (3 jetons minimum au retour). La résiliation prend effet immédiatement.</p>
+      <p style="font-size:0.82rem;color:var(--muted);line-height:1.6;margin-bottom:1.2rem;">En résiliant, tu repasses en mode standard. Tes jetons achetés sont conservés (3 jetons minimum au retour). La résiliation prend effet immédiatement.</p>
       <button onclick="annulerPro()" id="btn-resilier" style="padding:0.65rem 1.4rem;background:transparent;color:var(--rouge);border:1.5px solid rgba(204,10,43,0.3);border-radius:50px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--rouge)'" onmouseout="this.style.borderColor='rgba(204,10,43,0.3)'">Résilier mon abonnement Pro</button>
     </div>
   </div>
@@ -589,7 +589,7 @@
   <div class="success-modal">
     <div class="success-icon">🎉</div>
     <div class="success-title">Paiement réussi !</div>
-    <div class="success-sub">Vos jetons ont été ajoutés à votre compte instantanément.</div>
+    <div class="success-sub">Tes jetons ont été ajoutés à ton compte instantanément.</div>
     <div class="success-jetons">
       <div>
         <div class="success-jetons-num" id="success-num"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="1.15em" height="1.15em" style="vertical-align:-0.18em;display:inline-block"><circle cx="16" cy="16" r="15.5" fill="#F0A500"/><circle cx="16" cy="16" r="13" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><g transform="translate(16,16)"><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(72)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(144)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(216)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(288)"/><circle cx="0" cy="0" r="2" fill="#F0A500"/><circle cx="0" cy="0" r="0.9" fill="#C8860A"/></g></svg> 14</div>
@@ -687,7 +687,7 @@
 
     } catch(e) {
       console.error('Erreur paiement:', e);
-      alert('Erreur lors de la transaction. Veuillez réessayer.');
+      alert('Erreur lors de la transaction. Réessaie.');
     } finally {
       btn.innerHTML = `🔒 Payer <span id="btn-prix">${selectedPrix.toLocaleString('fr-FR')} XPF</span>`;
       btn.disabled = false;
@@ -835,13 +835,13 @@
       container.innerHTML = `
         <div style="font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:800;margin-bottom:0.5rem;color:var(--night);">Résiliation planifiée</div>
         <p style="font-size:0.82rem;color:var(--muted);line-height:1.6;margin-bottom:1.2rem;">
-          Votre abonnement se terminera le <strong>${finStr}</strong>. Vous conservez l'accès Pro jusqu'à cette date.
+          Ton abonnement se terminera le <strong>${finStr}</strong>. Tu conserves l'accès Pro jusqu'à cette date.
         </p>
         <button onclick="annulerResiliation()" style="padding:0.65rem 1.4rem;background:transparent;color:var(--vert);border:1.5px solid rgba(26,122,74,0.3);border-radius:50px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;" onmouseover="this.style.borderColor='var(--vert)'" onmouseout="this.style.borderColor='rgba(26,122,74,0.3)'">↩ Annuler la résiliation</button>`;
     } else {
       container.innerHTML = `
         <div style="font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:800;margin-bottom:0.5rem;color:var(--night);">Gérer mon abonnement</div>
-        <p style="font-size:0.82rem;color:var(--muted);line-height:1.6;margin-bottom:1.2rem;">En résiliant, vous conservez l'accès Pro jusqu'à la fin du mois en cours. Vos jetons achetés sont conservés (3 jetons minimum au retour).</p>
+        <p style="font-size:0.82rem;color:var(--muted);line-height:1.6;margin-bottom:1.2rem;">En résiliant, tu conserves l'accès Pro jusqu'à la fin du mois en cours. Tes jetons achetés sont conservés (3 jetons minimum au retour).</p>
         <button onclick="annulerPro()" id="btn-resilier" style="padding:0.65rem 1.4rem;background:transparent;color:var(--rouge);border:1.5px solid rgba(204,10,43,0.3);border-radius:50px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--rouge)'" onmouseout="this.style.borderColor='rgba(204,10,43,0.3)'">Résilier mon abonnement Pro</button>`;
     }
   }
@@ -852,7 +852,7 @@
     const renewalDate = proRenewalDate || (() => { const d = new Date(); d.setMonth(d.getMonth() + 1); return d; })();
     const finStr = renewalDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
-    if (!confirm(`Résilier votre abonnement Pro ?\n\nVous conserverez l'accès jusqu'au ${finStr}. Vos jetons achetés seront conservés (3 minimum).`)) return;
+    if (!confirm(`Résilier ton abonnement Pro ?\n\nTu conserveras l'accès jusqu'au ${finStr}. Tes jetons achetés seront conservés (3 minimum).`)) return;
 
     const btn = document.getElementById('btn-resilier');
     if (btn) { btn.disabled = true; btn.textContent = 'En cours…'; }
@@ -874,7 +874,7 @@
       if (soldeSub) soldeSub.textContent = `Accès Pro jusqu'au ${finStr}`;
     } catch(e) {
       console.error('Erreur résiliation:', e);
-      alert('Erreur. Veuillez réessayer.');
+      alert('Erreur. Réessaie.');
       if (btn) { btn.disabled = false; btn.textContent = 'Résilier mon abonnement Pro'; }
     }
   }
@@ -888,7 +888,7 @@
       currentUser.metadata = newMeta;
       window.location.reload();
     } catch(e) {
-      alert('Erreur. Veuillez réessayer.');
+      alert('Erreur. Réessaie.');
     }
   }
 

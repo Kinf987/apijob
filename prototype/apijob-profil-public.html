@@ -307,9 +307,9 @@
     <div class="sheet-handle"></div>
     <span class="sheet-icon">🔐</span>
     <div class="sheet-title">Compte client requis</div>
-    <p class="sheet-sub">Pour contacter ce prestataire directement, vous devez être connecté en tant que client APIJOB.<br>L'inscription est gratuite.</p>
+    <p class="sheet-sub">Pour contacter ce prestataire directement, tu dois être connecté en tant que client APIJOB.<br>C'est gratuit, ça prend 1 minute.</p>
     <div class="sheet-btns">
-      <a href="apijob-auth.html?role=client" class="btn-sheet-primary">Créer un compte client gratuit</a>
+      <a href="apijob-auth.html?role=client" class="btn-sheet-primary">Créer mon compte gratuit →</a>
       <a href="apijob-auth.html" class="btn-sheet-secondary">J'ai déjà un compte — Me connecter</a>
     </div>
   </div>
@@ -493,7 +493,7 @@
     const nomProfil = `${profile.prenom || ''} ${profile.nom || ''}`.trim();
     const sheetSub = document.querySelector('.sheet-sub');
     if (sheetSub) {
-      sheetSub.innerHTML = `Pour contacter <strong>${nomProfil}</strong> directement, vous devez être connecté en tant que client APIJOB.<br>L'inscription est gratuite.`;
+      sheetSub.innerHTML = `Pour contacter <strong>${nomProfil}</strong> directement, tu dois être connecté en tant que client APIJOB.<br>L'inscription est gratuite.`;
     }
 
     const btnContacter = document.querySelector('.btn-contacter');

@@ -328,7 +328,7 @@
 
       <div class="form-group">
         <label class="form-label">Email <span class="required">*</span></label>
-        <input type="email" class="form-input" id="input-email-inscription" placeholder="votre@email.pf">
+        <input type="email" class="form-input" id="input-email-inscription" placeholder="ton@email.pf">
       </div>
 
       <div class="form-group">
@@ -391,11 +391,11 @@
     <!-- ── CONNEXION ── -->
     <div class="panel" id="panel-connexion">
       <h1 class="panel-title">Bon retour ! 👋</h1>
-      <p class="panel-sub">Connectez-vous à votre compte API JOB.</p>
+      <p class="panel-sub">Connecte-toi à ton compte API JOB.</p>
 
       <div class="form-group">
         <label class="form-label">Email</label>
-        <input type="email" class="form-input" id="input-email-connexion" placeholder="votre@email.pf">
+        <input type="email" class="form-input" id="input-email-connexion" placeholder="ton@email.pf">
       </div>
 
       <div class="form-group">
@@ -481,19 +481,19 @@
     const cps      = document.getElementById('cps').checked;
 
     // Validation
-    if (!role)     return showMsg('msg-inscription', 'Veuillez choisir votre rôle (client ou prestataire).');
-    if (!prenom)   return showMsg('msg-inscription', 'Veuillez saisir votre prénom.');
-    if (!nom)      return showMsg('msg-inscription', 'Veuillez saisir votre nom.');
-    if (!email)    return showMsg('msg-inscription', 'Veuillez saisir votre email.');
+    if (!role)     return showMsg('msg-inscription', 'Choisis ton rôle (client ou prestataire).');
+    if (!prenom)   return showMsg('msg-inscription', 'Saisis ton prénom.');
+    if (!nom)      return showMsg('msg-inscription', 'Saisis ton nom.');
+    if (!email)    return showMsg('msg-inscription', 'Saisis ton email.');
     if (!password || password.length < 8) return showMsg('msg-inscription', 'Le mot de passe doit contenir au moins 8 caractères.');
-    if (role === 'prestataire' && !cps) return showMsg('msg-inscription', 'Vous devez cocher la déclaration CPS.');
-    if (!cgu)      return showMsg('msg-inscription', 'Vous devez accepter les conditions générales.');
+    if (role === 'prestataire' && !cps) return showMsg('msg-inscription', 'Tu dois cocher la déclaration CPS.');
+    if (!cgu)      return showMsg('msg-inscription', 'Tu dois accepter les conditions générales.');
 
     // Prestataire : champs supplémentaires
     let numero_tahiti = null;
     if (role === 'prestataire') {
       numero_tahiti = document.getElementById('input-numero-tahiti').value.trim();
-      if (!numero_tahiti) return showMsg('msg-inscription', 'Veuillez saisir votre numéro Tahiti.');
+      if (!numero_tahiti) return showMsg('msg-inscription', 'Saisis ton numéro Tahiti.');
     }
 
     hideMsg('msg-inscription');
@@ -512,7 +512,7 @@
 
       if (error) {
         let msg = error.message;
-        if (msg.includes('already registered')) msg = 'Cet email est déjà utilisé. Connectez-vous.';
+        if (msg.includes('already registered')) msg = 'Cet email est déjà utilisé. Connecte-toi.';
         if (msg.includes('invalid email'))       msg = 'Adresse email invalide.';
         if (msg.includes('Password'))            msg = 'Mot de passe trop faible (min. 8 caractères).';
         showMsg('msg-inscription', msg);
@@ -548,8 +548,8 @@
     const email    = document.getElementById('input-email-connexion').value.trim();
     const password = document.getElementById('input-password-connexion').value;
 
-    if (!email)    return showMsg('msg-connexion', 'Veuillez saisir votre email.');
-    if (!password) return showMsg('msg-connexion', 'Veuillez saisir votre mot de passe.');
+    if (!email)    return showMsg('msg-connexion', 'Saisis ton email.');
+    if (!password) return showMsg('msg-connexion', 'Saisis ton mot de passe.');
 
     hideMsg('msg-connexion');
     setLoading('btn-connexion', true, 'Se connecter');
@@ -560,7 +560,7 @@
       if (error) {
         let msg = error.message;
         if (msg.includes('Invalid login'))      msg = 'Email ou mot de passe incorrect.';
-        if (msg.includes('Email not confirmed')) msg = 'Veuillez confirmer votre email avant de vous connecter.';
+        if (msg.includes('Email not confirmed')) msg = 'Confirme ton email avant de te connecter.';
         showMsg('msg-connexion', msg);
         return;
       }
@@ -569,7 +569,7 @@
       const { data: profile } = await db.from('profiles').select('is_banned').eq('id', data.user.id).single();
       if (profile?.is_banned) {
         await db.auth.signOut();
-        showMsg('msg-connexion', 'Votre compte a été suspendu. Contactez le support.');
+        showMsg('msg-connexion', 'Ton compte a été suspendu. Contacte le support.');
         return;
       }
 

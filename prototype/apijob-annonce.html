@@ -279,8 +279,8 @@
 
     <!-- ÉTAPE 1 — CATÉGORIE -->
     <div class="step-panel active" id="step-1">
-      <div class="step-title">Quel service cherchez-vous ? 🔍</div>
-      <div class="step-sub">Choisissez une catégorie pour votre annonce.</div>
+      <div class="step-title">Quel service cherches-tu ? 🔍</div>
+      <div class="step-sub">Choisis une catégorie pour ton annonce.</div>
 
       <div class="cat-grid">
         <div class="cat-card" onclick="selectCat(this, 'Maçonnerie')">
@@ -455,8 +455,8 @@
 
     <!-- ÉTAPE 2 — DESCRIPTION -->
     <div class="step-panel" id="step-2">
-      <div class="step-title">Décrivez votre besoin ✍️</div>
-      <div class="step-sub">Plus c'est précis, meilleures seront les propositions que vous recevrez.</div>
+      <div class="step-title">Décris ton besoin ✍️</div>
+      <div class="step-sub">Plus c'est précis, meilleures seront les propositions que tu recevras.</div>
 
       <div class="form-group">
         <label class="form-label">Titre de l'annonce <span>*</span></label>
@@ -465,9 +465,9 @@
 
       <div class="form-group">
         <label class="form-label">Description détaillée <span>*</span></label>
-        <textarea class="form-textarea" id="input-desc" placeholder="Décrivez votre besoin en détail : taille du jardin, matériel fourni ou non, accès, contraintes particulières..." oninput="checkDesc()"></textarea>
+        <textarea class="form-textarea" id="input-desc" placeholder="Décris ton besoin en détail : taille du jardin, matériel fourni ou non, accès, contraintes particulières..." oninput="checkDesc()"></textarea>
         <div id="alert-coordonnees" style="display:none; margin-top:0.5rem; background:rgba(204,10,43,0.06); border:1px solid rgba(204,10,43,0.2); border-radius:10px; padding:0.6rem 0.9rem; font-size:0.78rem; color:var(--rouge); font-weight:500;">
-          🚫 Votre description contient un numéro de téléphone ou une adresse email — merci de les retirer.
+          🚫 Ta description contient un numéro de téléphone ou une adresse email — merci de les retirer.
         </div>
       </div>
 
@@ -477,14 +477,14 @@
           <input type="number" class="form-input" id="input-budget" placeholder="Ex : 5000" min="0" step="100" style="flex:1;">
           <span style="font-size:0.88rem; color:var(--muted); white-space:nowrap;">XPF</span>
         </div>
-        <div style="font-size:0.78rem; color:var(--muted); margin-top:0.4rem;">Indiquez le montant maximum que vous êtes prêt à payer pour cette mission.</div>
+        <div style="font-size:0.78rem; color:var(--muted); margin-top:0.4rem;">Indique le montant maximum que tu es prêt(e) à payer pour cette mission.</div>
       </div>
 
       <label style="display:flex;align-items:center;gap:0.75rem;padding:0.9rem 1rem;background:rgba(240,165,0,0.06);border:1.5px solid rgba(240,165,0,0.25);border-radius:12px;cursor:pointer;margin-bottom:1rem;">
         <input type="checkbox" id="input-devis" style="width:18px;height:18px;accent-color:var(--rouge);flex-shrink:0;">
         <div>
           <div style="font-size:0.88rem;font-weight:600;color:var(--night);">Besoin d'un devis</div>
-          <div style="font-size:0.75rem;color:var(--muted);margin-top:0.1rem;">Le prestataire sera informé que vous souhaitez recevoir un devis détaillé.</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:0.1rem;">Le prestataire sera informé que tu souhaites recevoir un devis détaillé.</div>
         </div>
       </label>
 
@@ -504,7 +504,7 @@
     <!-- ÉTAPE 3 — LIEU & DATE -->
     <div class="step-panel" id="step-3">
       <div class="step-title">Où et quand ? 📍</div>
-      <div class="step-sub">Indiquez votre localisation et vos disponibilités.</div>
+      <div class="step-sub">Indique ta localisation et tes disponibilités.</div>
 
       <div class="form-group">
         <label class="form-label">Île <span>*</span></label>
@@ -523,7 +523,7 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">Quand avez-vous besoin du service ? <span>*</span></label>
+        <label class="form-label">Quand as-tu besoin du service ? <span>*</span></label>
         <div class="urgence-options">
           <button class="urgence-btn" onclick="selectUrgence(this, 'Dès que possible')">⚡ Dès que possible</button>
           <button class="urgence-btn" onclick="selectUrgence(this, 'Cette semaine')">📅 Cette semaine</button>
@@ -545,8 +545,8 @@
 
     <!-- ÉTAPE 4 — RÉCAP -->
     <div class="step-panel" id="step-4">
-      <div class="step-title">Vérifiez votre annonce ✅</div>
-      <div class="step-sub">Relisez avant de publier — votre annonce sera visible par tous les prestataires.</div>
+      <div class="step-title">Vérifie ton annonce ✅</div>
+      <div class="step-sub">Relis avant de publier — ton annonce sera visible par tous les prestataires.</div>
 
       <div class="recap-block">
         <div class="recap-row">
@@ -581,7 +581,7 @@
 
       <div class="info-box">
         <span class="icon">ℹ️</span>
-        <span>Votre annonce sera visible par tous les prestataires disponibles à Tahiti & Moorea. Vous recevrez une notification dès qu'une proposition vous sera envoyée.</span>
+        <span>Ton annonce sera visible par tous les prestataires disponibles à Tahiti & Moorea. Tu recevras une notification dès qu'une proposition te sera envoyée.</span>
       </div>
 
       <div class="form-nav">
@@ -595,7 +595,7 @@
       <div class="success-state">
         <div class="success-icon">🎉</div>
         <div class="success-title">Annonce publiée !</div>
-        <div class="success-sub">Votre annonce est en ligne. Les prestataires disponibles vont bientôt vous envoyer leurs propositions. Vous serez notifié à chaque nouvelle proposition.</div>
+        <div class="success-sub">Ton annonce est en ligne. Les prestataires disponibles vont bientôt t'envoyer leurs propositions. Tu seras notifié(e) à chaque nouvelle proposition.</div>
         <div class="success-btns">
           <button class="btn-next" style="justify-content:center;" onclick="window.location='apijob-dashboard.html'">Retour au tableau de bord</button>
           <button class="btn-back" onclick="reset()">Publier une autre annonce</button>
@@ -780,7 +780,7 @@
 
       // Notification au client
       await createNotification(user.id, 'annonce_publiee', '✅ Annonce publiée !',
-        `Votre annonce "${titre}" est en ligne. Les prestataires vont bientôt vous contacter.`);
+        `Ton annonce "${titre}" est en ligne. Les prestataires vont bientôt te contacter.`);
 
       // Notifier les prestataires dont les services correspondent à la catégorie
       const { data: prestas } = await db
@@ -794,7 +794,7 @@
           if (services.some(s => s.replace(/^[^a-zA-ZÀ-ÿ]+/, '').toLowerCase() === catLow)) {
             await createNotification(p.id, 'nouvelle_annonce',
               `🔔 Nouvelle annonce : ${selectedCat}`,
-              `Une annonce "${titre}" vient d'être publiée dans votre domaine.`
+              `Une annonce "${titre}" vient d'être publiée dans ton domaine.`
             );
           }
         }

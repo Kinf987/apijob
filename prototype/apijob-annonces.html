@@ -383,7 +383,7 @@
   <div class="page-header">
     <div>
       <div class="page-title">Annonces disponibles 🔍</div>
-      <div class="page-sub">Trouvez des missions près de chez vous · Tahiti & Moorea</div>
+      <div class="page-sub">Trouve des missions près de chez toi · Tahiti & Moorea</div>
     </div>
   </div>
 
@@ -453,7 +453,7 @@
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">Envoyer une proposition 📩</div>
-    <div class="modal-sub">Présentez-vous et expliquez pourquoi vous êtes la bonne personne pour cette mission.</div>
+    <div class="modal-sub">Présente-toi et explique pourquoi tu es la bonne personne pour cette mission.</div>
 
     <div class="modal-annonce">
       <span id="modal-emoji" style="font-size:1.8rem;">🌿</span>
@@ -463,10 +463,10 @@
       </div>
     </div>
 
-    <label class="modal-form-label">Votre message au client <span style="color:var(--rouge)">*</span></label>
-    <textarea class="modal-textarea" id="modal-message" placeholder="Bonjour, je suis disponible pour votre mission. J'ai X ans d'expérience en jardinage et mon matériel..."></textarea>
+    <label class="modal-form-label">Ton message au client <span style="color:var(--rouge)">*</span></label>
+    <textarea class="modal-textarea" id="modal-message" placeholder="Bonjour, je suis disponible pour ta mission. J'ai X ans d'expérience en jardinage et mon matériel..."></textarea>
 
-    <label class="modal-form-label">Votre tarif proposé</label>
+    <label class="modal-form-label">Ton tarif proposé</label>
     <div class="modal-tarif">
       <input type="number" placeholder="Ex : 3500" id="modal-prix">
       <span class="modal-tarif-unit">XPF / heure ou forfait</span>
@@ -474,7 +474,7 @@
 
     <div class="modal-jeton-warning">
       <span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="1.15em" height="1.15em" style="vertical-align:-0.18em;display:inline-block"><circle cx="16" cy="16" r="15.5" fill="#F0A500"/><circle cx="16" cy="16" r="13" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><g transform="translate(16,16)"><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(72)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(144)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(216)"/><ellipse cx="0" cy="-5.5" rx="2.8" ry="5" fill="rgba(255,255,255,0.9)" transform="rotate(288)"/><circle cx="0" cy="0" r="2" fill="#F0A500"/><circle cx="0" cy="0" r="0.9" fill="#C8860A"/></g></svg></span>
-      <span>1 jeton sera débité <strong>uniquement si le client accepte</strong> votre proposition. Il vous reste 5 jetons.</span>
+      <span>1 jeton sera débité <strong>uniquement si le client accepte</strong> ta proposition. Il te reste 5 jetons.</span>
     </div>
 
     <div id="msg-proposition" style="display:none;margin-bottom:1rem;font-size:0.82rem;padding:0.7rem 1rem;border-radius:10px;background:rgba(204,10,43,0.06);border:1px solid rgba(204,10,43,0.2);color:var(--rouge);"></div>
@@ -538,7 +538,7 @@
         <div class="empty-state">
           <div class="empty-emoji">😕</div>
           <div class="empty-title">Erreur de chargement</div>
-          <div class="empty-sub">Vérifiez votre connexion et réessayez.</div>
+          <div class="empty-sub">Vérifie ta connexion et réessaie.</div>
         </div>`;
       return;
     }
@@ -661,7 +661,7 @@
     // Mettre à jour le warning jetons
     const warning = document.querySelector('.modal-jeton-warning span:last-child');
     const tokens = currentUser.is_pro ? '∞' : currentUser.tokens;
-    if (warning) warning.innerHTML = `1 jeton sera débité <strong>uniquement si le client accepte</strong> votre proposition. Il vous reste <strong>${tokens}</strong> jeton${typeof tokens === 'number' && tokens !== 1 ? 's' : ''}.`;
+    if (warning) warning.innerHTML = `1 jeton sera débité <strong>uniquement si le client accepte</strong> ta proposition. Il te reste <strong>${tokens}</strong> jeton${typeof tokens === 'number' && tokens !== 1 ? 's' : ''}.`;
 
     hideMsg('msg-proposition');
     document.getElementById('modal-overlay').classList.add('open');
@@ -685,7 +685,7 @@
     const message = document.getElementById('modal-message').value.trim();
     const prix    = document.getElementById('modal-prix').value;
 
-    if (!message) return showMsg('msg-proposition', 'Veuillez écrire un message pour le client.');
+    if (!message) return showMsg('msg-proposition', 'Écris un message pour le client.');
     if (!currentAnnonceId) return;
 
     const btn = document.getElementById('btn-modal-submit');
@@ -703,13 +703,13 @@
         .single();
 
       if (existant) {
-        showMsg('msg-proposition', 'Vous avez déjà envoyé une proposition pour cette annonce.');
+        showMsg('msg-proposition', 'Tu as déjà envoyé une proposition pour cette annonce.');
         return;
       }
 
       // Vérifier jetons (sauf Pro)
       if (!currentUser.is_pro && currentUser.tokens < 1) {
-        showMsg('msg-proposition', 'Vous n\'avez plus de jetons. Rechargez votre compte pour continuer.');
+        showMsg('msg-proposition', 'Tu n\'as plus de jetons. Recharge ton compte pour continuer.');
         return;
       }
 
@@ -735,7 +735,7 @@
           annonce.client_id,
           'nouvelle_proposition',
           '📩 Nouvelle proposition reçue !',
-          `Un prestataire a répondu à votre annonce "${annonce.titre}".`,
+          `Un prestataire a répondu à ton annonce "${annonce.titre}".`,
           'apijob-annonce-detail.html?id=' + currentAnnonceId
         );
       }
@@ -755,7 +755,7 @@
     } catch (e) {
       console.error(e);
       let msg = 'Erreur lors de l\'envoi. Réessayez.';
-      if (e.message?.includes('unique')) msg = 'Vous avez déjà envoyé une proposition pour cette annonce.';
+      if (e.message?.includes('unique')) msg = 'Tu as déjà envoyé une proposition pour cette annonce.';
       showMsg('msg-proposition', msg);
     } finally {
       if (btn.textContent === 'Envoi...') {

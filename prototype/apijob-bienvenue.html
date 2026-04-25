@@ -177,7 +177,7 @@
       <div class="hero">
         <span class="hero-icon">🌺</span>
         <div class="hero-title">Ia ora na, <span>Teiva</span> !</div>
-        <p class="hero-sub">Votre compte prestataire est créé. Complétez votre profil pour commencer à recevoir des missions.</p>
+        <p class="hero-sub">Ton compte prestataire est créé. Complète ton profil pour commencer à recevoir des missions.</p>
       </div>
 
       <div class="progress-card">
@@ -203,7 +203,7 @@
           <div class="step-icon-wrap bg-bleu">🔍</div>
           <div class="step-text">
             <div class="step-label">Parcourir les annonces</div>
-            <div class="step-desc">Trouvez des missions qui correspondent à vos compétences</div>
+            <div class="step-desc">Trouve des missions qui correspondent à tes compétences</div>
           </div>
           <div class="step-arrow">›</div>
         </a>
@@ -236,7 +236,7 @@
       <div class="hero">
         <span class="hero-icon">👋</span>
         <div class="hero-title">Bienvenue, <span>Marie</span> !</div>
-        <p class="hero-sub">Votre compte est prêt. Publiez votre première annonce et recevez des propositions de prestataires.</p>
+        <p class="hero-sub">Ton compte est prêt. Publie ta première annonce et reçois des propositions de prestataires.</p>
       </div>
 
       <div class="steps">
@@ -244,7 +244,7 @@
           <div class="step-icon-wrap bg-rouge">📢</div>
           <div class="step-text">
             <div class="step-label">Publier une annonce</div>
-            <div class="step-desc">Décrivez votre besoin et recevez des propositions</div>
+            <div class="step-desc">Décris ton besoin et reçois des propositions</div>
           </div>
           <div class="step-arrow">›</div>
         </a>
@@ -297,7 +297,7 @@
 
     if (!profile) { window.location.href = 'apijob-auth.html'; return; }
 
-    const prenom = profile.prenom || 'vous';
+    const prenom = profile.prenom || 'toi';
     const role   = profile.role; // 'client' ou 'prestataire'
 
     // Affiche le bon prénom

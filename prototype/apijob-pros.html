@@ -469,8 +469,8 @@
 <!-- HERO -->
 <div class="hero">
   <div class="hero-badge">⭐ Professionnels vérifiés</div>
-  <h1>Trouvez le bon <span>professionnel</span></h1>
-  <p class="hero-sub">Des prestataires qualifiés à Tahiti et Moorea, disponibles pour tous vos besoins du quotidien.</p>
+  <h1>Trouve le bon <span>professionnel</span></h1>
+  <p class="hero-sub">Des prestataires qualifiés à Tahiti et Moorea, disponibles pour tous tes besoins du quotidien.</p>
 </div>
 
 <!-- PAGE -->
@@ -561,13 +561,13 @@
   <div class="section-pro">
     <div class="section-pro-left">
       <div class="pro-label">✦ OFFRE PRO</div>
-      <h2>Tu es prestataire ?<br>Passe <span>Pro</span> et décroche plus de missions.</h2>
+      <h2>Ne cherche plus le travail,<br>laisse le travail <span>te trouver</span>.</h2>
       <p>Le badge PRO te place dans cet annuaire et te rend directement joignable par les clients — sans qu'ils aient à publier une annonce.</p>
       <div class="pro-avantages">
         <div class="avantage"><div class="avantage-icon">📲</div>Directement joignable par les clients</div>
         <div class="avantage"><div class="avantage-icon">⭐</div>Badge PRO visible sur ton profil</div>
         <div class="avantage"><div class="avantage-icon">∞</div>Jetons illimités — réponds sans compter</div>
-        <div class="avantage"><div class="avantage-icon">📸</div>Jusqu'à 8 photos sur ton profil public</div>
+        <div class="avantage"><div class="avantage-icon">📸</div><strong>Jusqu'à 8 photos</strong> sur ton profil public</div>
       </div>
       <a href="apijob-jetons.html" class="btn-devenirpro">Passer Pro — 2 900 XPF/mois →</a>
     </div>
@@ -635,6 +635,7 @@ function filterPros() {
   });
 
   document.getElementById('countNum').textContent = count;
+  document.querySelector('.pagination').style.display = count === 0 ? 'none' : '';
 }
 
 function escHTML(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
@@ -710,9 +711,11 @@ function buildProCard(profile, avgNote, nbAvis) {
       <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted);">
         <div style="font-size:2.5rem;margin-bottom:1rem;">🔍</div>
         <div style="font-family:'Syne',sans-serif;font-weight:800;margin-bottom:0.5rem;">Aucun professionnel pour l'instant</div>
-        <div style="font-size:0.85rem;">Les prestataires Pro apparaîtront ici dès leur inscription.</div>
+        <div style="font-size:0.85rem;margin-bottom:1.2rem;">Les prestataires Pro apparaîtront ici dès leur inscription.</div>
+        <a href="apijob-annonce.html" style="display:inline-block;background:var(--rouge);color:white;padding:0.75rem 1.8rem;border-radius:50px;font-family:'Syne',sans-serif;font-size:0.88rem;font-weight:800;text-decoration:none;">Tu ne trouves pas de pro ? Publie ta demande →</a>
       </div>`;
     document.getElementById('countNum').textContent = '0';
+    document.querySelector('.pagination').style.display = 'none';
     return;
   }
 
