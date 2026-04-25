@@ -505,11 +505,6 @@
           <span class="methode-name">Virement bancaire</span>
           <div class="methode-radio"></div>
         </button>
-        <button class="methode-btn" onclick="selectMethode(this, 'relais')">
-          <span class="methode-icon">🏪</span>
-          <span class="methode-name">Payer en point relais</span>
-          <div class="methode-radio"></div>
-        </button>
       </div>
 
       <!-- FORMULAIRE CARTE -->
@@ -547,24 +542,6 @@
         </div>
       </div>
 
-      <!-- INFO POINT RELAIS -->
-      <div class="carte-form" id="relais-form">
-        <div style="background:var(--gris); border-radius:12px; padding:1.2rem; font-size:0.85rem; line-height:1.7; color:var(--muted);">
-          <div style="font-family:'Syne',sans-serif; font-weight:700; color:var(--night); margin-bottom:0.5rem;">🏪 Paiement en espèces — Point relais</div>
-          <p style="margin-bottom:0.8rem;">Rendez-vous dans l'un de nos magasins partenaires à Tahiti et Moorea avec votre <strong>code de commande</strong>. Payez en espèces directement en caisse.</p>
-          <div style="background:var(--rouge); color:white; border-radius:10px; padding:0.8rem; text-align:center; margin-bottom:0.8rem;">
-            <div style="font-size:0.72rem; opacity:0.7; margin-bottom:0.2rem;">Votre code de commande</div>
-            <div style="font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:800; letter-spacing:3px;">AJ-7842</div>
-          </div>
-          <div style="background:rgba(26,122,74,0.08); border:1px solid rgba(26,122,74,0.15); border-radius:10px; padding:0.7rem 1rem; margin-bottom:0.8rem; color:var(--vert); font-size:0.78rem;">
-            💵 <strong>Paiement en espèces uniquement</strong> — Présentez ce code en caisse et réglez le montant exact.
-          </div>
-          <div style="font-size:0.78rem;">
-            📍 Liste des points relais disponible à l'ouverture de la plateforme.<br>
-            ⚡ Les jetons sont crédités immédiatement après validation en caisse.
-          </div>
-        </div>
-      </div>
 
       <!-- RECAP -->
       <div class="recap-commande">
@@ -660,7 +637,6 @@
     btn.classList.add('selected');
     document.getElementById('carte-form').classList.toggle('visible',   type === 'carte');
     document.getElementById('virement-form').classList.toggle('visible', type === 'virement');
-    document.getElementById('relais-form').classList.toggle('visible',   type === 'relais');
   }
 
   function formatCard(input) {
