@@ -420,24 +420,36 @@
 
   async function init() {
     const { data: { session } } = await db.auth.getSession();
-    if (!session) return; // non connecté → liens apijob-auth.html déjà en place
+    if (!session) return; // non connecté → liens apijob-auth.html corrects
 
     const { data: profile } = await db.from('profiles').select('is_pro, role').eq('id', session.user.id).single();
-    if (!profile || profile.role !== 'prestataire') return;
+    if (!profile) return;
+
+    // Lien retour → toujours le dashboard si connecté
+    const navBack = document.getElementById('nav-back');
+    if (navBack) { navBack.href = 'apijob-dashboard.html'; }
 
     const ctas = document.querySelectorAll('a[href="apijob-auth.html"]');
+
+    if (profile.role !== 'prestataire') {
+      // Client connecté → CTA pointe vers dashboard
+      ctas.forEach(btn => {
+        btn.href = 'apijob-dashboard.html';
+      });
+      return;
+    }
+
     if (profile.is_pro) {
-      // Déjà Pro → message
+      // Déjà Pro
       ctas.forEach(btn => {
         btn.href = 'apijob-profil-edit.html';
         btn.textContent = '✅ Vous êtes déjà Pro — Gérer mon profil';
         btn.style.background = 'var(--vert)';
       });
     } else {
-      // Connecté mais pas Pro → aller acheter
+      // Prestataire connecté, pas encore Pro → page jetons
       ctas.forEach(btn => {
         btn.href = 'apijob-jetons.html';
-        btn.textContent = '⭐ Passer au forfait Pro — 2 900 XPF/mois';
       });
     }
   }
