@@ -493,6 +493,7 @@
     API<span>JOB</span>
   </div>
   <ul class="nav-links">
+    <li><a href="apijob-auth.html?role=prestataire" id="nav-presta-link">🛠️ Je suis prestataire</a></li>
   </ul>
   <a href="apijob-auth.html?tab=connexion" class="nav-cta">Se connecter</a>
 </nav>
@@ -616,6 +617,8 @@
     const btnClient = document.getElementById('btn-client');
     if (btnPresta) btnPresta.href = 'apijob-dashboard.html';
     if (btnClient) btnClient.href = 'apijob-dashboard.html';
+    const navPrestaLink = document.getElementById('nav-presta-link');
+    if (navPrestaLink) navPrestaLink.style.display = 'none'; // déjà connecté, inutile
 
     const initiales = (((user.prenom||'')[0]||'') + ((user.nom||'')[0]||'')).toUpperCase() || '?';
     if (!btn) return;
