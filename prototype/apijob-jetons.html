@@ -569,7 +569,7 @@
   </div><!-- /section-achat -->
 
   <!-- HISTORIQUE -->
-  <div class="historique-card" id="historique">
+  <div class="historique-card" id="historique" style="display:none;">
     <div class="historique-header">📋 Historique des jetons</div>
   </div>
 
@@ -750,6 +750,10 @@
   (async () => {
     currentUser = await requireAuth();
     if (!currentUser) return;
+
+    // Révéler l'historique uniquement après auth confirmée
+    const historiqueEl = document.getElementById('historique');
+    if (historiqueEl) historiqueEl.style.display = '';
 
     // Solde — révéler après chargement pour éviter le flash
     const solde = currentUser.is_pro ? '∞' : (currentUser.tokens || 0);
