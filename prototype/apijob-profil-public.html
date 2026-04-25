@@ -374,9 +374,16 @@
       }
     }
 
-    // --- Nom ---
+    // --- Nom + Titre ---
     const nameEl = document.querySelector('.profil-name');
     if (nameEl) nameEl.textContent = `${profile.prenom || ''} ${profile.nom || ''}`.trim();
+
+    if (meta.titre) {
+      const titreEl = document.createElement('div');
+      titreEl.style.cssText = 'font-size:0.82rem;color:var(--muted);margin-bottom:0.3rem;';
+      titreEl.textContent = meta.titre;
+      nameEl.insertAdjacentElement('afterend', titreEl);
+    }
 
     // --- Badges ---
     const badgesEl = document.querySelector('.profil-badges');

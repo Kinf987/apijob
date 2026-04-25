@@ -247,6 +247,11 @@
     margin-bottom: 0.25rem;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
+  .pro-titre {
+    font-size: 0.78rem; color: var(--muted);
+    margin-bottom: 0.2rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
   .pro-badges {
     display: flex; gap: 0.3rem; flex-wrap: wrap;
     margin-bottom: 0.3rem;
@@ -641,6 +646,7 @@ function buildProCard(profile, avgNote, nbAvis) {
   const zones = Array.isArray(meta.zones) ? meta.zones : (profile.localisation ? [profile.localisation] : []);
   const zoneLabel = zones[0] || 'Polynésie';
   const services  = Array.isArray(meta.services) ? meta.services.slice(0,3) : [];
+  const titre     = meta.titre || '';
   const bio       = profile.bio || '';
   const note      = avgNote ? avgNote.toFixed(1) : '—';
   const stars     = avgNote ? '★'.repeat(Math.round(avgNote)) + '☆'.repeat(5 - Math.round(avgNote)) : '—';
@@ -660,6 +666,7 @@ function buildProCard(profile, avgNote, nbAvis) {
       <div class="pro-avatar" style="background:linear-gradient(135deg,var(--rouge),#E8305A)">${init}</div>
       <div class="pro-info">
         <div class="pro-name">${escHTML(nom)}</div>
+        ${titre ? `<div class="pro-titre">${escHTML(titre)}</div>` : ''}
         <div class="pro-badges">
           <span class="badge-pro">⭐ PRO</span>
           <span class="badge-verifie">✓ Vérifié</span>
