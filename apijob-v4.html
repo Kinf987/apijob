@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API JOB — Tahiti & Moorea</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rouge: #CC0A2B;
+    --rouge-dark: #A00822;
+    --or: #F0A500;
+    --or-light: #FDD87A;
+    --night: #1A0008;
+    --blanc: #FFFFFF;
+    --gris: #F7F3F0;
+    --muted: rgba(26,0,8,0.45);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; color: var(--night); background: var(--blanc); overflow-x: hidden; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 5%;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 2px solid var(--rouge);
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem; font-weight: 800;
+    color: var(--rouge); letter-spacing: -0.5px;
+    display: flex; align-items: center; gap: 0.25rem;
+  }
+  .nav-logo span { color: var(--or); }
+  .flag-pill {
+    display: none;
+  }
+  /* Drapeau PF rond */
+  .flag-pf {
+    display: inline-flex;
+    flex-direction: column;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1.5px solid rgba(0,0,0,0.12);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    flex-shrink: 0;
+    position: relative;
+    margin-right: 0.1rem;
+  }
+  .flag-pf-band { flex: 1; }
+  .flag-pf-red  { background: #CC0A2B; }
+  .flag-pf-white { background: #FFFFFF; position: relative; }
+  .flag-pf-sun {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px; height: 6px;
+    background: #F0A500;
+    border-radius: 50%;
+  }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    text-decoration: none; color: var(--night);
+    font-size: 0.88rem; font-weight: 500;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--rouge); }
+  .nav-cta {
+    visibility: hidden;
+    background: var(--rouge); color: var(--blanc);
+    border: none; padding: 0.6rem 1.4rem;
+    border-radius: 50px; font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem; font-weight: 600; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-cta:hover { background: var(--rouge-dark); transform: translateY(-1px); }
+
+  /* ── HERO INTRO ── */
+  .hero {
+    padding: 9rem 5% 5rem;
+    text-align: center;
+    background: var(--blanc);
+    position: relative; overflow: hidden;
+  }
+  .hero::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--rouge) 0%, var(--or) 50%, var(--rouge) 100%);
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: rgba(204,10,43,0.07);
+    border: 1px solid rgba(204,10,43,0.15);
+    color: var(--rouge);
+    padding: 0.35rem 1rem; border-radius: 50px;
+    font-size: 0.8rem; font-weight: 600;
+    margin-bottom: 1.8rem;
+    animation: fadeUp 0.5s ease both;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    font-weight: 800; letter-spacing: -1.5px;
+    line-height: 1.05; margin-bottom: 1.2rem;
+    animation: fadeUp 0.6s ease 0.1s both;
+  }
+  .hero h1 span { color: var(--rouge); }
+  .hero-desc {
+    font-size: clamp(1rem, 1.8vw, 1.15rem);
+    color: var(--muted); line-height: 1.75;
+    max-width: 580px; margin: 0 auto 1rem;
+    font-weight: 300;
+    animation: fadeUp 0.6s ease 0.2s both;
+  }
+  .hero-sub {
+    font-size: 0.88rem; color: rgba(204,10,43,0.7);
+    font-weight: 500; margin-bottom: 3rem;
+    animation: fadeUp 0.6s ease 0.25s both;
+  }
+
+  /* ── SPLIT BOUTONS ── */
+  .split-buttons {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1.2rem; max-width: 780px; margin: 0 auto;
+    animation: fadeUp 0.6s ease 0.3s both;
+  }
+  .split-btn {
+    border-radius: 20px; padding: 2.2rem 1.8rem;
+    cursor: pointer; transition: all 0.25s;
+    text-decoration: none; display: flex;
+    flex-direction: column; align-items: center;
+    text-align: center; gap: 0.6rem;
+    border: 2px solid transparent;
+  }
+  .split-btn-presta {
+    background: var(--rouge); color: var(--blanc);
+  }
+  .split-btn-presta:hover {
+    background: var(--rouge-dark);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(204,10,43,0.3);
+  }
+  .split-btn-client {
+    background: var(--gris); color: var(--night);
+    border-color: rgba(204,10,43,0.15);
+  }
+  .split-btn-client:hover {
+    border-color: var(--rouge);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(204,10,43,0.1);
+    background: var(--blanc);
+  }
+  .split-btn-icon { font-size: 2.4rem; }
+  .split-btn-label {
+    font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 2.5px; text-transform: uppercase;
+    opacity: 0.65;
+  }
+  .split-btn-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem; font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .split-btn-presta .split-btn-title { color: var(--blanc); }
+  .split-btn-client .split-btn-title { color: var(--night); }
+  .split-btn-sub {
+    font-size: 0.85rem; font-weight: 300;
+    line-height: 1.5;
+  }
+  .split-btn-presta .split-btn-sub { color: rgba(255,255,255,0.7); }
+  .split-btn-client .split-btn-sub { color: var(--muted); }
+  .split-btn-cta {
+    display: inline-block;
+    margin-top: 0.6rem;
+    padding: 0.55rem 1.3rem;
+    border-radius: 50px;
+    font-size: 0.85rem; font-weight: 600;
+    transition: all 0.2s;
+  }
+  .split-btn-presta .split-btn-cta {
+    background: var(--or); color: var(--night);
+  }
+  .split-btn-presta:hover .split-btn-cta { background: var(--or-light); }
+  .split-btn-client .split-btn-cta {
+    background: var(--rouge); color: var(--blanc);
+  }
+
+  /* ── TICKER SERVICES ── */
+  .ticker-wrap {
+    width: 100%; overflow: hidden;
+    margin-top: 2.5rem;
+    padding: 1rem 0;
+    position: relative;
+  }
+  .ticker-wrap::before,
+  .ticker-wrap::after {
+    content: '';
+    position: absolute; top: 0; bottom: 0; width: 80px;
+    z-index: 2; pointer-events: none;
+  }
+  .ticker-wrap::before { left: 0; background: linear-gradient(90deg, var(--blanc), transparent); }
+  .ticker-wrap::after  { right: 0; background: linear-gradient(-90deg, var(--blanc), transparent); }
+  .ticker-track {
+    display: flex; gap: 0.8rem;
+    width: max-content;
+    animation: ticker 28s linear infinite;
+  }
+  .ticker-track:hover { animation-play-state: paused; }
+  .ticker-item {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--gris);
+    border: 1.5px solid rgba(204,10,43,0.1);
+    border-radius: 50px;
+    padding: 0.55rem 1.2rem;
+    font-size: 0.88rem; font-weight: 500;
+    color: var(--night);
+    white-space: nowrap;
+    transition: all 0.2s; cursor: default;
+  }
+  .ticker-item:hover {
+    background: rgba(204,10,43,0.07);
+    border-color: var(--rouge);
+    color: var(--rouge);
+  }
+  .ticker-emoji { font-size: 1rem; }
+  @keyframes ticker {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  /* ── BLOC NOS PROS ── */
+  .pros-promo-wrap {
+    max-width: 780px; margin: 2.5rem auto 0;
+  }
+  .pros-promo {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1.2rem;
+    background: linear-gradient(135deg, #1A0008 0%, #2E0012 50%, #1A0008 100%);
+    border-radius: 20px;
+    padding: 1.4rem 1.8rem;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative; overflow: hidden;
+    border: 1px solid rgba(204,10,43,0.25);
+  }
+  .pros-promo::before {
+    content: '';
+    position: absolute; top: -40px; right: -20px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(204,10,43,0.18) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .pros-promo::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--rouge), var(--or), var(--rouge), transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .pros-promo:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(204,10,43,0.4);
+  }
+  .pros-promo:hover::after { opacity: 1; }
+  .pros-promo-left { flex: 1; min-width: 200px; }
+  .pros-promo-badge {
+    display: inline-block;
+    background: rgba(204,10,43,0.2);
+    border: 1px solid rgba(204,10,43,0.4);
+    color: rgba(255,255,255,0.75);
+    padding: 0.2rem 0.75rem; border-radius: 50px;
+    font-size: 0.7rem; font-weight: 700;
+    margin-bottom: 0.5rem; letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .pros-promo-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem; font-weight: 800;
+    color: white;
+    letter-spacing: -0.2px;
+  }
+  .pros-promo-right { flex-shrink: 0; }
+  .pros-promo-cta {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: var(--or); color: var(--night);
+    padding: 0.65rem 1.4rem; border-radius: 50px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.88rem; font-weight: 800;
+    white-space: nowrap;
+    transition: background 0.2s, transform 0.2s;
+    box-shadow: 0 4px 14px rgba(240,165,0,0.3);
+  }
+  .pros-promo:hover .pros-promo-cta { background: var(--or-light); transform: translateX(3px); }
+
+  .section { padding: 5.5rem 5%; }
+  .section-alt { background: var(--gris); }
+  .section-rouge { background: var(--rouge); }
+  .section-night { background: var(--night); }
+
+  .section-label {
+    font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--rouge); margin-bottom: 0.7rem;
+  }
+  .section-rouge .section-label,
+  .section-night .section-label { color: var(--or); }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    font-weight: 800; letter-spacing: -1px;
+    line-height: 1.15; margin-bottom: 0.8rem;
+  }
+  .section-rouge .section-title,
+  .section-night .section-title { color: var(--blanc); }
+
+  .section-sub {
+    font-size: 0.95rem; color: var(--muted);
+    line-height: 1.7; max-width: 500px;
+    font-weight: 300; margin-bottom: 3rem;
+  }
+  .section-rouge .section-sub { color: rgba(255,255,255,0.6); }
+  .section-night .section-sub { color: rgba(255,255,255,0.5); }
+
+
+  /* ── PRESTATAIRES MIS EN AVANT ── */
+  .presta-grid {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: 1.2rem;
+  }
+  .presta-card {
+    background: var(--blanc);
+    border-radius: 18px; padding: 1.6rem;
+    border: 1.5px solid rgba(204,10,43,0.08);
+    transition: all 0.25s;
+    position: relative; overflow: hidden;
+  }
+  .presta-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--rouge);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.3s;
+  }
+  .presta-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(204,10,43,0.1); }
+  .presta-card:hover::before { transform: scaleX(1); }
+
+  .presta-top { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+  .presta-avatar {
+    width: 52px; height: 52px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+    background: rgba(204,10,43,0.07);
+    flex-shrink: 0;
+  }
+  .presta-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem; font-weight: 700;
+  }
+  .presta-metier { font-size: 0.82rem; color: var(--muted); margin-top: 0.15rem; }
+  .presta-stars { color: #F0A500; font-size: 0.82rem; }
+  .presta-reviews { font-size: 0.78rem; color: var(--muted); margin-left: 0.3rem; }
+  .presta-zone {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.78rem; color: var(--rouge);
+    background: rgba(204,10,43,0.07);
+    padding: 0.2rem 0.7rem; border-radius: 50px;
+    margin: 0.8rem 0;
+    font-weight: 500;
+  }
+  .presta-desc {
+    font-size: 0.85rem; color: var(--muted);
+    line-height: 1.55; margin-bottom: 1rem;
+  }
+  .presta-prix {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem; font-weight: 700;
+    color: var(--night);
+  }
+  .presta-prix span { font-size: 0.8rem; font-weight: 400; color: var(--muted); }
+  .presta-badge {
+    position: absolute; top: 1rem; right: 1rem;
+    background: var(--or); color: var(--night);
+    font-size: 0.68rem; font-weight: 700;
+    padding: 0.2rem 0.6rem; border-radius: 50px;
+  }
+
+  /* ── EXEMPLES DE DEMANDES ── */
+  .demandes-grid {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: 1.2rem;
+  }
+  .demande-card {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px; padding: 1.5rem;
+    transition: all 0.2s;
+  }
+  .demande-card:hover {
+    background: rgba(255,255,255,0.13);
+    transform: translateY(-3px);
+    border-color: rgba(240,165,0,0.3);
+  }
+  .demande-emoji { font-size: 1.8rem; margin-bottom: 0.8rem; }
+  .demande-titre {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem; font-weight: 700;
+    color: var(--blanc); margin-bottom: 0.5rem;
+  }
+  .demande-detail {
+    font-size: 0.83rem; color: rgba(255,255,255,0.6);
+    line-height: 1.55; margin-bottom: 1rem;
+  }
+  .demande-meta {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .demande-zone {
+    font-size: 0.75rem; color: rgba(255,255,255,0.45);
+    display: flex; align-items: center; gap: 0.3rem;
+  }
+  .demande-devis {
+    font-size: 0.75rem; font-weight: 600;
+    color: var(--or);
+    background: rgba(240,165,0,0.12);
+    padding: 0.2rem 0.6rem; border-radius: 50px;
+  }
+
+
+  /* ── FOOTER ── */
+  footer {
+    background: #110005;
+    padding: 2.5rem 5%;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 1rem;
+  }
+  .footer-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem; font-weight: 800; color: var(--blanc);
+  }
+  .footer-logo span { color: var(--or); }
+  .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .footer-links a {
+    font-size: 0.82rem; color: rgba(255,255,255,0.35);
+    text-decoration: none; transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--or); }
+  .footer-copy { font-size: 0.78rem; color: rgba(255,255,255,0.2); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(20px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .presta-grid { grid-template-columns: 1fr 1fr; }
+    .demandes-grid { grid-template-columns: 1fr 1fr; }
+    .nav-links { display: none; }
+  }
+  @media (max-width: 600px) {
+    .split-buttons { grid-template-columns: 1fr; }
+    .presta-grid { grid-template-columns: 1fr; }
+    .demandes-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <svg width="24" height="24" viewBox="0 0 28 28" style="border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.15);flex-shrink:0;" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="c"><circle cx="14" cy="14" r="14"/></clipPath></defs><g clip-path="url(#c)"><circle cx="14" cy="14" r="14" fill="white"/><g stroke="#F0A500" stroke-width="1.3" stroke-linecap="round"><line x1="14" y1="17" x2="2.2" y2="14.9"/><line x1="14" y1="17" x2="3.4" y2="11.4"/><line x1="14" y1="17" x2="5.7" y2="8.4"/><line x1="14" y1="17" x2="8.5" y2="6.3"/><line x1="14" y1="17" x2="12.1" y2="5.2"/><line x1="14" y1="17" x2="15.9" y2="5.2"/><line x1="14" y1="17" x2="19.5" y2="6.3"/><line x1="14" y1="17" x2="22.3" y2="8.4"/><line x1="14" y1="17" x2="24.6" y2="11.4"/><line x1="14" y1="17" x2="25.8" y2="14.9"/></g><rect x="0" y="17" width="28" height="11" fill="#1E7FC2"/><path d="M7,17.5 Q14,15.5 21,17.5 L20.5,18.5 Q14,16.8 7.5,18.5 Z" fill="#CE1126"/><path d="M3,19.5 Q7,18.5 11,19.5 Q14,20.5 17,19.5 Q21,18.5 25,19.5" fill="none" stroke="white" stroke-width="0.6" opacity="0.8"/><path d="M3,21.5 Q7,20.5 11,21.5 Q14,22.5 17,21.5 Q21,20.5 25,21.5" fill="none" stroke="white" stroke-width="0.5" opacity="0.6"/><path d="M3,23.5 Q7,22.5 11,23.5 Q14,24.5 17,23.5 Q21,22.5 25,23.5" fill="none" stroke="white" stroke-width="0.4" opacity="0.4"/></g></svg>
+    API<span>JOB</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="apijob-faq.html">FAQ</a></li>
+  </ul>
+  <a href="apijob-auth.html?tab=connexion" class="nav-cta">Se connecter</a>
+</nav>
+
+<!-- ── HERO INTRO ── -->
+<section class="hero">
+  <div class="hero-badge">🌺 Polynésie française</div>
+  <h1>Besoin d'un service<br><span>sur Tahiti ou Moorea ?</span></h1>
+  <p class="hero-desc">
+    Publie ta demande gratuitement et reçois des propositions rapidement.
+  </p>
+  <p class="hero-sub">100% local · Gratuit pour les clients</p>
+
+  <!-- LES 2 BOUTONS -->
+  <div class="split-buttons">
+    <a href="apijob-auth.html?role=prestataire" class="split-btn split-btn-presta" id="btn-presta">
+      <span class="split-btn-icon">🛠️</span>
+      <span class="split-btn-label">Professionnel / Patenté</span>
+      <span class="split-btn-title">Je rends service</span>
+      <span class="split-btn-sub">Tu es patenté, tu as un service à proposer ? Inscris-toi et trouve tes premiers clients à Tahiti ou Moorea.</span>
+      <span style="font-size:0.75rem;opacity:0.55;margin-top:-0.2rem;">3 jetons offerts · Sans engagement</span>
+      <span class="split-btn-cta">Créer mon profil →</span>
+    </a>
+    <a href="apijob-auth.html?role=client" class="split-btn split-btn-client" id="btn-client">
+      <span class="split-btn-icon">🔍</span>
+      <span class="split-btn-label">C'est gratuit pour toi</span>
+      <span class="split-btn-title">Besoin d'un service</span>
+      <span class="split-btn-sub">Trouve rapidement quelqu'un de confiance près de chez toi à Tahiti ou Moorea.</span>
+      <span class="split-btn-cta">Trouver un service →</span>
+    </a>
+  </div>
+
+  <!-- TICKER SERVICES -->
+  <div class="ticker-wrap">
+    <div class="ticker-track">
+      <div class="ticker-item"><span class="ticker-emoji">🌿</span> Jardinage & entretien</div>
+      <div class="ticker-item"><span class="ticker-emoji">🏠</span> Ménage & nettoyage</div>
+      <div class="ticker-item"><span class="ticker-emoji">🔧</span> Plomberie</div>
+      <div class="ticker-item"><span class="ticker-emoji">⚡</span> Électricité</div>
+      <div class="ticker-item"><span class="ticker-emoji">🛠️</span> Bricolage & rénovation</div>
+      <div class="ticker-item"><span class="ticker-emoji">📦</span> Déménagement & livraison</div>
+      <div class="ticker-item"><span class="ticker-emoji">👶</span> Baby-sitting</div>
+      <div class="ticker-item"><span class="ticker-emoji">🏡</span> Gardiennage de maison</div>
+      <div class="ticker-item"><span class="ticker-emoji">🐾</span> Garde d'animaux</div>
+      <div class="ticker-item"><span class="ticker-emoji">🎨</span> Peinture & rénovation</div>
+      <div class="ticker-item"><span class="ticker-emoji">🚗</span> Petits transports</div>
+      <div class="ticker-item"><span class="ticker-emoji">📋</span> Démarches & administratif</div>
+      <div class="ticker-item"><span class="ticker-emoji">📚</span> Enseignement</div>
+      <div class="ticker-item"><span class="ticker-emoji">🛋️</span> Aménagement & déco</div>
+      <div class="ticker-item"><span class="ticker-emoji">🎉</span> Événementiel</div>
+      <div class="ticker-item"><span class="ticker-emoji">💼</span> Bureautique & administratif</div>
+      <div class="ticker-item"><span class="ticker-emoji">🧘</span> Bien-être</div>
+      <div class="ticker-item"><span class="ticker-emoji">🌺</span> Aide aux personnes âgées</div>
+      <div class="ticker-item"><span class="ticker-emoji">🔩</span> Mécanique</div>
+      <div class="ticker-item"><span class="ticker-emoji">🤝</span> Aide à la personne</div>
+      <div class="ticker-item"><span class="ticker-emoji">💻</span> Informatique</div>
+      <div class="ticker-item"><span class="ticker-emoji">🎓</span> Cours particuliers</div>
+      <!-- doublon pour boucle infinie seamless -->
+      <div class="ticker-item"><span class="ticker-emoji">🌿</span> Jardinage & entretien</div>
+      <div class="ticker-item"><span class="ticker-emoji">🏠</span> Ménage & nettoyage</div>
+      <div class="ticker-item"><span class="ticker-emoji">🔧</span> Plomberie</div>
+      <div class="ticker-item"><span class="ticker-emoji">⚡</span> Électricité</div>
+      <div class="ticker-item"><span class="ticker-emoji">🛠️</span> Bricolage & rénovation</div>
+      <div class="ticker-item"><span class="ticker-emoji">📦</span> Déménagement & livraison</div>
+      <div class="ticker-item"><span class="ticker-emoji">👶</span> Baby-sitting</div>
+      <div class="ticker-item"><span class="ticker-emoji">🏡</span> Gardiennage de maison</div>
+      <div class="ticker-item"><span class="ticker-emoji">🐾</span> Garde d'animaux</div>
+      <div class="ticker-item"><span class="ticker-emoji">🎨</span> Peinture & rénovation</div>
+      <div class="ticker-item"><span class="ticker-emoji">🚗</span> Petits transports</div>
+      <div class="ticker-item"><span class="ticker-emoji">📋</span> Démarches & administratif</div>
+      <div class="ticker-item"><span class="ticker-emoji">📚</span> Enseignement</div>
+      <div class="ticker-item"><span class="ticker-emoji">🛋️</span> Aménagement & déco</div>
+      <div class="ticker-item"><span class="ticker-emoji">🎉</span> Événementiel</div>
+      <div class="ticker-item"><span class="ticker-emoji">💼</span> Bureautique & administratif</div>
+      <div class="ticker-item"><span class="ticker-emoji">🧘</span> Bien-être</div>
+      <div class="ticker-item"><span class="ticker-emoji">🌺</span> Aide aux personnes âgées</div>
+      <div class="ticker-item"><span class="ticker-emoji">🔩</span> Mécanique</div>
+      <div class="ticker-item"><span class="ticker-emoji">🤝</span> Aide à la personne</div>
+      <div class="ticker-item"><span class="ticker-emoji">💻</span> Informatique</div>
+      <div class="ticker-item"><span class="ticker-emoji">🎓</span> Cours particuliers</div>
+    </div>
+  </div>
+
+  <!-- BLOC NOS PROS -->
+  <div class="pros-promo-wrap">
+    <a href="apijob-pros.html" class="pros-promo">
+      <div class="pros-promo-left">
+        <div class="pros-promo-badge">Nos professionnels</div>
+        <div class="pros-promo-title">Consulte la liste de nos professionnels, c'est par ici.</div>
+      </div>
+      <div class="pros-promo-right">
+        <span class="pros-promo-cta">Voir la liste →</span>
+      </div>
+    </a>
+  </div>
+
+</section>
+
+
+<!-- ── BLOC QUESTION ── -->
+<section class="section section-alt">
+  <div style="max-width:780px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:2rem;flex-wrap:wrap;">
+    <div>
+      <div class="section-label">Aide</div>
+      <h2 class="section-title" style="margin-bottom:0.4rem;">Une question ?</h2>
+      <p style="font-size:0.95rem;color:var(--muted);font-weight:300;">Toutes les réponses sont dans notre FAQ.</p>
+    </div>
+    <a href="apijob-faq.html" style="display:inline-block;background:var(--rouge);color:white;padding:0.85rem 2rem;border-radius:50px;font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:800;text-decoration:none;white-space:nowrap;transition:background 0.2s;" onmouseover="this.style.background='#A00822'" onmouseout="this.style.background='#CC0A2B'">Voir la FAQ →</a>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-logo">API<span>JOB</span></div>
+  <div class="footer-links">
+    <a href="apijob-mentions.html">Mentions légales</a>
+    <a href="apijob-confidentialite.html">Confidentialité</a>
+    <a href="apijob-contact.html">Contact</a>
+    <a href="apijob-faq.html">FAQ</a>
+  </div>
+  <div class="footer-copy">© 2025 API JOB · Tahiti & Moorea 🌺</div>
+</footer>
+
+<script>
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+  (async () => {
+    const btn = document.querySelector('.nav-cta');
+    const session = await getSession();
+    if (!session) {
+      if (btn) btn.style.visibility = 'visible';
+      return;
+    }
+    const user = await getCurrentUser();
+    if (!user) {
+      if (btn) btn.style.visibility = 'visible';
+      return;
+    }
+    // Connecté : rediriger les boutons split directement vers le dashboard
+    const btnPresta = document.getElementById('btn-presta');
+    const btnClient = document.getElementById('btn-client');
+    if (btnPresta) btnPresta.href = 'apijob-dashboard.html';
+    if (btnClient) btnClient.href = 'apijob-dashboard.html';
+
+    const initiales = (((user.prenom||'')[0]||'') + ((user.nom||'')[0]||'')).toUpperCase() || '?';
+    if (!btn) return;
+    btn.href = 'apijob-dashboard.html';
+    btn.textContent = '';
+    btn.style.cssText = 'visibility:visible;width:36px;height:36px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;font-family:"Syne",sans-serif;font-weight:800;font-size:0.85rem;background:var(--rouge);color:white;text-decoration:none;cursor:pointer;overflow:hidden;';
+    if (user.photo) {
+      const img = document.createElement('img');
+      img.src = user.photo;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+      btn.appendChild(img);
+    } else {
+      btn.textContent = initiales;
+    }
+  })();
+</script>
+
+</body>
+</html>
