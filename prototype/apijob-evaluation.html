@@ -420,7 +420,8 @@
       console.error('Erreur évaluation:', e);
       btn.disabled = false;
       btn.textContent = 'Publier mon évaluation →';
-      alert('Erreur lors de la publication. Veuillez réessayer.');
+      const msg = e?.message || e?.code || JSON.stringify(e);
+      alert('Erreur : ' + msg);
     }
   }
 
