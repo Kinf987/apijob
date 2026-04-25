@@ -191,48 +191,6 @@
     background: var(--rouge); color: var(--blanc);
   }
 
-  /* ── TICKER SERVICES ── */
-  .ticker-wrap {
-    width: 100%; overflow: hidden;
-    margin-top: 2.5rem;
-    padding: 1rem 0;
-    position: relative;
-  }
-  .ticker-wrap::before,
-  .ticker-wrap::after {
-    content: '';
-    position: absolute; top: 0; bottom: 0; width: 80px;
-    z-index: 2; pointer-events: none;
-  }
-  .ticker-wrap::before { left: 0; background: linear-gradient(90deg, var(--blanc), transparent); }
-  .ticker-wrap::after  { right: 0; background: linear-gradient(-90deg, var(--blanc), transparent); }
-  .ticker-track {
-    display: flex; gap: 0.8rem;
-    width: max-content;
-    animation: ticker 28s linear infinite;
-  }
-  .ticker-track:hover { animation-play-state: paused; }
-  .ticker-item {
-    display: inline-flex; align-items: center; gap: 0.5rem;
-    background: var(--gris);
-    border: 1.5px solid rgba(204,10,43,0.1);
-    border-radius: 50px;
-    padding: 0.55rem 1.2rem;
-    font-size: 0.88rem; font-weight: 500;
-    color: var(--night);
-    white-space: nowrap;
-    transition: all 0.2s; cursor: default;
-  }
-  .ticker-item:hover {
-    background: rgba(204,10,43,0.07);
-    border-color: var(--rouge);
-    color: var(--rouge);
-  }
-  .ticker-emoji { font-size: 1rem; }
-  @keyframes ticker {
-    0%   { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
   /* ── BLOC NOS PROS ── */
   .pros-promo-wrap {
     max-width: 780px; margin: 2.5rem auto 0;
@@ -567,57 +525,6 @@
       <span class="split-btn-sub">Tu as un talent ou une compétence ? Inscris-toi et trouve tes premiers clients à Tahiti ou Moorea.</span>
       <span class="split-btn-cta">Créer mon profil →</span>
     </a>
-  </div>
-
-  <!-- TICKER SERVICES -->
-  <div class="ticker-wrap">
-    <div class="ticker-track">
-      <div class="ticker-item"><span class="ticker-emoji">🌿</span> Jardinage & entretien</div>
-      <div class="ticker-item"><span class="ticker-emoji">🏠</span> Ménage & nettoyage</div>
-      <div class="ticker-item"><span class="ticker-emoji">🔧</span> Plomberie</div>
-      <div class="ticker-item"><span class="ticker-emoji">⚡</span> Électricité</div>
-      <div class="ticker-item"><span class="ticker-emoji">🛠️</span> Bricolage & rénovation</div>
-      <div class="ticker-item"><span class="ticker-emoji">📦</span> Déménagement & livraison</div>
-      <div class="ticker-item"><span class="ticker-emoji">👶</span> Baby-sitting</div>
-      <div class="ticker-item"><span class="ticker-emoji">🏡</span> Gardiennage de maison</div>
-      <div class="ticker-item"><span class="ticker-emoji">🐾</span> Garde d'animaux</div>
-      <div class="ticker-item"><span class="ticker-emoji">🎨</span> Peinture & rénovation</div>
-      <div class="ticker-item"><span class="ticker-emoji">🚗</span> Petits transports</div>
-      <div class="ticker-item"><span class="ticker-emoji">📋</span> Démarches & administratif</div>
-      <div class="ticker-item"><span class="ticker-emoji">📚</span> Enseignement</div>
-      <div class="ticker-item"><span class="ticker-emoji">🛋️</span> Aménagement & déco</div>
-      <div class="ticker-item"><span class="ticker-emoji">🎉</span> Événementiel</div>
-      <div class="ticker-item"><span class="ticker-emoji">💼</span> Bureautique & administratif</div>
-      <div class="ticker-item"><span class="ticker-emoji">🧘</span> Bien-être</div>
-      <div class="ticker-item"><span class="ticker-emoji">🌺</span> Aide aux personnes âgées</div>
-      <div class="ticker-item"><span class="ticker-emoji">🔩</span> Mécanique</div>
-      <div class="ticker-item"><span class="ticker-emoji">🤝</span> Aide à la personne</div>
-      <div class="ticker-item"><span class="ticker-emoji">💻</span> Informatique</div>
-      <div class="ticker-item"><span class="ticker-emoji">🎓</span> Cours particuliers</div>
-      <!-- doublon pour boucle infinie seamless -->
-      <div class="ticker-item"><span class="ticker-emoji">🌿</span> Jardinage & entretien</div>
-      <div class="ticker-item"><span class="ticker-emoji">🏠</span> Ménage & nettoyage</div>
-      <div class="ticker-item"><span class="ticker-emoji">🔧</span> Plomberie</div>
-      <div class="ticker-item"><span class="ticker-emoji">⚡</span> Électricité</div>
-      <div class="ticker-item"><span class="ticker-emoji">🛠️</span> Bricolage & rénovation</div>
-      <div class="ticker-item"><span class="ticker-emoji">📦</span> Déménagement & livraison</div>
-      <div class="ticker-item"><span class="ticker-emoji">👶</span> Baby-sitting</div>
-      <div class="ticker-item"><span class="ticker-emoji">🏡</span> Gardiennage de maison</div>
-      <div class="ticker-item"><span class="ticker-emoji">🐾</span> Garde d'animaux</div>
-      <div class="ticker-item"><span class="ticker-emoji">🎨</span> Peinture & rénovation</div>
-      <div class="ticker-item"><span class="ticker-emoji">🚗</span> Petits transports</div>
-      <div class="ticker-item"><span class="ticker-emoji">📋</span> Démarches & administratif</div>
-      <div class="ticker-item"><span class="ticker-emoji">📚</span> Enseignement</div>
-      <div class="ticker-item"><span class="ticker-emoji">🛋️</span> Aménagement & déco</div>
-      <div class="ticker-item"><span class="ticker-emoji">🎉</span> Événementiel</div>
-      <div class="ticker-item"><span class="ticker-emoji">💼</span> Bureautique & administratif</div>
-      <div class="ticker-item"><span class="ticker-emoji">🧘</span> Bien-être</div>
-      <div class="ticker-item"><span class="ticker-emoji">🌺</span> Aide aux personnes âgées</div>
-      <div class="ticker-item"><span class="ticker-emoji">🔩</span> Mécanique</div>
-      <div class="ticker-item"><span class="ticker-emoji">🤝</span> Aide à la personne</div>
-      <div class="ticker-item"><span class="ticker-emoji">💻</span> Informatique</div>
-      <div class="ticker-item"><span class="ticker-emoji">🎓</span> Cours particuliers</div>
-    </div>
   </div>
 
   <!-- BLOC NOS PROS -->
