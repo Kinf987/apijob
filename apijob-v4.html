@@ -137,19 +137,20 @@
     text-align: center; gap: 0.6rem;
     border: 2px solid transparent;
   }
-  .split-btn-presta {
+  .split-btn-client {
     background: var(--rouge); color: var(--blanc);
+    border-color: transparent;
   }
-  .split-btn-presta:hover {
+  .split-btn-client:hover {
     background: var(--rouge-dark);
     transform: translateY(-4px);
     box-shadow: 0 16px 40px rgba(204,10,43,0.3);
   }
-  .split-btn-client {
+  .split-btn-presta {
     background: var(--gris); color: var(--night);
     border-color: rgba(204,10,43,0.15);
   }
-  .split-btn-client:hover {
+  .split-btn-presta:hover {
     border-color: var(--rouge);
     transform: translateY(-4px);
     box-shadow: 0 16px 40px rgba(204,10,43,0.1);
@@ -166,14 +167,14 @@
     font-size: 1.4rem; font-weight: 800;
     letter-spacing: -0.5px;
   }
-  .split-btn-presta .split-btn-title { color: var(--blanc); }
-  .split-btn-client .split-btn-title { color: var(--night); }
+  .split-btn-client .split-btn-title { color: var(--blanc); }
+  .split-btn-presta .split-btn-title { color: var(--night); }
   .split-btn-sub {
     font-size: 0.85rem; font-weight: 300;
     line-height: 1.5;
   }
-  .split-btn-presta .split-btn-sub { color: rgba(255,255,255,0.7); }
-  .split-btn-client .split-btn-sub { color: var(--muted); }
+  .split-btn-client .split-btn-sub { color: rgba(255,255,255,0.7); }
+  .split-btn-presta .split-btn-sub { color: var(--muted); }
   .split-btn-cta {
     display: inline-block;
     margin-top: 0.6rem;
@@ -182,11 +183,11 @@
     font-size: 0.85rem; font-weight: 600;
     transition: all 0.2s;
   }
-  .split-btn-presta .split-btn-cta {
+  .split-btn-client .split-btn-cta {
     background: var(--or); color: var(--night);
   }
-  .split-btn-presta:hover .split-btn-cta { background: var(--or-light); }
-  .split-btn-client .split-btn-cta {
+  .split-btn-client:hover .split-btn-cta { background: var(--or-light); }
+  .split-btn-presta .split-btn-cta {
     background: var(--rouge); color: var(--blanc);
   }
 
@@ -430,6 +431,64 @@
   }
 
 
+  /* ── RÉASSURANCE ── */
+  .reassurance-grid {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: 1.5rem; max-width: 900px; margin: 0 auto;
+    text-align: center;
+  }
+  .reassurance-item { padding: 1.5rem 1rem; }
+  .reassurance-icon { font-size: 2.2rem; margin-bottom: 0.8rem; }
+  .reassurance-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem; font-weight: 800;
+    color: var(--night); margin-bottom: 0.4rem;
+  }
+  .reassurance-sub {
+    font-size: 0.88rem; color: var(--muted);
+    line-height: 1.65; font-weight: 300;
+  }
+
+  /* ── COMMENT ÇA MARCHE ── */
+  .steps-grid {
+    display: flex; align-items: flex-start;
+    gap: 1rem; max-width: 900px;
+  }
+  .step-card {
+    flex: 1; background: var(--blanc);
+    border-radius: 18px; padding: 1.8rem 1.5rem;
+    border: 1.5px solid rgba(204,10,43,0.1);
+  }
+  .step-num {
+    width: 40px; height: 40px;
+    background: var(--rouge); color: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+  .step-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem; font-weight: 800;
+    color: var(--night); margin-bottom: 0.5rem;
+  }
+  .step-desc {
+    font-size: 0.88rem; color: var(--muted);
+    line-height: 1.65; font-weight: 300;
+  }
+  .step-arrow {
+    font-size: 1.4rem; color: rgba(204,10,43,0.25);
+    padding-top: 2.8rem; flex-shrink: 0;
+  }
+  @media (max-width: 900px) {
+    .reassurance-grid { grid-template-columns: 1fr 1fr; }
+    .steps-grid { flex-direction: column; }
+    .step-arrow { display: none; }
+  }
+  @media (max-width: 600px) {
+    .reassurance-grid { grid-template-columns: 1fr; }
+  }
+
   /* ── FOOTER ── */
   footer {
     background: #110005;
@@ -495,20 +554,19 @@
 
   <!-- LES 2 BOUTONS -->
   <div class="split-buttons">
-    <a href="apijob-auth.html?role=prestataire" class="split-btn split-btn-presta" id="btn-presta">
-      <span class="split-btn-icon">🛠️</span>
-      <span class="split-btn-label">Professionnel / Patenté</span>
-      <span class="split-btn-title">Je rends service</span>
-      <span class="split-btn-sub">Tu es patenté, tu as un service à proposer ? Inscris-toi et trouve tes premiers clients à Tahiti ou Moorea.</span>
-      <span style="font-size:0.75rem;opacity:0.55;margin-top:-0.2rem;">3 jetons offerts · Sans engagement</span>
-      <span class="split-btn-cta">Créer mon profil →</span>
-    </a>
     <a href="apijob-auth.html?role=client" class="split-btn split-btn-client" id="btn-client">
       <span class="split-btn-icon">🔍</span>
       <span class="split-btn-label">C'est gratuit pour toi</span>
-      <span class="split-btn-title">Besoin d'un service</span>
-      <span class="split-btn-sub">Trouve rapidement quelqu'un de confiance près de chez toi à Tahiti ou Moorea.</span>
-      <span class="split-btn-cta">Trouver un service →</span>
+      <span class="split-btn-title">J'ai besoin d'aide</span>
+      <span class="split-btn-sub">Publie ta demande en 2 minutes et reçois des propositions de prestataires près de chez toi.</span>
+      <span class="split-btn-cta">Publier une demande →</span>
+    </a>
+    <a href="apijob-auth.html?role=prestataire" class="split-btn split-btn-presta" id="btn-presta">
+      <span class="split-btn-icon">🛠️</span>
+      <span class="split-btn-label">Professionnel / Patenté</span>
+      <span class="split-btn-title">Je propose mes services</span>
+      <span class="split-btn-sub">Tu as un talent ou une compétence ? Inscris-toi et trouve tes premiers clients à Tahiti ou Moorea.</span>
+      <span class="split-btn-cta">Créer mon profil →</span>
     </a>
   </div>
 
@@ -578,6 +636,56 @@
 
 </section>
 
+
+<!-- ── RÉASSURANCE ── -->
+<section class="section">
+  <div class="reassurance-grid">
+    <div class="reassurance-item">
+      <div class="reassurance-icon">🎁</div>
+      <div class="reassurance-title">Gratuit pour les clients</div>
+      <div class="reassurance-sub">Publie ta demande, reçois des propositions et choisis ton prestataire. Sans payer un centime.</div>
+    </div>
+    <div class="reassurance-item">
+      <div class="reassurance-icon">📍</div>
+      <div class="reassurance-title">100% local</div>
+      <div class="reassurance-sub">Uniquement des prestataires de Tahiti et Moorea. Quelqu'un de confiance, près de chez toi.</div>
+    </div>
+    <div class="reassurance-item">
+      <div class="reassurance-icon">✅</div>
+      <div class="reassurance-title">Prestataires vérifiés</div>
+      <div class="reassurance-sub">Chaque profil est vérifié à l'inscription. Les avis des clients garantissent la qualité.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── COMMENT ÇA MARCHE ── -->
+<section class="section section-alt">
+  <div class="section-label">Simple & rapide</div>
+  <h2 class="section-title">Comment ça marche ?</h2>
+  <p class="section-sub">Trouver un prestataire de confiance n'a jamais été aussi simple.</p>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div class="step-title">Publie ta demande</div>
+      <div class="step-desc">Décris ce dont tu as besoin, ta zone et ta disponibilité. C'est gratuit et ça prend 2 minutes.</div>
+    </div>
+    <div class="step-arrow">→</div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div class="step-title">Reçois des propositions</div>
+      <div class="step-desc">Les prestataires de ta zone te font leurs offres. Tu consultes leurs profils et leurs avis clients.</div>
+    </div>
+    <div class="step-arrow">→</div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <div class="step-title">Choisis & contacte</div>
+      <div class="step-desc">Tu acceptes la proposition qui te convient. La mission démarre, vous vous contactez directement.</div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:2.5rem;">
+    <a href="apijob-auth.html?role=client" style="display:inline-block;background:var(--rouge);color:white;padding:0.9rem 2.2rem;border-radius:50px;font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:800;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='#A00822'" onmouseout="this.style.background='#CC0A2B'">Publier une demande gratuitement →</a>
+  </div>
+</section>
 
 <!-- ── BLOC QUESTION ── -->
 <section class="section section-alt">
