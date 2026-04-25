@@ -587,7 +587,7 @@
 
     // Charger annonce + profil client
     const { data: a, error } = await db.from('annonces')
-      .select('*, client:profiles!client_id(id, prenom, nom, created_at)')
+      .select('*, client:profiles!client_id(id, prenom, nom, photo, created_at)')
       .eq('id', annonceId)
       .single();
 
@@ -599,7 +599,7 @@
       db.from('annonces').select('id', { count: 'exact', head: true }).eq('client_id', a.client_id),
       db.from('propositions').select('id', { count: 'exact', head: true }).eq('annonce_id', annonceId),
       db.from('propositions').select('id').eq('annonce_id', annonceId).eq('prestataire_id', currentUser.id).maybeSingle(),
-      db.from('profiles').select('id, prenom, nom, created_at').eq('id', a.client_id).maybeSingle()
+      db.from('profiles').select('id, prenom, nom, photo, created_at').eq('id', a.client_id).maybeSingle()
     ]);
 
     const client = a.client || clientProfile || {};
@@ -610,7 +610,9 @@
     // --- Carte "Publié par" ---
     const publishCard = document.querySelector('.main-col > a > .card');
     if (publishCard) {
-      const avatarHtml = `<div class="client-avatar">${initiales}</div>`;
+      const avatarHtml = client.photo
+        ? `<img src="${client.photo}" alt="${nomAbrege}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
+        : `<div class="client-avatar">${initiales}</div>`;
       publishCard.innerHTML = `
         ${avatarHtml}
         <div style="flex:1;">
