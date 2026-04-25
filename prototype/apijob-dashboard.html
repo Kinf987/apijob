@@ -1031,18 +1031,26 @@
 
     // Missions en cours / terminées
     (missions || []).forEach(m => {
-      const badge = m.statut === 'terminee'
-        ? '<span class="mission-badge badge-termine">Terminée ✓</span>'
-        : '<span class="mission-badge badge-cours">Acceptée ✅</span>';
-      const lien = m.statut === 'terminee' ? '#' : `apijob-messagerie.html?mission=${m.id}`;
+      const enCours = m.statut !== 'terminee';
+      const badge = enCours
+        ? '<span class="mission-badge badge-cours">Acceptée ✅</span>'
+        : '<span class="mission-badge badge-termine">Terminée ✓</span>';
+      const msgBtn = enCours
+        ? `<a href="apijob-messagerie.html?mission=${m.id}" onclick="event.stopPropagation()"
+            style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;
+            border-radius:50%;background:var(--gris);font-size:1rem;text-decoration:none;flex-shrink:0;
+            transition:background 0.2s;" onmouseover="this.style.background='var(--gris2)'" onmouseout="this.style.background='var(--gris)'">💬</a>`
+        : '';
+      const lien = enCours ? `apijob-messagerie.html?mission=${m.id}` : '#';
       items.push(`
-        <div class="mission-item" onclick="location.href='${lien}'">
+        <div class="mission-item" onclick="location.href='${lien}'" style="cursor:${enCours ? 'pointer' : 'default'}">
           <div class="mission-emoji">${catEmoji(m.annonces?.categorie)}</div>
           <div class="mission-info">
             <div class="mission-title">${escDash(m.annonces?.titre || '')}</div>
             <div class="mission-meta">${formatDate(m.created_at)}</div>
           </div>
           ${badge}
+          ${msgBtn}
         </div>`);
     });
 
