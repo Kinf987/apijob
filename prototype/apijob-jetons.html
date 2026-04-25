@@ -748,7 +748,7 @@
 
   // ── INIT ──
   (async () => {
-    currentUser = await requireAuth();
+    currentUser = await requireAuth('apijob-auth.html?role=prestataire');
     if (!currentUser) return;
 
     // Révéler l'historique uniquement après auth confirmée

@@ -38,9 +38,9 @@ async function getCurrentUser() {
 }
 
 // Redirige vers apijob-auth.html si non connecté, retourne le profil sinon
-async function requireAuth() {
+async function requireAuth(authUrl = 'apijob-auth.html') {
   const user = await getCurrentUser();
-  if (!user) { window.location.replace('apijob-auth.html'); return null; }
+  if (!user) { window.location.replace(authUrl); return null; }
   const statut = user.metadata?.statut;
   if (user.is_banned || statut === 'banni' || statut === 'suspendu') {
     await db.auth.signOut();
