@@ -125,71 +125,68 @@
 
   /* ── SPLIT BOUTONS ── */
   .split-buttons {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 1.2rem; max-width: 780px; margin: 0 auto;
+    display: flex; flex-direction: column;
+    gap: 0.9rem; max-width: 560px; margin: 0 auto;
     animation: fadeUp 0.6s ease 0.3s both;
   }
-  .split-btn {
-    border-radius: 20px; padding: 2.2rem 1.8rem;
-    cursor: pointer; transition: all 0.25s;
-    text-decoration: none; display: flex;
-    flex-direction: column; align-items: center;
-    text-align: center; gap: 0.6rem;
-    border: 2px solid transparent;
-  }
+
+  /* ── BOUTON PRINCIPAL CLIENT ── */
   .split-btn-client {
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; gap: 0.5rem;
     background: var(--rouge); color: var(--blanc);
-    border-color: transparent;
+    border-radius: 22px; padding: 2.6rem 2rem;
+    text-decoration: none; border: none; cursor: pointer;
+    transition: all 0.25s;
+    box-shadow: 0 8px 32px rgba(204,10,43,0.25);
   }
   .split-btn-client:hover {
     background: var(--rouge-dark);
-    transform: translateY(-4px);
-    box-shadow: 0 16px 40px rgba(204,10,43,0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 18px 48px rgba(204,10,43,0.38);
   }
+  .split-btn-icon { font-size: 2.8rem; margin-bottom: 0.3rem; }
+  .split-btn-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 800; letter-spacing: -0.5px;
+    color: var(--blanc); line-height: 1.15;
+  }
+  .split-btn-sub {
+    font-size: 0.9rem; font-weight: 300;
+    color: rgba(255,255,255,0.72); line-height: 1.55;
+    max-width: 400px;
+  }
+  .split-btn-cta {
+    display: inline-block; margin-top: 0.8rem;
+    padding: 0.75rem 2rem; border-radius: 50px;
+    background: var(--or); color: var(--night);
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem; font-weight: 800;
+    transition: all 0.2s; letter-spacing: -0.2px;
+  }
+  .split-btn-client:hover .split-btn-cta {
+    background: #FFB800; transform: scale(1.03);
+  }
+
+  /* ── BOUTON SECONDAIRE PRESTATAIRE ── */
   .split-btn-presta {
-    background: var(--gris); color: var(--night);
-    border-color: rgba(204,10,43,0.15);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; text-decoration: none;
+    background: var(--blanc); color: var(--night);
+    border: 1.5px solid rgba(204,10,43,0.15);
+    border-radius: 14px; padding: 1rem 1.4rem;
+    transition: all 0.2s;
   }
   .split-btn-presta:hover {
     border-color: var(--rouge);
-    transform: translateY(-4px);
-    box-shadow: 0 16px 40px rgba(204,10,43,0.1);
-    background: var(--blanc);
+    background: rgba(204,10,43,0.02);
   }
-  .split-btn-icon { font-size: 2.4rem; }
-  .split-btn-label {
-    font-size: 0.72rem; font-weight: 600;
-    letter-spacing: 2.5px; text-transform: uppercase;
-    opacity: 0.65;
-  }
-  .split-btn-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.4rem; font-weight: 800;
-    letter-spacing: -0.5px;
-  }
-  .split-btn-client .split-btn-title { color: var(--blanc); }
-  .split-btn-presta .split-btn-title { color: var(--night); }
-  .split-btn-sub {
-    font-size: 0.85rem; font-weight: 300;
-    line-height: 1.5;
-  }
-  .split-btn-client .split-btn-sub { color: rgba(255,255,255,0.7); }
-  .split-btn-presta .split-btn-sub { color: var(--muted); }
-  .split-btn-cta {
-    display: inline-block;
-    margin-top: 0.6rem;
-    padding: 0.55rem 1.3rem;
-    border-radius: 50px;
-    font-size: 0.85rem; font-weight: 600;
-    transition: all 0.2s;
-  }
-  .split-btn-client .split-btn-cta {
-    background: var(--or); color: var(--night);
-  }
-  .split-btn-client:hover .split-btn-cta { background: var(--or-light); }
-  .split-btn-presta .split-btn-cta {
-    background: var(--rouge); color: var(--blanc);
-  }
+  .split-btn-presta-left { display: flex; align-items: center; gap: 0.7rem; }
+  .split-btn-presta-icon { font-size: 1.4rem; }
+  .split-btn-presta-text { font-size: 0.9rem; font-weight: 600; }
+  .split-btn-presta-text small { display: block; font-size: 0.75rem; color: var(--muted); font-weight: 400; }
+  .split-btn-presta-arrow { font-size: 1.1rem; color: var(--rouge); font-weight: 700; flex-shrink: 0; }
 
   /* ── BLOC NOS PROS ── */
   .pros-promo-wrap {
@@ -509,21 +506,25 @@
   </p>
   <p class="hero-sub">100% local · Gratuit pour les clients</p>
 
-  <!-- LES 2 BOUTONS -->
+  <!-- CTA PRINCIPAL CLIENT -->
   <div class="split-buttons">
-    <a href="apijob-auth.html?role=client" class="split-btn split-btn-client" id="btn-client">
+    <a href="apijob-auth.html?role=client" class="split-btn-client" id="btn-client">
       <span class="split-btn-icon">🔍</span>
-      <span class="split-btn-label">C'est gratuit pour toi</span>
-      <span class="split-btn-title">J'ai besoin d'un service</span>
-      <span class="split-btn-sub">Publie ta demande en 2 minutes et reçois des propositions de prestataires près de chez toi.</span>
-      <span class="split-btn-cta">Publier une demande →</span>
+      <span class="split-btn-title">Publier ma demande gratuitement</span>
+      <span class="split-btn-sub">Décris ton besoin en 2 minutes — reçois des propositions de pros de Tahiti ou Moorea.</span>
+      <span class="split-btn-cta">C'est parti, c'est gratuit →</span>
     </a>
-    <a href="apijob-auth.html?role=prestataire" class="split-btn split-btn-presta" id="btn-presta">
-      <span class="split-btn-icon">🛠️</span>
-      <span class="split-btn-label">Professionnel / Patenté</span>
-      <span class="split-btn-title">Je propose mes services</span>
-      <span class="split-btn-sub">Tu as un talent ou une compétence ? Inscris-toi et trouve tes premiers clients à Tahiti ou Moorea.</span>
-      <span class="split-btn-cta">Créer mon profil →</span>
+
+    <!-- SECONDAIRE PRESTATAIRE -->
+    <a href="apijob-auth.html?role=prestataire" class="split-btn-presta" id="btn-presta">
+      <div class="split-btn-presta-left">
+        <span class="split-btn-presta-icon">🛠️</span>
+        <div class="split-btn-presta-text">
+          Je suis prestataire
+          <small>Crée ton profil et décroche des missions</small>
+        </div>
+      </div>
+      <span class="split-btn-presta-arrow">→</span>
     </a>
   </div>
 
