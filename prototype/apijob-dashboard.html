@@ -547,7 +547,7 @@
       <div class="profil-card">
         <div class="profil-avatar">?</div>
         <div class="profil-name"></div>
-        <div class="profil-badge">✅ Profil vérifié</div>
+        <div class="profil-badge" id="badge-verifie" style="display:none;">⭐ Pro vérifié</div>
         <div>
           <span class="profil-stars">☆☆☆☆☆</span>
           <span class="profil-reviews">Pas encore d'avis</span>
@@ -781,8 +781,10 @@
         jetonsNum.textContent = ' ' + tokens;
         if (svgEl) jetonsNum.prepend(svgEl);
       }
-      // Si Pro : masquer "Acheter des jetons", afficher infos période
+      // Si Pro : badge vérifié + masquer "Acheter des jetons", afficher infos période
       if (currentUser.is_pro) {
+        const badgeVerifie = document.getElementById('badge-verifie');
+        if (badgeVerifie) badgeVerifie.style.display = '';
         const btnAcheter = document.getElementById('btn-acheter-jetons');
         if (btnAcheter) btnAcheter.style.display = 'none';
         document.getElementById('jetons-sub').textContent = 'Abonnement Pro actif · Jetons illimités';
@@ -915,8 +917,14 @@
       if (Array.isArray(metaC.disponibilites) && metaC.disponibilites.length > 0) score += 15;
       const pctEl = document.querySelector('.profil-completude-label span:last-child');
       const fillEl = document.querySelector('.progress-fill');
-      if (pctEl) pctEl.textContent = score + '%';
-      if (fillEl) fillEl.style.width = score + '%';
+      if (pctEl) {
+        pctEl.textContent = score + '%';
+        pctEl.style.color = score === 100 ? 'var(--vert)' : 'var(--rouge)';
+      }
+      if (fillEl) {
+        fillEl.style.width = score + '%';
+        fillEl.style.background = score === 100 ? 'var(--vert)' : 'var(--rouge)';
+      }
     }
 
     } catch(e) { console.error('Dashboard init error:', e); }
