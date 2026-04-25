@@ -538,6 +538,9 @@
       const elapsed = Date.now() - new Date(mission.terminated_at).getTime();
       if (elapsed > 48 * 60 * 60 * 1000) {
         await db.from('missions').update({ statut: 'terminee' }).eq('id', mission.id);
+        if (mission.annonce_id) {
+          await db.from('annonces').update({ statut: 'terminee' }).eq('id', mission.annonce_id);
+        }
         mission.statut = 'terminee';
         currentMission.statut = 'terminee';
       }

@@ -403,6 +403,10 @@
 
       // Le client évalue → mission clôturée définitivement
       await db.from('missions').update({ statut: 'terminee' }).eq('id', currentMission.id);
+      // Passer l'annonce à terminée pour la masquer du dashboard client
+      if (currentMission.annonce_id) {
+        await db.from('annonces').update({ statut: 'terminee' }).eq('id', currentMission.annonce_id);
+      }
 
       // Notifier la cible de l'avis reçu
       await createNotification(
