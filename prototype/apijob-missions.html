@@ -203,14 +203,10 @@
 
   <div class="page-header">
     <div class="page-title">Mes missions</div>
-    <div class="mode-toggle">
-      <button class="mode-btn active" onclick="setMode('prestataire', this)">Prestataire</button>
-      <button class="mode-btn" onclick="setMode('client', this)">Client</button>
-    </div>
   </div>
 
   <!-- STATS -->
-  <div class="stats-row" id="stats-presta">
+  <div class="stats-row" id="stats-row">
     <div class="stat-card">
       <div class="stat-num">—</div>
       <div class="stat-label">En cours</div>
@@ -225,21 +221,6 @@
     </div>
   </div>
 
-  <div class="stats-row" id="stats-client" style="display:none;">
-    <div class="stat-card">
-      <div class="stat-num">—</div>
-      <div class="stat-label">En cours</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num">—</div>
-      <div class="stat-label">Terminées</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num">—</div>
-      <div class="stat-label">Annonces publiées</div>
-    </div>
-  </div>
-
   <!-- FILTRES -->
   <div class="filtres">
     <button class="filtre-btn active" onclick="setFiltre(this, 'toutes')">Toutes</button>
@@ -248,11 +229,8 @@
     <button class="filtre-btn" onclick="setFiltre(this, 'terminee')">✅ Terminées</button>
   </div>
 
-  <!-- LISTE PRESTATAIRE -->
-  <div class="missions-list" id="list-presta"></div>
-
-  <!-- LISTE CLIENT -->
-  <div class="missions-list" id="list-client" style="display:none;"></div>
+  <!-- LISTE MISSIONS -->
+  <div class="missions-list" id="missions-list"></div>
 
 </div>
 
@@ -260,72 +238,75 @@
 <script src="supabase-config.js"></script>
 <script>
   let currentUser  = null;
-  let currentMode  = 'prestataire';
   let currentFiltre = 'toutes';
-  let allData = { presta: [], client: [] };
-
-  // ── MODE TOGGLE ──
-  function setMode(mode, btn) {
-    currentMode = mode;
-    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('list-presta').style.display  = mode === 'prestataire' ? 'flex' : 'none';
-    document.getElementById('list-client').style.display  = mode === 'client'       ? 'flex' : 'none';
-    document.getElementById('stats-presta').style.display = mode === 'prestataire' ? 'grid' : 'none';
-    document.getElementById('stats-client').style.display = mode === 'client'       ? 'grid' : 'none';
-    appliquerFiltre();
-  }
+  let allData = [];
 
   function setFiltre(btn, filtre) {
     currentFiltre = filtre;
     document.querySelectorAll('.filtre-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    appliquerFiltre();
+    renderList(allData);
   }
 
-  function appliquerFiltre() {
-    const listId = currentMode === 'prestataire' ? 'list-presta' : 'list-client';
-    document.querySelectorAll('#' + listId + ' .mission-card').forEach(card => {
-      card.style.display = (currentFiltre === 'toutes' || card.dataset.statut === currentFiltre) ? '' : 'none';
-    });
-  }
-
-  // ── HELPERS ──
   function escHTML(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
 
   function statutInfo(statut) {
     return {
-      en_cours:   { css: 'en-cours',   badge: 'badge-encours',  label: '⏳ En cours'   },
-      en_attente: { css: 'en-attente', badge: 'badge-attente',  label: '🕐 En attente' },
-      terminee:   { css: 'terminee',   badge: 'badge-terminee', label: '✅ Terminée'   },
-      annulee:    { css: 'terminee',   badge: 'badge-attente',  label: '❌ Annulée'    },
+      en_cours:            { css: 'en-cours',   badge: 'badge-encours',  label: '⏳ En cours'          },
+      en_attente_cloture:  { css: 'en-cours',   badge: 'badge-encours',  label: '⏳ En attente d\'avis' },
+      en_attente:          { css: 'en-attente', badge: 'badge-attente',  label: '🕐 En attente'         },
+      terminee:            { css: 'terminee',   badge: 'badge-terminee', label: '✅ Terminée'            },
+      annulee:             { css: 'terminee',   badge: 'badge-attente',  label: '❌ Annulée'             },
     }[statut] || { css: 'en-attente', badge: 'badge-attente', label: statut };
   }
 
-  // ── RENDER CARD ──
-  function buildCard(mission, role) {
-    const other  = role === 'prestataire' ? mission.client : mission.prestataire;
-    const init   = other ? ((other.prenom||'?')[0]+(other.nom||'?')[0]).toUpperCase() : '??';
-    const nom    = other ? `${other.prenom||''} ${other.nom||''}`.trim() : 'Utilisateur';
-    const ann    = mission.annonces;
-    const titre  = ann ? `${escHTML(ann.titre)}${ann.localisation ? ' — '+escHTML(ann.localisation) : ''}` : 'Mission';
-    const emoji  = ann ? catEmoji(ann.categorie) : '✨';
-    const dateS  = new Date(mission.created_at).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-    const s      = statutInfo(mission.statut);
-    const roleLabel = role === 'prestataire' ? 'Client' : 'Prestataire';
+  // ── SIGNALER TERMINÉE (prestataire uniquement) ──
+  async function signalerTerminee(missionId, clientId, clientPrenom) {
+    if (!confirm('Confirmer que la mission est terminée ?')) return;
+    await db.from('missions').update({ statut: 'en_attente_cloture' }).eq('id', missionId);
+    await createNotification(
+      clientId, 'validation_requise',
+      '✅ Mission déclarée terminée',
+      `Le prestataire a déclaré la mission terminée. Laissez votre avis pour clôturer.`,
+      `apijob-evaluation.html?mission=${missionId}`
+    );
+    location.reload();
+  }
 
-    // Footer selon rôle + statut
+  // ── CARTE MISSION ──
+  function buildCard(mission) {
+    const role = mission._role;
+    const other = role === 'prestataire' ? mission.client : mission.prestataire;
+    const init  = other ? ((other.prenom||'?')[0]+(other.nom||'?')[0]).toUpperCase() : '??';
+    const nom   = other ? `${other.prenom||''} ${other.nom||''}`.trim() : 'Utilisateur';
+    const ann   = mission.annonces;
+    const titre = ann ? `${escHTML(ann.titre)}${ann.localisation ? ' — '+escHTML(ann.localisation) : ''}` : 'Mission';
+    const emoji = ann ? catEmoji(ann.categorie) : '✨';
+    const dateS = new Date(mission.created_at).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    const s     = statutInfo(mission.statut);
+    const roleLabel = role === 'prestataire' ? 'Client' : 'Prestataire';
+    const roleBadge = role === 'prestataire'
+      ? '<span style="font-size:0.7rem;background:rgba(240,165,0,0.12);color:#B07800;padding:0.15rem 0.6rem;border-radius:50px;font-weight:600;margin-left:0.4rem;">Prestataire</span>'
+      : '<span style="font-size:0.7rem;background:rgba(204,10,43,0.08);color:var(--rouge);padding:0.15rem 0.6rem;border-radius:50px;font-weight:600;margin-left:0.4rem;">Client</span>';
+
     let footer = '';
     if (mission.statut === 'en_cours') {
-      const btnEval = role === 'prestataire'
-        ? `<a href="apijob-evaluation.html?mission=${mission.id}" class="btn-action btn-rouge">✅ Terminer</a>`
+      const btnAction = role === 'prestataire'
+        ? `<button class="btn-action btn-rouge" onclick="signalerTerminee('${mission.id}','${mission.client_id}','${escHTML(other?.prenom||'')}')">✅ Signaler terminée</button>`
         : `<a href="apijob-evaluation.html?mission=${mission.id}" class="btn-action btn-rouge">⭐ Laisser un avis</a>`;
       footer = `
         <div class="mission-footer-left">📍 ${escHTML(ann?.localisation||'')}</div>
         <div class="mission-actions">
           <a href="apijob-messagerie.html?mission=${mission.id}" class="btn-action btn-outline">💬 Message</a>
-          ${btnEval}
+          ${btnAction}
         </div>`;
+    } else if (mission.statut === 'en_attente_cloture') {
+      const btnAction = role === 'client'
+        ? `<a href="apijob-evaluation.html?mission=${mission.id}" class="btn-action btn-rouge">⭐ Laisser un avis</a>`
+        : `<span class="btn-action btn-gris">⏳ En attente de l'avis client</span>`;
+      footer = `
+        <div class="mission-footer-left">📍 ${escHTML(ann?.localisation||'')}</div>
+        <div class="mission-actions">${btnAction}</div>`;
     } else if (mission.statut === 'en_attente') {
       footer = `
         <div class="mission-footer-left">📍 ${escHTML(ann?.localisation||'')} · En attente de confirmation</div>
@@ -334,9 +315,16 @@
         </div>`;
     } else if (mission.statut === 'terminee') {
       const evalInfo = mission.eval_recu;
-      const footLeft = evalInfo
-        ? `⭐ Avis reçu : ${evalInfo.note_globale}/5${evalInfo.commentaire ? ' — &ldquo;'+escHTML(evalInfo.commentaire.slice(0,60))+'…&rdquo;' : ''}`
-        : (role === 'client' ? '💬 <a href="apijob-evaluation.html?mission='+mission.id+'" style="color:var(--rouge)">Laisser un avis</a>' : 'Pas encore d\'avis');
+      let footLeft = '';
+      if (role === 'prestataire') {
+        footLeft = evalInfo
+          ? `⭐ Avis reçu : ${evalInfo.note_globale}/5${evalInfo.commentaire ? ' — &ldquo;'+escHTML(evalInfo.commentaire.slice(0,60))+'…&rdquo;' : ''}`
+          : 'Aucun avis laissé';
+      } else {
+        footLeft = evalInfo
+          ? `✅ Avis publié : ${evalInfo.note_globale}/5`
+          : `💬 <a href="apijob-evaluation.html?mission=${mission.id}" style="color:var(--rouge)">Laisser un avis</a>`;
+      }
       footer = `<div class="mission-footer-left">${footLeft}</div><div class="mission-actions"></div>`;
     } else {
       footer = `<div class="mission-footer-left">Mission annulée</div><div class="mission-actions"></div>`;
@@ -349,7 +337,7 @@
       <div class="mission-top">
         <div class="mission-emoji">${emoji}</div>
         <div class="mission-content">
-          <div class="mission-title">${titre}</div>
+          <div class="mission-title">${titre}${roleBadge}</div>
           <div class="mission-interlocuteur">
             <div class="avatar-xs">${init}</div>
             ${roleLabel} : ${escHTML(nom)}
@@ -362,11 +350,13 @@
     return div;
   }
 
-  // ── RENDER LIST ──
-  function renderList(listId, missions, role) {
-    const el = document.getElementById(listId);
+  function renderList(missions) {
+    const el = document.getElementById('missions-list');
     el.innerHTML = '';
-    if (!missions.length) {
+    const filtered = currentFiltre === 'toutes'
+      ? missions
+      : missions.filter(m => statutInfo(m.statut).css === currentFiltre);
+    if (!filtered.length) {
       el.innerHTML = `
         <div class="empty-state">
           <div class="empty-icon">📋</div>
@@ -375,43 +365,31 @@
         </div>`;
       return;
     }
-    missions.forEach(m => el.appendChild(buildCard(m, role)));
+    filtered.forEach(m => el.appendChild(buildCard(m)));
   }
 
-  // ── STATS ──
   async function chargerStats() {
     const uid = currentUser.id;
-
-    // Stats prestataire
-    const [{ count: enCoursPr }, { count: termineePr }, { data: evals }] = await Promise.all([
-      db.from('missions').select('*',{count:'exact',head:true}).eq('prestataire_id',uid).eq('statut','en_cours'),
-      db.from('missions').select('*',{count:'exact',head:true}).eq('prestataire_id',uid).eq('statut','terminee'),
-      db.from('evaluations').select('note_globale').eq('cible_id',uid)
+    const [{ count: enCours }, { count: terminee }, { data: evals }] = await Promise.all([
+      db.from('missions').select('*',{count:'exact',head:true})
+        .or(`prestataire_id.eq.${uid},client_id.eq.${uid}`)
+        .in('statut',['en_cours','en_attente_cloture']),
+      db.from('missions').select('*',{count:'exact',head:true})
+        .or(`prestataire_id.eq.${uid},client_id.eq.${uid}`)
+        .eq('statut','terminee'),
+      db.from('evaluations').select('note_globale').eq('cible_id', uid)
     ]);
     const avg = evals?.length ? (evals.reduce((s,e)=>s+e.note_globale,0)/evals.length).toFixed(1)+'★' : '—';
-    const sPr = document.querySelectorAll('#stats-presta .stat-num');
-    if (sPr[0]) sPr[0].textContent = enCoursPr || 0;
-    if (sPr[1]) sPr[1].textContent = termineePr || 0;
-    if (sPr[2]) sPr[2].textContent = avg;
-
-    // Stats client
-    const [{ count: enCoursCl }, { count: termineeCl }, { count: annonces }] = await Promise.all([
-      db.from('missions').select('*',{count:'exact',head:true}).eq('client_id',uid).eq('statut','en_cours'),
-      db.from('missions').select('*',{count:'exact',head:true}).eq('client_id',uid).eq('statut','terminee'),
-      db.from('annonces').select('*',{count:'exact',head:true}).eq('client_id',uid)
-    ]);
-    const sCl = document.querySelectorAll('#stats-client .stat-num');
-    if (sCl[0]) sCl[0].textContent = enCoursCl || 0;
-    if (sCl[1]) sCl[1].textContent = termineeCl || 0;
-    if (sCl[2]) sCl[2].textContent = annonces || 0;
+    const nums = document.querySelectorAll('#stats-row .stat-num');
+    if (nums[0]) nums[0].textContent = enCours || 0;
+    if (nums[1]) nums[1].textContent = terminee || 0;
+    if (nums[2]) nums[2].textContent = avg;
   }
 
-  // ── INIT ──
   (async () => {
     currentUser = await requireAuth();
     if (!currentUser) return;
 
-    // Charger missions + évaluations reçues
     const [{ data: mPresta }, { data: mClient }] = await Promise.all([
       db.from('missions')
         .select('*, annonces(titre,categorie,localisation), client:profiles!client_id(prenom,nom), eval_recu:evaluations!mission_id(note_globale,commentaire,auteur_id)')
@@ -423,29 +401,21 @@
         .order('created_at', { ascending: false })
     ]);
 
-    // eval_recu = tableau → garder seulement l'éval de l'autre partie
-    const withEval = (missions, role) => (missions || []).map(m => ({
+    const tagEval = (missions, role) => (missions||[]).map(m => ({
       ...m,
+      _role: role,
       eval_recu: Array.isArray(m.eval_recu)
-        ? m.eval_recu.find(e => role === 'prestataire'
-            ? e.auteur_id === m.client_id       // avis du client sur le presta
-            : e.auteur_id === m.prestataire_id) // avis du presta sur le client
+        ? m.eval_recu.find(e => e.auteur_id === (role === 'prestataire' ? m.client_id : m.prestataire_id))
         : null
     }));
 
-    allData.presta = withEval(mPresta, 'prestataire');
-    allData.client = withEval(mClient, 'client');
+    allData = [
+      ...tagEval(mPresta, 'prestataire'),
+      ...tagEval(mClient, 'client')
+    ].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
 
-    renderList('list-presta', allData.presta, 'prestataire');
-    renderList('list-client', allData.client, 'client');
+    renderList(allData);
     await chargerStats();
-
-    // Mode par défaut selon rôle
-    const defaultMode = currentUser.role === 'client' ? 'client' : 'prestataire';
-    const btnDefault = defaultMode === 'client'
-      ? document.querySelectorAll('.mode-btn')[1]
-      : document.querySelectorAll('.mode-btn')[0];
-    setMode(defaultMode, btnDefault);
   })();
 </script>
 

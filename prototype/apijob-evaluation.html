@@ -401,26 +401,8 @@
       });
       if (error) throw error;
 
-      // Flux 2 étapes : premier → en_attente_cloture / second → terminee
-      const estPremier = currentMission.statut === 'en_cours';
-      if (estPremier) {
-        await db.from('missions').update({
-          statut:        'en_attente_cloture',
-          terminated_at: new Date().toISOString(),
-          terminated_by: currentUser.id
-        }).eq('id', currentMission.id);
-        // Notifier l'autre partie pour validation
-        await createNotification(
-          cibleId,
-          'validation_requise',
-          '✅ Mission déclarée terminée',
-          `${currentUser.prenom || 'Votre interlocuteur'} a déclaré la mission terminée. Validez dans les 48h ou la mission sera automatiquement clôturée.`,
-          `apijob-messagerie.html?mission=${currentMission.id}`
-        );
-      } else {
-        // Deuxième partie → clôture définitive
-        await db.from('missions').update({ statut: 'terminee' }).eq('id', currentMission.id);
-      }
+      // Le client évalue → mission clôturée définitivement
+      await db.from('missions').update({ statut: 'terminee' }).eq('id', currentMission.id);
 
       // Notifier la cible de l'avis reçu
       await createNotification(
@@ -476,15 +458,18 @@
       return;
     }
 
-    // Déterminer la cible
-    const isClient = mission.client_id === currentUser.id;
-    const cible = isClient ? mission.prestataire : mission.client;
-    cibleId = isClient ? mission.prestataire_id : mission.client_id;
+    // Seul le client peut évaluer le prestataire
+    if (mission.client_id !== currentUser.id) {
+      window.location.href = 'apijob-missions.html';
+      return;
+    }
+
+    const cible = mission.prestataire;
+    cibleId = mission.prestataire_id;
 
     if (!cible) return;
     const cibleNom   = `${cible.prenom || ''} ${cible.nom || ''}`.trim();
     const cibleInit  = ((cible.prenom||'?')[0] + (cible.nom||'?')[0]).toUpperCase();
-    const cibleRole  = isClient ? 'Prestataire' : 'Client';
     const ann        = mission.annonces;
     const emoji      = ann ? catEmoji(ann.categorie) : '✨';
     const missionLbl = ann ? ann.titre : 'Mission';
@@ -494,11 +479,11 @@
     document.querySelector('.mission-title').textContent = missionLbl;
     document.querySelector('.cible-avatar').textContent  = cibleInit;
     document.querySelector('.cible-name').textContent    = cibleNom;
-    document.querySelector('.cible-role').textContent    = `${cibleRole} · ${ann?.categorie || ''}`;
+    document.querySelector('.cible-role').textContent    = `Prestataire · ${ann?.categorie || ''}`;
     document.querySelector('.success-sub').textContent   =
       `Votre évaluation a été publiée sur le profil de ${cibleNom}. Elle aide la communauté API JOB à faire les bons choix.`;
     document.querySelector('#comment').placeholder =
-      `Décrivez votre expérience avec ${isClient ? 'ce prestataire' : 'ce client'}…`;
+      `Décrivez votre expérience avec ce prestataire…`;
 
     document.documentElement.style.visibility = 'visible';
   })();
