@@ -69,6 +69,15 @@
   }
 
   .nav-right { display: flex; align-items: center; gap: 1rem; }
+  .nav-msg {
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--gris); color: var(--night);
+    font-size: 1.1rem; text-decoration: none;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .nav-msg:hover { background: var(--gris2); }
   .nav-avatar {
     width: 36px; height: 36px; border-radius: 50%;
     background: var(--rouge);
@@ -432,6 +441,7 @@
   </div>
 
   <div class="nav-right">
+    <a href="apijob-messagerie.html" class="nav-msg" title="Messagerie">💬</a>
     <div class="nav-notif" onclick="toggleNotifPanel()" id="notif-bell">🔔<div class="notif-dot" id="notif-dot" style="display:none;"></div>
       <div id="notif-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:white;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);width:320px;max-height:400px;overflow-y:auto;z-index:200;" onclick="event.stopPropagation()">
         <div style="padding:0.9rem 1rem 0.6rem;font-weight:700;font-size:0.88rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
