@@ -326,8 +326,20 @@
           : `💬 <a href="apijob-evaluation.html?mission=${mission.id}" style="color:var(--rouge)">Laisser un avis</a>`;
       }
       footer = `<div class="mission-footer-left">${footLeft}</div><div class="mission-actions"></div>`;
+    } else if (mission.statut === 'annulee') {
+      if (role === 'prestataire') {
+        footer = `
+          <div class="mission-footer-left" style="flex-direction:column;align-items:flex-start;gap:0.3rem;">
+            <span style="color:var(--muted);font-size:0.82rem;">Le client a retenu un autre prestataire cette fois. Continue à postuler — les opportunités ne manquent pas !</span>
+          </div>
+          <div class="mission-actions">
+            <a href="apijob-annonces.html" class="btn-action btn-rouge">🔍 Voir les annonces</a>
+          </div>`;
+      } else {
+        footer = `<div class="mission-footer-left" style="color:var(--muted);font-size:0.82rem;">Proposition refusée</div><div class="mission-actions"></div>`;
+      }
     } else {
-      footer = `<div class="mission-footer-left">Mission annulée</div><div class="mission-actions"></div>`;
+      footer = `<div class="mission-footer-left" style="color:var(--muted);font-size:0.82rem;">Mission annulée</div><div class="mission-actions"></div>`;
     }
 
     const div = document.createElement('div');
