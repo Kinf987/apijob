@@ -161,6 +161,59 @@
   .signaler a { color:var(--muted); text-decoration:none; }
   .signaler a:hover { color:var(--rouge); }
 
+  /* MODAL SIGNALEMENT */
+  .modal-overlay {
+    position:fixed; inset:0; background:rgba(26,0,8,0.5);
+    display:flex; align-items:center; justify-content:center;
+    z-index:200; padding:1.5rem;
+    opacity:0; pointer-events:none; transition:opacity 0.2s;
+  }
+  .modal-overlay.open { opacity:1; pointer-events:all; }
+  .modal-box {
+    background:var(--blanc); border-radius:20px;
+    padding:2rem; max-width:420px; width:100%;
+    transform:translateY(16px); transition:transform 0.2s;
+  }
+  .modal-overlay.open .modal-box { transform:translateY(0); }
+  .modal-title {
+    font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:800;
+    margin-bottom:0.3rem;
+  }
+  .modal-sub { font-size:0.82rem; color:var(--muted); margin-bottom:1.2rem; line-height:1.5; }
+  .signal-motifs { display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1rem; }
+  .signal-motif {
+    display:flex; align-items:center; gap:0.75rem;
+    padding:0.75rem 1rem; border-radius:12px;
+    border:1.5px solid var(--border); cursor:pointer;
+    font-size:0.85rem; transition:all 0.15s;
+  }
+  .signal-motif:hover { border-color:var(--rouge); background:rgba(204,10,43,0.04); }
+  .signal-motif.selected { border-color:var(--rouge); background:rgba(204,10,43,0.06); font-weight:600; }
+  .signal-motif input[type=radio] { accent-color:var(--rouge); flex-shrink:0; }
+  .signal-textarea {
+    width:100%; padding:0.75rem 1rem;
+    border:1.5px solid var(--border); border-radius:12px;
+    font-family:'DM Sans',sans-serif; font-size:0.85rem;
+    resize:vertical; min-height:80px; outline:none;
+    transition:border-color 0.2s; margin-bottom:1rem;
+  }
+  .signal-textarea:focus { border-color:var(--rouge); }
+  .signal-textarea::placeholder { color:rgba(26,0,8,0.3); }
+  .signal-btns { display:flex; gap:0.6rem; }
+  .btn-signal-send {
+    flex:1; padding:0.8rem; background:var(--rouge); color:white;
+    border:none; border-radius:12px; font-family:'DM Sans',sans-serif;
+    font-size:0.9rem; font-weight:700; cursor:pointer; transition:background 0.2s;
+  }
+  .btn-signal-send:hover { background:var(--rouge-dark); }
+  .btn-signal-send:disabled { opacity:0.6; cursor:not-allowed; }
+  .btn-signal-cancel {
+    padding:0.8rem 1.2rem; background:var(--gris); color:var(--muted);
+    border:none; border-radius:12px; font-family:'DM Sans',sans-serif;
+    font-size:0.9rem; cursor:pointer; transition:background 0.2s;
+  }
+  .btn-signal-cancel:hover { background:var(--gris2); }
+
   @media (max-width:480px) {
     .stats-grid { grid-template-columns:repeat(3,1fr); gap:0.5rem; }
     .stat-num { font-size:1.2rem; }
@@ -231,9 +284,42 @@
   </div>
 
   <div class="signaler">
-    <a href="#">⚑ Signaler ce profil</a>
+    <a href="#" onclick="ouvrirSignalement(event)">⚑ Signaler ce profil</a>
   </div>
 
+</div>
+
+<!-- MODAL SIGNALEMENT -->
+<div class="modal-overlay" id="modal-signalement" onclick="fermerSignalement(event)">
+  <div class="modal-box">
+    <div class="modal-title">⚑ Signaler ce profil</div>
+    <p class="modal-sub">Votre signalement sera examiné par notre équipe sous 48h. En cas de litige sur un jeton, précisez la mission concernée.</p>
+
+    <div class="signal-motifs" id="signal-motifs">
+      <label class="signal-motif" onclick="selMotif(this)">
+        <input type="radio" name="motif" value="jeton_litige"> 🪙 Jeton débité — mission abandonnée par le client
+      </label>
+      <label class="signal-motif" onclick="selMotif(this)">
+        <input type="radio" name="motif" value="coordonnees"> 📵 Partage de coordonnées avant acceptation
+      </label>
+      <label class="signal-motif" onclick="selMotif(this)">
+        <input type="radio" name="motif" value="comportement"> ⚠️ Comportement inapproprié ou agressif
+      </label>
+      <label class="signal-motif" onclick="selMotif(this)">
+        <input type="radio" name="motif" value="fausses_infos"> 🚫 Informations fausses ou profil frauduleux
+      </label>
+      <label class="signal-motif" onclick="selMotif(this)">
+        <input type="radio" name="motif" value="autre"> ✏️ Autre
+      </label>
+    </div>
+
+    <textarea class="signal-textarea" id="signal-desc" placeholder="Décrivez le problème en détail. Pour un litige de jeton, indiquez le titre de la mission et la date..."></textarea>
+
+    <div class="signal-btns">
+      <button class="btn-signal-cancel" onclick="fermerSignalement()">Annuler</button>
+      <button class="btn-signal-send" id="btn-signal-send" onclick="envoyerSignalement()">Envoyer le signalement</button>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -366,6 +452,93 @@
             }).join('')
       );
     }
+  }
+
+  // ── SIGNALEMENT ──
+  let currentUser = null;
+  let signalementProfileId = null;
+
+  (async () => {
+    const { data: { session } } = await db.auth.getSession();
+    if (session?.user) {
+      const { data } = await db.from('profiles').select('id, prenom, nom, role').eq('id', session.user.id).single();
+      currentUser = data;
+    }
+    const params = new URLSearchParams(window.location.search);
+    signalementProfileId = params.get('id');
+  })();
+
+  function ouvrirSignalement(e) {
+    e.preventDefault();
+    if (!currentUser) { window.location.href = 'apijob-auth.html'; return; }
+    document.getElementById('modal-signalement').classList.add('open');
+  }
+
+  function fermerSignalement(e) {
+    if (e && e.target !== document.getElementById('modal-signalement')) return;
+    document.getElementById('modal-signalement').classList.remove('open');
+    document.querySelectorAll('.signal-motif').forEach(el => el.classList.remove('selected'));
+    document.querySelectorAll('input[name=motif]').forEach(el => el.checked = false);
+    document.getElementById('signal-desc').value = '';
+  }
+
+  function selMotif(label) {
+    document.querySelectorAll('.signal-motif').forEach(el => el.classList.remove('selected'));
+    label.classList.add('selected');
+  }
+
+  async function envoyerSignalement() {
+    const motifEl = document.querySelector('input[name=motif]:checked');
+    const desc = document.getElementById('signal-desc').value.trim();
+    const btn = document.getElementById('btn-signal-send');
+    if (!motifEl) {
+      const wrap = document.getElementById('signal-motifs');
+      wrap.style.outline = '2px solid var(--rouge)';
+      wrap.style.borderRadius = '12px';
+      setTimeout(() => { wrap.style.outline = ''; }, 2000);
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'Envoi…';
+    const motif = motifEl.value;
+    const motifLabels = {
+      jeton_litige:  'Jeton débité — mission abandonnée',
+      coordonnees:   'Partage de coordonnées',
+      comportement:  'Comportement inapproprié',
+      fausses_infos: 'Informations fausses',
+      autre:         'Autre'
+    };
+    const message = `Motif : ${motifLabels[motif]}\nProfil signalé : ${signalementProfileId}\nSignalé par : ${currentUser?.id}\n\n${desc || '(sans description)'}`;
+
+    // Notification liée au profil signalé (visible par admin)
+    await db.from('notifications').insert({
+      user_id: signalementProfileId,
+      type: 'signalement',
+      titre: `⚑ Signalement — ${motifLabels[motif]}`,
+      message,
+      lu: false
+    });
+
+    // Confirmation à l'auteur du signalement
+    if (currentUser) {
+      await db.from('notifications').insert({
+        user_id: currentUser.id,
+        type: 'signalement_confirme',
+        titre: '✅ Signalement reçu',
+        message: 'Votre signalement a bien été transmis à notre équipe. Nous l\'examinerons sous 48h.',
+        lu: false
+      });
+    }
+
+    btn.textContent = '✅ Envoyé';
+    btn.style.background = 'var(--vert)';
+    setTimeout(() => {
+      document.getElementById('modal-signalement').classList.remove('open');
+      btn.disabled = false; btn.textContent = 'Envoyer le signalement'; btn.style.background = '';
+      document.querySelectorAll('.signal-motif').forEach(el => el.classList.remove('selected'));
+      document.querySelectorAll('input[name=motif]').forEach(el => el.checked = false);
+      document.getElementById('signal-desc').value = '';
+    }, 2000);
   }
 
   init().finally(() => { document.documentElement.style.visibility = 'visible'; });
