@@ -494,9 +494,12 @@
   const convListEl = document.querySelector('.conv-list');
   if (convListEl) convListEl.innerHTML = '';
 
-  let currentUser    = null;
-  let currentMission = null;
+  let currentUser     = null;
+  let currentMission  = null;
   let realtimeChannel = null;
+  let pollingInterval = null;
+  let lastMsgAt       = '';
+  const renderedMsgIds = new Set();
   let allMissions    = { client: [], presta: [] };
   let currentMode    = 'client';
 
@@ -628,16 +631,28 @@
 
     await chargerMessages(mission.id);
 
-    // Realtime
+    // Realtime + polling de secours
     if (realtimeChannel) db.removeChannel(realtimeChannel);
+    if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; }
+    renderedMsgIds.clear();
+    lastMsgAt = new Date().toISOString();
+
     realtimeChannel = db.channel(`msgs_${mission.id}`)
       .on('postgres_changes', { event:'INSERT', schema:'public', table:'messages', filter:`mission_id=eq.${mission.id}` },
         (payload) => {
-          if (payload.new.sender_id !== currentUser.id) {
-            appendMessage({ ...payload.new, profiles: other }, null, true);
+          if (payload.new.sender_id !== currentUser.id && !renderedMsgIds.has(payload.new.id)) {
+            renderedMsgIds.add(payload.new.id);
+            const otherUser = currentMission.client_id === currentUser.id ? currentMission.prestataire : currentMission.client;
+            appendMessage({ ...payload.new, profiles: otherUser }, null, true);
+            lastMsgAt = payload.new.created_at;
           }
         })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[Realtime messages]', status);
+      });
+
+    // Polling toutes les 5s (filet de sécurité si realtime non activé en base)
+    pollingInterval = setInterval(pollNouveauxMessages, 5000);
 
     if (window.innerWidth <= 680) document.getElementById('sidebar').classList.remove('mobile-open');
   }
@@ -685,7 +700,8 @@
       em.textContent = 'Commencez la conversation…';
       area.appendChild(em);
     } else {
-      msgs.forEach(m => appendMessage(m, area, false));
+      msgs.forEach(m => { renderedMsgIds.add(m.id); appendMessage(m, area, false); });
+      lastMsgAt = msgs[msgs.length - 1].created_at;
     }
 
     area.scrollTop = area.scrollHeight;
@@ -813,6 +829,26 @@
       contenu:    text
     });
     if (error) console.error('Envoi message:', error);
+  }
+
+  // ── POLLING NOUVEAUX MESSAGES ──
+  async function pollNouveauxMessages() {
+    if (!currentMission || ['terminee','annulee'].includes(currentMission.statut)) return;
+    const { data: newMsgs } = await db.from('messages')
+      .select('id, mission_id, sender_id, contenu, created_at')
+      .eq('mission_id', currentMission.id)
+      .gt('created_at', lastMsgAt)
+      .neq('sender_id', currentUser.id)
+      .order('created_at', { ascending: true });
+    if (!newMsgs || newMsgs.length === 0) return;
+    const otherUser = currentMission.client_id === currentUser.id ? currentMission.prestataire : currentMission.client;
+    newMsgs.forEach(m => {
+      if (!renderedMsgIds.has(m.id)) {
+        renderedMsgIds.add(m.id);
+        appendMessage({ ...m, profiles: otherUser }, null, true);
+        lastMsgAt = m.created_at;
+      }
+    });
   }
 
   // ── CHARGER MISSIONS ──
