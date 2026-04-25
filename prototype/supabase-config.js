@@ -41,7 +41,12 @@ async function getCurrentUser() {
 async function requireAuth() {
   const user = await getCurrentUser();
   if (!user) { window.location.href = 'apijob-auth.html'; return null; }
-  if (user.is_banned) { await db.auth.signOut(); window.location.href = 'apijob-auth.html'; return null; }
+  const statut = user.metadata?.statut;
+  if (user.is_banned || statut === 'banni' || statut === 'suspendu') {
+    await db.auth.signOut();
+    window.location.href = 'apijob-auth.html?raison=compte_suspendu';
+    return null;
+  }
   return user;
 }
 

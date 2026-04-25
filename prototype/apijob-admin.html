@@ -225,6 +225,45 @@
   .btn-supprimer:hover { background:rgba(204,10,43,0.15); }
   .btn-reactiver { background:var(--vert-light); color:var(--vert); }
 
+  /* MESSAGERIE ADMIN */
+  .conv-list { display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1.5rem; }
+  .conv-item {
+    background:var(--blanc); border:1.5px solid var(--border); border-radius:14px;
+    padding:1rem 1.2rem; display:flex; align-items:center; gap:1rem;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .conv-item:hover { border-color:var(--rouge); }
+  .conv-item.selected { border-color:var(--rouge); background:rgba(204,10,43,0.02); }
+  .conv-emoji { font-size:1.4rem; flex-shrink:0; }
+  .conv-info { flex:1; min-width:0; }
+  .conv-title { font-weight:700; font-size:0.88rem; }
+  .conv-meta { font-size:0.75rem; color:var(--muted); margin-top:0.15rem; }
+  .conv-badge { font-size:0.72rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:50px; flex-shrink:0; }
+  .conv-en-cours { background:rgba(240,165,0,0.15); color:#B07800; }
+  .conv-terminee { background:var(--vert-light); color:var(--vert); }
+  .conv-annulee { background:var(--gris2); color:var(--muted); }
+
+  .messages-viewer {
+    background:var(--blanc); border:1.5px solid var(--border); border-radius:14px;
+    padding:1.2rem; max-height:420px; overflow-y:auto;
+  }
+  .msg-row { display:flex; gap:0.7rem; margin-bottom:1rem; align-items:flex-start; }
+  .msg-row.right { flex-direction:row-reverse; }
+  .msg-avatar-sm {
+    width:28px; height:28px; border-radius:50%;
+    background:var(--rouge); color:white;
+    font-size:0.65rem; font-weight:800;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .msg-bubble {
+    background:var(--gris); border-radius:12px; padding:0.5rem 0.8rem;
+    font-size:0.82rem; line-height:1.5; max-width:70%;
+  }
+  .msg-row.right .msg-bubble { background:rgba(204,10,43,0.08); }
+  .msg-time { font-size:0.68rem; color:var(--muted); margin-top:0.2rem; text-align:right; }
+  .msg-sender { font-size:0.68rem; color:var(--muted); margin-bottom:0.15rem; }
+  .viewer-empty { text-align:center; padding:2rem; color:var(--muted); font-size:0.85rem; }
+
   /* SIGNALEMENTS */
   .signal-card {
     border:1.5px solid var(--border); border-radius:14px;
@@ -310,6 +349,10 @@
     <button class="nav-item" onclick="showPanel('annonces')">
       <span class="nav-icon">📢</span>
       <span>Annonces</span>
+    </button>
+    <button class="nav-item" onclick="showPanel('messagerie')">
+      <span class="nav-icon">💬</span>
+      <span>Messagerie</span>
     </button>
     <button class="nav-item" onclick="showPanel('avis')">
       <span class="nav-icon">⭐</span>
@@ -461,61 +504,40 @@
     <div class="panel" id="panel-signalements">
       <div class="table-card">
         <div class="table-header">
-          <div class="table-title">⚠️ Signalements en attente <span style="color:var(--rouge)">(3)</span></div>
+          <div class="table-title">⚠️ Signalements en attente <span id="signal-count" style="color:var(--rouge)"></span></div>
         </div>
-        <div style="padding:1.2rem;">
+        <div style="padding:1.2rem;" id="signalements-list">
+          <div class="viewer-empty">Chargement…</div>
+        </div>
+      </div>
+    </div>
 
-          <div class="signal-card urgent">
-            <div class="signal-icon">🚫</div>
-            <div class="signal-content">
-              <div class="signal-title">Partage de coordonnées hors plateforme</div>
-              <div class="signal-desc">L'utilisateur "Reva T." aurait partagé son numéro de téléphone dans la description de son annonce. Signalé par un client.</div>
-              <div class="signal-meta">
-                <span>📅 Il y a 2 heures</span>
-                <span>👤 Signalé par : Marie-Hélène T.</span>
-                <span>⚠️ Priorité haute</span>
-              </div>
-            </div>
-            <div class="signal-actions">
-              <button class="btn-action btn-suspendre" style="white-space:nowrap;">Suspendre</button>
-              <button class="btn-action btn-bannir" style="white-space:nowrap;">Bannir</button>
-              <button class="btn-action btn-voir" style="white-space:nowrap;">Ignorer</button>
-            </div>
+    <!-- ── MESSAGERIE ADMIN ── -->
+    <div class="panel" id="panel-messagerie">
+      <div class="table-card" style="margin-bottom:1.5rem;">
+        <div class="table-header">
+          <div class="table-title">💬 Toutes les conversations</div>
+          <div class="table-actions">
+            <select id="msg-filtre" onchange="filtrerConvs()" style="font-size:0.8rem;padding:0.3rem 0.6rem;border:1.5px solid var(--border);border-radius:8px;background:var(--blanc);">
+              <option value="">Toutes</option>
+              <option value="en_cours">En cours</option>
+              <option value="terminee">Terminées</option>
+            </select>
           </div>
-
-          <div class="signal-card">
-            <div class="signal-icon">❌</div>
-            <div class="signal-content">
-              <div class="signal-title">Abandon de mission — 2ème récidive</div>
-              <div class="signal-desc">Le client "Teva N." a abandonné une 2ème mission après acceptation sans motif valable. Selon les CGU, le compte doit être suspendu.</div>
-              <div class="signal-meta">
-                <span>📅 Il y a 5 heures</span>
-                <span>👤 Signalé par : système automatique</span>
-                <span>⚠️ CGU Art. 9</span>
-              </div>
-            </div>
-            <div class="signal-actions">
-              <button class="btn-action btn-bannir" style="white-space:nowrap;">Bannir</button>
-              <button class="btn-action btn-voir" style="white-space:nowrap;">Ignorer</button>
-            </div>
+        </div>
+        <div style="padding:1rem;" id="conv-list-wrap">
+          <div class="viewer-empty">Chargement…</div>
+        </div>
+      </div>
+      <div class="table-card" id="conv-viewer" style="display:none;">
+        <div class="table-header">
+          <div class="table-title" id="conv-viewer-title">Messages</div>
+          <button onclick="document.getElementById('conv-viewer').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:0.8rem;color:var(--muted);">✕ Fermer</button>
+        </div>
+        <div style="padding:1rem;">
+          <div class="messages-viewer" id="messages-viewer">
+            <div class="viewer-empty">Sélectionne une conversation</div>
           </div>
-
-          <div class="signal-card">
-            <div class="signal-icon">⭐</div>
-            <div class="signal-content">
-              <div class="signal-title">Avis suspect — note injustifiée</div>
-              <div class="signal-desc">Un avis 1 étoile a été laissé sans commentaire par un compte récemment créé sur le profil de "Teiva M.". Possible faux avis.</div>
-              <div class="signal-meta">
-                <span>📅 Hier à 16:30</span>
-                <span>👤 Signalé par : Teiva M.</span>
-              </div>
-            </div>
-            <div class="signal-actions">
-              <button class="btn-action btn-supprimer" style="white-space:nowrap;">Supprimer avis</button>
-              <button class="btn-action btn-voir" style="white-space:nowrap;">Ignorer</button>
-            </div>
-          </div>
-
         </div>
       </div>
     </div>
@@ -624,16 +646,191 @@
       b.classList.toggle('active', b.getAttribute('onclick')?.includes(`'${name}'`));
     });
     const titles = {
-      dashboard: '📊 Tableau de bord',
+      dashboard:    '📊 Tableau de bord',
       utilisateurs: '👥 Utilisateurs',
       signalements: '⚠️ Signalements',
-      annonces: '📢 Annonces',
-      avis: '⭐ Avis',
-      revenus: '💰 Revenus & Jetons'
+      annonces:     '📢 Annonces',
+      messagerie:   '💬 Messagerie',
+      avis:         '⭐ Avis',
+      revenus:      '💰 Revenus & Jetons'
     };
     const el = document.getElementById('topbar-title');
     if (el) el.textContent = titles[name] || name;
+    if (name === 'signalements') chargerSignalements();
+    if (name === 'messagerie')   chargerConversations();
   }
+
+  // ── SIGNALEMENTS RÉELS ──
+  async function chargerSignalements() {
+    const wrap = document.getElementById('signalements-list');
+    if (!wrap) return;
+    const { data } = await db.from('notifications')
+      .select('id, titre, message, created_at, lu, user_id, reported:profiles!user_id(id, prenom, nom, email)')
+      .eq('type', 'signalement')
+      .order('created_at', { ascending: false });
+
+    const pending = (data || []).filter(s => !s.lu);
+    const countEl = document.getElementById('signal-count');
+    if (countEl) countEl.textContent = pending.length ? `(${pending.length})` : '';
+
+    // Mise à jour badge sidebar
+    document.querySelectorAll('.nav-badge').forEach(b => {
+      if (b.closest('button')?.getAttribute('onclick')?.includes('signalements')) {
+        b.textContent = pending.length || '';
+        b.style.display = pending.length ? '' : 'none';
+      }
+    });
+
+    if (!data || data.length === 0) {
+      wrap.innerHTML = '<div class="viewer-empty">✅ Aucun signalement en attente</div>';
+      return;
+    }
+
+    const motifIcons = {
+      coordonnees: '📞', comportement: '🚫', jeton_litige: '🪙',
+      fausses_infos: '❌', autre: '⚠️'
+    };
+
+    wrap.innerHTML = data.map(s => {
+      const reported = s.reported || {};
+      const nom = `${reported.prenom || ''} ${reported.nom || ''}`.trim() || reported.email || '—';
+      const icon = motifIcons[s.titre] || '⚠️';
+      const date = new Date(s.created_at).toLocaleString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+      const urgent = !s.lu;
+      return `
+        <div class="signal-card${urgent ? ' urgent' : ''}" id="sig-${s.id}">
+          <div class="signal-icon">${icon}</div>
+          <div class="signal-content">
+            <div class="signal-title">${escAdmin(s.titre || 'Signalement')}</div>
+            <div class="signal-desc">${escAdmin(s.message || '')}</div>
+            <div class="signal-meta">
+              <span>📅 ${date}</span>
+              <span>👤 Signalé : <strong>${escAdmin(nom)}</strong> · ${reported.email || ''}</span>
+              ${s.lu ? '<span style="color:var(--vert)">✓ Traité</span>' : '<span style="color:var(--rouge)">⏳ En attente</span>'}
+            </div>
+          </div>
+          <div class="signal-actions">
+            ${!s.lu ? `
+              <button class="btn-action btn-suspendre" style="white-space:nowrap" onclick="suspendreUser('${reported.id}','${s.id}')">Suspendre</button>
+              <button class="btn-action btn-bannir" style="white-space:nowrap" onclick="bannirUser('${reported.id}','${s.id}')">Bannir</button>
+              <button class="btn-action btn-voir" style="white-space:nowrap" onclick="ignorerSignalement('${s.id}')">Ignorer</button>
+            ` : '<span style="font-size:0.75rem;color:var(--muted);">Traité</span>'}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  async function suspendreUser(userId, signalementId) {
+    if (!confirm('Suspendre ce compte ? Il ne pourra plus se connecter.')) return;
+    const { data: prof } = await db.from('profiles').select('metadata').eq('id', userId).single();
+    await db.from('profiles').update({ metadata: { ...(prof?.metadata || {}), statut: 'suspendu' } }).eq('id', userId);
+    await ignorerSignalement(signalementId);
+    alert('Compte suspendu.');
+  }
+
+  async function bannirUser(userId, signalementId) {
+    if (!confirm('Bannir définitivement ce compte ? Cette action est irréversible.')) return;
+    const { data: prof } = await db.from('profiles').select('metadata').eq('id', userId).single();
+    await db.from('profiles').update({ metadata: { ...(prof?.metadata || {}), statut: 'banni' } }).eq('id', userId);
+    await ignorerSignalement(signalementId);
+    alert('Compte banni.');
+  }
+
+  async function ignorerSignalement(signalementId) {
+    await db.from('notifications').update({ lu: true }).eq('id', signalementId);
+    const card = document.getElementById('sig-' + signalementId);
+    if (card) card.style.opacity = '0.4';
+    chargerSignalements();
+  }
+
+  // ── MESSAGERIE ADMIN ──
+  let allConvs = [];
+
+  async function chargerConversations() {
+    const wrap = document.getElementById('conv-list-wrap');
+    if (!wrap) return;
+    const { data } = await db.from('missions')
+      .select('id, statut, created_at, annonces(titre, categorie), client:profiles!client_id(id, prenom, nom), prestataire:profiles!prestataire_id(id, prenom, nom)')
+      .order('created_at', { ascending: false })
+      .limit(50);
+    allConvs = data || [];
+    renderConvs(allConvs);
+  }
+
+  function filtrerConvs() {
+    const f = document.getElementById('msg-filtre')?.value;
+    const filtered = f ? allConvs.filter(m => m.statut === f) : allConvs;
+    renderConvs(filtered);
+  }
+
+  function renderConvs(list) {
+    const wrap = document.getElementById('conv-list-wrap');
+    if (!list || list.length === 0) {
+      wrap.innerHTML = '<div class="viewer-empty">Aucune conversation trouvée</div>';
+      return;
+    }
+    wrap.innerHTML = '<div class="conv-list">' + list.map(m => {
+      const client = m.client || {};
+      const presta = m.prestataire || {};
+      const ann    = m.annonces || {};
+      const emoji  = catEmoji(ann.categorie);
+      const badgeCls = m.statut === 'en_cours' ? 'conv-en-cours' : m.statut === 'terminee' ? 'conv-terminee' : 'conv-annulee';
+      const badgeLbl = m.statut === 'en_cours' ? '⏳ En cours' : m.statut === 'terminee' ? '✅ Terminée' : m.statut;
+      const date = new Date(m.created_at).toLocaleDateString('fr-FR');
+      return `
+        <div class="conv-item" onclick="voirMessages('${m.id}','${escAdmin(ann.titre||'')}','${escAdmin(client.prenom||'')} ${escAdmin(client.nom||'')}','${escAdmin(presta.prenom||'')} ${escAdmin(presta.nom||'')}','${client.id}')">
+          <div class="conv-emoji">${emoji}</div>
+          <div class="conv-info">
+            <div class="conv-title">${escAdmin(ann.titre || 'Mission')}</div>
+            <div class="conv-meta">👤 ${escAdmin(client.prenom||'')} ${escAdmin(client.nom||'')} · 🔧 ${escAdmin(presta.prenom||'')} ${escAdmin(presta.nom||'')} · ${date}</div>
+          </div>
+          <span class="conv-badge ${badgeCls}">${badgeLbl}</span>
+        </div>`;
+    }).join('') + '</div>';
+  }
+
+  async function voirMessages(missionId, titre, clientNom, prestaNom, clientId) {
+    const viewer = document.getElementById('conv-viewer');
+    const titleEl = document.getElementById('conv-viewer-title');
+    const msgWrap = document.getElementById('messages-viewer');
+    viewer.style.display = 'block';
+    titleEl.textContent = `💬 ${titre} — ${clientNom} / ${prestaNom}`;
+    msgWrap.innerHTML = '<div class="viewer-empty">Chargement…</div>';
+
+    document.querySelectorAll('.conv-item').forEach(el => el.classList.remove('selected'));
+    event.currentTarget?.classList.add('selected');
+
+    const { data: msgs } = await db.from('messages')
+      .select('id, contenu, created_at, sender_id, sender:profiles!sender_id(prenom, nom)')
+      .eq('mission_id', missionId)
+      .order('created_at', { ascending: true });
+
+    if (!msgs || msgs.length === 0) {
+      msgWrap.innerHTML = '<div class="viewer-empty">Aucun message dans cette conversation</div>';
+      return;
+    }
+
+    msgWrap.innerHTML = msgs.map(msg => {
+      const sender = msg.sender || {};
+      const nom = `${sender.prenom || ''} ${sender.nom || ''}`.trim() || '?';
+      const init = ((sender.prenom?.[0] || '') + (sender.nom?.[0] || '')).toUpperCase() || '?';
+      const isClient = msg.sender_id === clientId;
+      const time = new Date(msg.created_at).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+      const date = new Date(msg.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
+      return `
+        <div class="msg-row${isClient ? '' : ' right'}">
+          <div class="msg-avatar-sm" style="background:${isClient ? 'var(--rouge)' : '#1E7FC2'}">${init}</div>
+          <div>
+            <div class="msg-sender">${escAdmin(nom)}</div>
+            <div class="msg-bubble">${escAdmin(msg.contenu)}</div>
+            <div class="msg-time">${date} ${time}</div>
+          </div>
+        </div>`;
+    }).join('');
+    msgWrap.scrollTop = msgWrap.scrollHeight;
+  }
+
+  function escAdmin(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
   function logout() {
     sessionStorage.removeItem('apijob_admin');
