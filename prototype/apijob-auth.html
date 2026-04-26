@@ -529,10 +529,14 @@
         await db.storage.from('identites').upload(path, file, { upsert: true });
       }
 
-      // Marquer le profil prestataire "en attente de vérification"
+      // Marquer le profil prestataire "en attente de vérification" + sauvegarder numero_tahiti
       if (role === 'prestataire' && data.user) {
+        const { data: existingProf } = await db.from('profiles').select('metadata').eq('id', data.user.id).single();
         await db.from('profiles')
-          .update({ status_verification: 'en_attente' })
+          .update({
+            status_verification: 'en_attente',
+            metadata: { ...(existingProf?.metadata || {}), numero_tahiti }
+          })
           .eq('id', data.user.id);
       }
 

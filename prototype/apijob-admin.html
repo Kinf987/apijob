@@ -466,9 +466,9 @@
           <div class="table-title">👥 Gestion des utilisateurs</div>
           <div class="table-actions">
             <div class="search-wrap">
-              <input type="text" class="search-input" placeholder="Rechercher...">
+              <input type="text" class="search-input" id="user-search" placeholder="Rechercher..." oninput="renderUtilisateurs(this.value)">
             </div>
-            <select style="padding:0.5rem 0.8rem; border:1.5px solid var(--border); border-radius:50px; font-size:0.82rem; background:var(--blanc); outline:none; cursor:pointer;">
+            <select id="user-filtre" style="padding:0.5rem 0.8rem; border:1.5px solid var(--border); border-radius:50px; font-size:0.82rem; background:var(--blanc); outline:none; cursor:pointer;" onchange="renderUtilisateurs(document.getElementById('user-search').value)">
               <option>Tous</option>
               <option>Actifs</option>
               <option>Suspendus</option>
@@ -481,8 +481,8 @@
           <thead><tr>
             <th>Utilisateur</th>
             <th>Inscription</th>
-            <th>Missions</th>
             <th>Jetons</th>
+            <th>Vérification</th>
             <th>Statut</th>
             <th>Actions</th>
           </tr></thead>
@@ -567,7 +567,11 @@
         <div class="table-header">
           <div class="table-title">📢 Gestion des annonces</div>
           <div class="table-actions">
-            <div class="search-wrap"><input type="text" class="search-input" placeholder="Rechercher..."></div>
+            <select id="annonce-filtre" onchange="chargerAnnonces(this.value)" style="padding:0.5rem 0.8rem; border:1.5px solid var(--border); border-radius:50px; font-size:0.82rem; background:var(--blanc); outline:none; cursor:pointer;">
+              <option>Tous</option>
+              <option>Active</option>
+              <option>Terminée</option>
+            </select>
           </div>
         </div>
         <table>
@@ -677,6 +681,121 @@
     if (name === 'messagerie')    chargerConversations();
     if (name === 'verifications') chargerVerifications();
     if (name === 'avis')          chargerAvis();
+    if (name === 'annonces')      chargerAnnonces();
+    if (name === 'utilisateurs')  chargerUtilisateurs();
+  }
+
+  // ── UTILISATEURS ──
+  let allUsers = [];
+
+  async function chargerUtilisateurs(filtre = '') {
+    const tbody = document.querySelector('#panel-utilisateurs tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1.5rem;color:var(--muted);">Chargement…</td></tr>';
+
+    let query = db.from('profiles')
+      .select('id, prenom, nom, email, role, is_pro, tokens, created_at, metadata, status_verification')
+      .neq('role', 'admin')
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    const { data, error } = await query;
+    if (error) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--rouge);">Erreur de chargement</td></tr>'; return; }
+    allUsers = data || [];
+    renderUtilisateurs(filtre);
+  }
+
+  function renderUtilisateurs(filtre = '') {
+    const tbody = document.querySelector('#panel-utilisateurs tbody');
+    if (!tbody) return;
+    const f = filtre.toLowerCase();
+    const list = f
+      ? allUsers.filter(u => (u.prenom + ' ' + u.nom + ' ' + u.email).toLowerCase().includes(f))
+      : allUsers;
+
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1.5rem;color:var(--muted);">Aucun utilisateur trouvé</td></tr>';
+      return;
+    }
+    tbody.innerHTML = list.map(u => {
+      const ini = initials(u.prenom, u.nom);
+      const nom = `${u.prenom || ''} ${u.nom || ''}`.trim() || u.email;
+      const roleStr = u.role === 'prestataire' ? 'Prestataire' : 'Client';
+      const statut = u.metadata?.statut;
+      let badge = u.is_pro
+        ? `<span class="badge badge-pro">⭐ Pro</span>`
+        : `<span class="badge badge-actif">✅ Actif</span>`;
+      if (statut === 'suspendu') badge = `<span class="badge badge-suspendu">⏸ Suspendu</span>`;
+      if (statut === 'banni')    badge = `<span class="badge badge-banni">🚫 Banni</span>`;
+      const date = new Date(u.created_at).toLocaleDateString('fr-FR');
+      return `<tr>
+        <td><div class="user-cell"><div class="user-avatar-sm">${ini}</div><div><div class="user-name">${escAdmin(nom)}</div><div class="user-email">${escAdmin(u.email || '')} · ${roleStr}</div></div></div></td>
+        <td>${date}</td>
+        <td>${u.role === 'prestataire' ? (u.tokens || 0) + ' 🪙' : '—'}</td>
+        <td>${u.role === 'prestataire' ? `<span class="badge badge-pending" style="font-size:0.68rem;">${u.status_verification || '—'}</span>` : '—'}</td>
+        <td>${badge}</td>
+        <td><div class="action-btns">
+          <button class="btn-action btn-voir" onclick="location.href='apijob-profil-public.html?id=${u.id}'">Voir</button>
+          <button class="btn-action btn-suspendre" onclick="actionUser('${u.id}','suspendu', this)">Suspendre</button>
+          <button class="btn-action btn-bannir" onclick="actionUser('${u.id}','banni', this)">Bannir</button>
+          ${statut === 'suspendu' || statut === 'banni' ? `<button class="btn-action btn-reactiver" onclick="actionUser('${u.id}','actif', this)">Réactiver</button>` : ''}
+        </div></td>
+      </tr>`;
+    }).join('');
+  }
+
+  async function actionUser(userId, action, btn) {
+    const labels = { suspendu: 'Suspendre', banni: 'Bannir définitivement', actif: 'Réactiver' };
+    if (!confirm(`${labels[action]} ce compte ?`)) return;
+    btn.disabled = true;
+    const { data: prof } = await db.from('profiles').select('metadata').eq('id', userId).single();
+    const newMeta = { ...(prof?.metadata || {}), statut: action === 'actif' ? null : action };
+    const { error } = await db.from('profiles').update({ metadata: newMeta }).eq('id', userId);
+    if (error) { btn.disabled = false; alert('Erreur : ' + error.message); return; }
+    chargerUtilisateurs();
+  }
+
+  // ── ANNONCES ──
+  async function chargerAnnonces(filtre = '') {
+    const tbody = document.querySelector('#panel-annonces tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1.5rem;color:var(--muted);">Chargement…</td></tr>';
+
+    let query = db.from('annonces')
+      .select('id, titre, categorie, localisation, statut, created_at, client:profiles!client_id(prenom, nom)')
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    if (filtre && filtre !== 'Tous') query = query.eq('statut', filtre === 'Active' ? 'active' : 'terminee');
+
+    const { data, error } = await query;
+    if (error) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--rouge);">Erreur de chargement</td></tr>'; return; }
+
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1.5rem;color:var(--muted);">Aucune annonce</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(a => {
+      const client = a.client || {};
+      const nomClient = `${client.prenom || ''} ${client.nom ? client.nom[0] + '.' : ''}`.trim() || '—';
+      const statutBadge = a.statut === 'terminee'
+        ? `<span class="badge" style="background:var(--vert-light);color:var(--vert);">Terminée</span>`
+        : a.statut === 'active'
+        ? `<span class="badge badge-actif">Active</span>`
+        : `<span class="badge badge-pending">${escAdmin(a.statut || '—')}</span>`;
+      const date = new Date(a.created_at).toLocaleDateString('fr-FR');
+      return `<tr>
+        <td><div style="font-weight:600;font-size:0.85rem;">${catEmoji(a.categorie)} ${escAdmin(a.titre || '')}</div><div style="font-size:0.72rem;color:var(--muted);">${escAdmin(a.localisation || 'Tahiti')}</div></td>
+        <td>${escAdmin(nomClient)}</td>
+        <td>${date}</td>
+        <td>—</td>
+        <td>${statutBadge}</td>
+        <td><div class="action-btns">
+          <button class="btn-action btn-voir" onclick="location.href='apijob-annonce-detail.html?annonce=${a.id}'">Voir</button>
+          <button class="btn-action btn-supprimer" onclick="supprimerAnnonce('${a.id}', this)">Supprimer</button>
+        </div></td>
+      </tr>`;
+    }).join('');
   }
 
   // ── SIGNALEMENTS RÉELS ──
@@ -743,16 +862,16 @@
     if (!confirm('Suspendre ce compte ? Il ne pourra plus se connecter.')) return;
     const { data: prof } = await db.from('profiles').select('metadata').eq('id', userId).single();
     await db.from('profiles').update({ metadata: { ...(prof?.metadata || {}), statut: 'suspendu' } }).eq('id', userId);
-    await ignorerSignalement(signalementId);
-    alert('Compte suspendu.');
+    if (signalementId) await ignorerSignalement(signalementId);
+    chargerSignalements();
   }
 
   async function bannirUser(userId, signalementId) {
     if (!confirm('Bannir définitivement ce compte ? Cette action est irréversible.')) return;
     const { data: prof } = await db.from('profiles').select('metadata').eq('id', userId).single();
     await db.from('profiles').update({ metadata: { ...(prof?.metadata || {}), statut: 'banni' } }).eq('id', userId);
-    await ignorerSignalement(signalementId);
-    alert('Compte banni.');
+    if (signalementId) await ignorerSignalement(signalementId);
+    chargerSignalements();
   }
 
   async function ignorerSignalement(signalementId) {
@@ -951,14 +1070,14 @@
     const dashTbody = document.querySelector('#panel-dashboard tbody');
     if (dashTbody && latestUsers) {
       dashTbody.innerHTML = latestUsers.slice(0, 5).map(u => {
-        const init = initials(u.prenom, u.nom);
+        const ini = initials(u.prenom, u.nom);
         const nom = `${u.prenom || ''} ${u.nom || ''}`.trim() || u.email;
         const badge = u.is_pro
           ? `<span class="badge badge-pro">⭐ Pro</span>`
           : `<span class="badge badge-actif">✅ ${u.role === 'prestataire' ? 'Prestataire' : 'Client'}</span>`;
         const date = new Date(u.created_at).toLocaleString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
         return `<tr>
-          <td><div class="user-cell"><div class="user-avatar-sm">${init}</div><div><div class="user-name">${escAdmin(nom)}</div><div class="user-email">${escAdmin(u.email || '')}</div></div></div></td>
+          <td><div class="user-cell"><div class="user-avatar-sm">${ini}</div><div><div class="user-name">${escAdmin(nom)}</div><div class="user-email">${escAdmin(u.email || '')}</div></div></div></td>
           <td>${date}</td>
           <td>${badge}</td>
           <td><div class="action-btns"><button class="btn-action btn-voir" onclick="location.href='apijob-profil-public.html?id=${u.id}'">Voir</button></div></td>
@@ -966,60 +1085,7 @@
       }).join('');
     }
 
-    // ── Panel utilisateurs ──
-    const userTbody = document.querySelector('#panel-utilisateurs tbody');
-    if (userTbody && latestUsers) {
-      userTbody.innerHTML = latestUsers.map(u => {
-        const init = initials(u.prenom, u.nom);
-        const nom = `${u.prenom || ''} ${u.nom || ''}`.trim() || u.email;
-        const roleStr = u.role === 'prestataire' ? 'Prestataire' : 'Client';
-        const statut = u.metadata?.statut;
-        let badge = u.is_pro
-          ? `<span class="badge badge-pro">⭐ Pro</span>`
-          : `<span class="badge badge-actif">✅ Actif</span>`;
-        if (statut === 'suspendu') badge = `<span class="badge badge-suspendu">⏸ Suspendu</span>`;
-        if (statut === 'banni')    badge = `<span class="badge badge-banni">🚫 Banni</span>`;
-        const date = new Date(u.created_at).toLocaleDateString('fr-FR');
-        return `<tr>
-          <td><div class="user-cell"><div class="user-avatar-sm">${init}</div><div><div class="user-name">${escAdmin(nom)}</div><div class="user-email">${escAdmin(u.email || '')} · ${roleStr}</div></div></div></td>
-          <td>${date}</td>
-          <td>—</td>
-          <td>${u.role === 'prestataire' ? (u.tokens || 0) + ' 🪙' : '—'}</td>
-          <td>${badge}</td>
-          <td><div class="action-btns">
-            <button class="btn-action btn-voir" onclick="location.href='apijob-profil-public.html?id=${u.id}'">Voir</button>
-            <button class="btn-action btn-suspendre" onclick="suspendreUser('${u.id}', null)">Suspendre</button>
-            <button class="btn-action btn-bannir" onclick="bannirUser('${u.id}', null)">Bannir</button>
-          </div></td>
-        </tr>`;
-      }).join('');
-    }
-
-    // ── Panel annonces ──
-    const annonceTbody = document.querySelector('#panel-annonces tbody');
-    if (annonceTbody && latestAnnonces) {
-      annonceTbody.innerHTML = latestAnnonces.map(a => {
-        const client = a.client || {};
-        const nomClient = `${client.prenom || ''} ${client.nom?.[0] ? client.nom[0] + '.' : ''}`.trim() || '—';
-        const statut = a.statut === 'terminee'
-          ? `<span class="badge" style="background:var(--vert-light);color:var(--vert);">Terminée</span>`
-          : a.statut === 'active'
-          ? `<span class="badge badge-actif">Active</span>`
-          : `<span class="badge badge-pending">${escAdmin(a.statut)}</span>`;
-        const date = new Date(a.created_at).toLocaleDateString('fr-FR');
-        return `<tr>
-          <td><div style="font-weight:600;font-size:0.85rem;">${catEmoji(a.categorie)} ${escAdmin(a.titre || '')}</div><div style="font-size:0.72rem;color:var(--muted);">${escAdmin(a.localisation || 'Tahiti')}</div></td>
-          <td>${escAdmin(nomClient)}</td>
-          <td>${date}</td>
-          <td>—</td>
-          <td>${statut}</td>
-          <td><div class="action-btns">
-            <button class="btn-action btn-voir" onclick="location.href='apijob-annonce-detail.html?annonce=${a.id}'">Voir</button>
-            <button class="btn-action btn-supprimer" onclick="supprimerAnnonce('${a.id}', this)">Supprimer</button>
-          </div></td>
-        </tr>`;
-      }).join('');
-    }
+    // Annonces et utilisateurs chargés via leurs fonctions dédiées au clic de nav
 
     // ── Panel revenus — transactions ──
     const txTbody = document.querySelector('#panel-revenus tbody');
@@ -1052,7 +1118,7 @@
     wrap.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:0.85rem;">Chargement…</div>';
 
     const { data, error } = await db.from('profiles')
-      .select('id, prenom, nom, email, numero_tahiti, created_at, metadata, photo')
+      .select('id, prenom, nom, email, created_at, metadata, photo')
       .eq('role', 'prestataire')
       .eq('status_verification', 'en_attente')
       .order('created_at', { ascending: true });
@@ -1112,9 +1178,9 @@
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
           <div style="background:#F7F3F0;border-radius:8px;padding:0.35rem 0.75rem;font-size:0.82rem;">
-            <strong>N° Tahiti :</strong> ${escAdmin(p.numero_tahiti||'Non renseigné')}
+            <strong>N° Tahiti :</strong> ${escAdmin(p.metadata?.numero_tahiti||'Non renseigné')}
           </div>
-          <button onclick="copierNumero('${escAdmin(p.numero_tahiti||'')}', this)" style="font-size:0.78rem;padding:0.3rem 0.8rem;background:transparent;border:1px solid #D4C8BE;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;">📋 Copier</button>
+          <button onclick="copierNumero('${escAdmin(p.metadata?.numero_tahiti||'')}', this)" style="font-size:0.78rem;padding:0.3rem 0.8rem;background:transparent;border:1px solid #D4C8BE;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;">📋 Copier</button>
           <a href="${ispfUrl}" target="_blank" style="font-size:0.78rem;padding:0.3rem 0.8rem;background:rgba(26,122,74,0.08);color:#1A7A4A;border:1px solid rgba(26,122,74,0.2);border-radius:6px;text-decoration:none;font-weight:600;">🔍 Vérifier ISPF →</a>
         </div>
         <div style="font-size:0.82rem;">${idLink}</div>
