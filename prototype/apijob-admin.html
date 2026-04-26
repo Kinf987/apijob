@@ -310,12 +310,6 @@
     .topbar { padding:0.9rem 1rem; }
   }
 </style>
-<script>
-  // Protection — redirige vers login si pas connecté
-  if (!sessionStorage.getItem('apijob_admin')) {
-    window.location.href = 'apijob-admin-login.html';
-  }
-</script>
 </head>
 <body>
 
@@ -661,8 +655,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script>
-  // Protection sessionStorage (déjà vérifiée en haut du <head>)
-
   function showPanel(name) {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-' + name)?.classList.add('active');
@@ -859,9 +851,10 @@
 
   function escAdmin(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-  function logout() {
+  async function logout() {
+    await db.auth.signOut();
     sessionStorage.removeItem('apijob_admin');
-    window.location.href = 'apijob-admin-login.html';
+    window.location.replace('apijob-admin-login.html');
   }
 
   function initials(prenom, nom) {
@@ -869,6 +862,19 @@
   }
 
   async function init() {
+    // ── Vérification Supabase Auth + rôle admin ──
+    const { data: { user } } = await db.auth.getUser();
+    if (!user) { window.location.replace('apijob-admin-login.html'); return; }
+    const { data: adminProfile } = await db.from('profiles').select('role, prenom, nom').eq('id', user.id).single();
+    if (!adminProfile || adminProfile.role !== 'admin') {
+      await db.auth.signOut();
+      window.location.replace('apijob-admin-login.html');
+      return;
+    }
+    // Afficher le nom dans la sidebar
+    const nameEl = document.querySelector('.admin-name');
+    if (nameEl) nameEl.textContent = `${adminProfile.prenom || ''} ${adminProfile.nom || ''}`.trim() || 'Admin';
+
     // Date du jour
     const dateEl = document.querySelector('.topbar-date');
     if (dateEl) dateEl.textContent = new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
