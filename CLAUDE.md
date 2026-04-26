@@ -33,10 +33,8 @@ apijob-contact.html, apijob-404.html
 - Clients : accès gratuit, aucun paiement
 - Prestataires : système de jetons (tokens)
   - Inscription : 3 jetons offerts
-  - Découverte : gratuit
-  - Starter : 900 XPF
-  - Standard : 1 900 XPF/mois (-30%)
-  - Pro : 2 900 XPF/mois
+  - Starter : 3 jetons · 900 XPF (achat unique)
+  - Pro : jetons illimités · 2 900 XPF/mois (abonnement)
 - Débit du jeton : uniquement quand le client ACCEPTE une proposition
 - Paiement : Stripe (carte) + virement + cash relais (Stripe différé)
 - Jetons non remboursables

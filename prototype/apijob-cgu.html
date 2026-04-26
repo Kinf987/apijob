@@ -396,14 +396,19 @@
     </div>
   </div>
 
-  <!-- VALIDATION -->
-  <div class="validation-card">
+  <!-- VALIDATION — visible uniquement depuis l'inscription -->
+  <div class="validation-card" id="validation-card" style="display:none;">
     <div class="validation-title">✅ Validation des CGU</div>
-    <div class="validation-sub">En s'inscrivant sur APIJOB, l'utilisateur reconnaît avoir lu, compris et accepté l'intégralité des présentes Conditions Générales d'Utilisation.</div>
+    <div class="validation-sub">En t'inscrivant sur APIJOB, tu reconnais avoir lu, compris et accepté l'intégralité des présentes Conditions Générales d'Utilisation.</div>
     <button class="btn-accepter" onclick="window.location='apijob-auth.html'">J'accepte et je m'inscris →</button>
   </div>
 
 </div>
 
+<script>
+  if (new URLSearchParams(window.location.search).get('from') === 'inscription') {
+    document.getElementById('validation-card').style.display = 'block';
+  }
+</script>
 </body>
 </html>

@@ -601,6 +601,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="supabase-config.js"></script>
 <script>
   let currentUser    = null;
@@ -733,6 +734,15 @@
       const dateStr  = new Date(t.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' })
         + ' · ' + new Date(t.created_at).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
 
+      const isAchat = t.type === 'achat' || t.type === 'achat_pro';
+      const btnFacture = isAchat
+        ? `<button onclick="genererFacture(${JSON.stringify(t).replace(/"/g,'&quot;')})"
+             style="flex-shrink:0;margin-left:0.5rem;padding:0.25rem 0.7rem;background:transparent;border:1.5px solid rgba(240,165,0,0.35);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.72rem;font-weight:700;color:#B07800;cursor:pointer;transition:all 0.2s;"
+             onmouseover="this.style.background='rgba(240,165,0,0.1)'" onmouseout="this.style.background='transparent'">
+             📄 Facture
+           </button>`
+        : '';
+
       const item = document.createElement('div');
       item.className = 'historique-item';
       item.innerHTML = `
@@ -741,9 +751,153 @@
           <div class="histo-title">${label}</div>
           <div class="histo-date">${dateStr}</div>
         </div>
-        <div class="histo-montant ${cls}">${montant} ${t.quantite > 0 ? svgJeton : ''}</div>`;
+        <div class="histo-montant ${cls}" style="display:flex;align-items:center;gap:0.25rem;">${montant} ${t.quantite > 0 ? svgJeton : ''}${btnFacture}</div>`;
       container.appendChild(item);
     });
+  }
+
+  // ── GÉNÉRATEUR FACTURE PDF ──
+  function genererFacture(t) {
+    if (!window.jspdf) { alert('Générateur PDF non chargé. Réessaie dans quelques secondes.'); return; }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const rouge  = [204, 10, 43];
+    const or     = [240, 165, 0];
+    const night  = [26, 0, 8];
+    const muted  = [140, 120, 125];
+    const gris   = [245, 240, 237];
+
+    // ── En-tête coloré ──
+    doc.setFillColor(...rouge);
+    doc.rect(0, 0, 210, 38, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(24);
+    doc.setTextColor(255, 255, 255);
+    doc.text('API', 20, 24);
+    doc.setTextColor(...or);
+    doc.text('.', 37, 24);
+    doc.setTextColor(255, 255, 255);
+    doc.text('JOB', 42, 24);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(255, 255, 255, 0.7);
+    doc.text('Marketplace de services · Polynésie française', 20, 31);
+
+    // Badge FACTURE
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(143, 11, 47, 16, 3, 3, 'F');
+    doc.setTextColor(...rouge);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('FACTURE', 166.5, 22, { align: 'center' });
+
+    // ── Numéro + date ──
+    const dateObj  = new Date(t.created_at);
+    const year     = dateObj.getFullYear();
+    const shortId  = (t.id || '').substring(0, 8).toUpperCase();
+    const numFac   = `FAC-${year}-${shortId}`;
+    const dateStr  = dateObj.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+    doc.setTextColor(...night);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`N° ${numFac}`, 20, 52);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...muted);
+    doc.text(`Date d'émission : ${dateStr}`, 20, 59);
+
+    // Séparateur
+    doc.setDrawColor(...rouge);
+    doc.setLineWidth(0.4);
+    doc.line(20, 65, 190, 65);
+
+    // ── Émetteur ──
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...muted);
+    doc.text('ÉMETTEUR', 20, 74);
+    doc.setTextColor(...night);
+    doc.setFontSize(10);
+    doc.text('API JOB', 20, 81);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...muted);
+    doc.text('Marketplace de services', 20, 87);
+    doc.text('Tahiti, Polynésie française', 20, 93);
+    doc.text('contact@apijob.pf · apijob.pf', 20, 99);
+
+    // ── Destinataire ──
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...muted);
+    doc.text('DESTINATAIRE', 120, 74);
+    doc.setTextColor(...night);
+    doc.setFontSize(10);
+    const nomPresta = `${currentUser.prenom || ''} ${currentUser.nom || ''}`.trim() || 'Prestataire';
+    doc.text(nomPresta, 120, 81);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...muted);
+    doc.text(currentUser.email || '', 120, 87);
+    if (currentUser.localisation) doc.text(currentUser.localisation, 120, 93);
+
+    // ── Tableau ──
+    doc.setFillColor(...gris);
+    doc.rect(20, 112, 170, 10, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(...muted);
+    doc.text('DESCRIPTION', 25, 119);
+    doc.text('QUANTITÉ', 138, 119);
+    doc.text('MONTANT', 172, 119, { align: 'right' });
+
+    const isPro    = t.type === 'achat_pro';
+    const desc     = isPro ? 'Abonnement Pro · Jetons illimités' : 'Pack Starter · 3 jetons';
+    const qteStr   = isPro ? '1 mois' : '3 jetons';
+    const prixStr  = isPro ? '2 900 XPF' : '900 XPF';
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...night);
+    doc.setFontSize(9);
+    doc.text(desc, 25, 130);
+    doc.text(qteStr, 138, 130);
+    doc.setFont('helvetica', 'bold');
+    doc.text(prixStr, 172, 130, { align: 'right' });
+
+    doc.setDrawColor(220, 210, 205);
+    doc.setLineWidth(0.25);
+    doc.line(20, 136, 190, 136);
+
+    // ── Total ──
+    doc.setFillColor(...rouge);
+    doc.roundedRect(120, 142, 70, 14, 2, 2, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('TOTAL TTC', 130, 151);
+    doc.text(prixStr, 183, 151, { align: 'right' });
+
+    // Note TVA
+    doc.setTextColor(...muted);
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'normal');
+    doc.text('TVA non applicable · Art. 293B du CGI', 20, 166);
+
+    // ── Pied de page ──
+    doc.setFillColor(...gris);
+    doc.rect(0, 274, 210, 23, 'F');
+    doc.setDrawColor(...rouge);
+    doc.setLineWidth(0.3);
+    doc.line(0, 274, 210, 274);
+    doc.setTextColor(...muted);
+    doc.setFontSize(7.5);
+    doc.text('API JOB · Marketplace de services en Polynésie française', 105, 281, { align: 'center' });
+    doc.text('apijob.pf · contact@apijob.pf', 105, 287, { align: 'center' });
+    doc.text('Ce document tient lieu de reçu · Généré automatiquement', 105, 293, { align: 'center' });
+
+    doc.save(`facture-apijob-${numFac}.pdf`);
   }
 
   // ── INIT ──
