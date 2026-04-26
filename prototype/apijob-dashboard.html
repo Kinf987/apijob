@@ -476,6 +476,10 @@
   <!-- ── VUE PRESTATAIRE ── -->
   <div class="panel" id="panel-prestataire">
 
+    <!-- BANDEAU VÉRIFICATION -->
+    <div id="bandeau-verif" style="display:none;border-radius:14px;padding:0.9rem 1.2rem;margin-bottom:1.2rem;display:none;align-items:center;gap:0.75rem;font-size:0.85rem;line-height:1.5;">
+    </div>
+
     <div class="dash-header">
       <div>
         <div class="dash-greeting">Ia ora na, <span></span> 🌺</div>
@@ -768,6 +772,20 @@
     } else {
       // Prestataire : toggle visible pour basculer en mode client
       switchMode('prestataire');
+
+      // Bandeau vérification
+      const sv = currentUser.status_verification;
+      const bandeauEl = document.getElementById('bandeau-verif');
+      if (bandeauEl && sv && sv !== 'non_soumis' && sv !== 'valide') {
+        if (sv === 'en_attente') {
+          bandeauEl.style.cssText = 'display:flex;align-items:center;gap:0.75rem;border-radius:14px;padding:0.9rem 1.2rem;margin-bottom:1.2rem;font-size:0.85rem;line-height:1.5;background:rgba(240,165,0,0.1);border:1.5px solid rgba(240,165,0,0.3);color:#8A6000;';
+          bandeauEl.innerHTML = '<span style="font-size:1.4rem;flex-shrink:0;">⏳</span><div><strong>Profil en cours de vérification</strong><br>Notre équipe vérifie ton dossier sous <strong>72h</strong>. Tu peux déjà explorer les annonces, mais ton profil ne sera visible dans l\'annuaire qu\'après validation.</div>';
+        } else if (sv === 'rejete') {
+          const raison = currentUser.metadata?.rejection_reason || 'Numéro Tahiti non reconnu.';
+          bandeauEl.style.cssText = 'display:flex;align-items:flex-start;gap:0.75rem;border-radius:14px;padding:0.9rem 1.2rem;margin-bottom:1.2rem;font-size:0.85rem;line-height:1.5;background:rgba(204,10,43,0.07);border:1.5px solid rgba(204,10,43,0.2);color:#8A0019;';
+          bandeauEl.innerHTML = `<span style="font-size:1.4rem;flex-shrink:0;">❌</span><div><strong>Vérification refusée</strong><br>${raison}<br><a href="apijob-contact.html" style="color:var(--rouge);font-weight:600;">Contacter le support →</a></div>`;
+        }
+      }
     }
 
     // Mettre à jour les jetons (prestataire)

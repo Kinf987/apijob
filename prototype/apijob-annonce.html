@@ -474,14 +474,14 @@
       <div class="form-group">
         <label class="form-label">Budget indicatif <span style="color:var(--muted);font-weight:400;">(optionnel)</span></label>
         <div style="display:flex; align-items:center; gap:0.6rem;">
-          <input type="number" class="form-input" id="input-budget" placeholder="Ex : 5000" min="0" step="100" style="flex:1;">
+          <input type="number" class="form-input" id="input-budget" placeholder="Ex : 5000" min="0" step="100" style="flex:1;transition:opacity 0.2s;">
           <span style="font-size:0.88rem; color:var(--muted); white-space:nowrap;">XPF</span>
         </div>
-        <div style="font-size:0.78rem; color:var(--muted); margin-top:0.4rem;">Indique le montant maximum que tu es prêt(e) à payer pour cette mission.</div>
+        <div style="font-size:0.78rem; color:var(--muted); margin-top:0.4rem;">Indique le montant maximum que tu es prêt(e) à payer pour cette mission.<br><span style="color:var(--rouge);font-weight:500;">Si tu n'as aucune idée du prix, coche "Besoin d'un devis" ci-dessous.</span></div>
       </div>
 
       <label style="display:flex;align-items:center;gap:0.75rem;padding:0.9rem 1rem;background:rgba(240,165,0,0.06);border:1.5px solid rgba(240,165,0,0.25);border-radius:12px;cursor:pointer;margin-bottom:1rem;">
-        <input type="checkbox" id="input-devis" style="width:18px;height:18px;accent-color:var(--rouge);flex-shrink:0;">
+        <input type="checkbox" id="input-devis" style="width:18px;height:18px;accent-color:var(--rouge);flex-shrink:0;" onchange="toggleDevis(this.checked)">
         <div>
           <div style="font-size:0.88rem;font-weight:600;color:var(--night);">Besoin d'un devis</div>
           <div style="font-size:0.75rem;color:var(--muted);margin-top:0.1rem;">Le prestataire sera informé que tu souhaites recevoir un devis détaillé.</div>
@@ -596,6 +596,9 @@
         <div class="success-icon">🎉</div>
         <div class="success-title">Annonce publiée !</div>
         <div class="success-sub">Ton annonce est en ligne. Les prestataires disponibles vont bientôt t'envoyer leurs propositions. Tu seras notifié(e) à chaque nouvelle proposition.</div>
+        <div style="display:inline-flex;align-items:center;gap:0.5rem;background:rgba(26,122,74,0.08);border:1.5px solid rgba(26,122,74,0.2);border-radius:50px;padding:0.55rem 1.1rem;font-size:0.82rem;font-weight:600;color:#1A7A4A;margin-bottom:1.5rem;">
+          ✅ Seuls des professionnels vérifiés (numéro Tahiti valide) pourront te répondre.
+        </div>
         <div class="success-btns">
           <button class="btn-next" style="justify-content:center;" onclick="window.location='apijob-dashboard.html'">Retour au tableau de bord</button>
           <button class="btn-back" onclick="reset()">Publier une autre annonce</button>
@@ -686,6 +689,15 @@
       return;
     }
     goStep(3);
+  }
+
+  function toggleDevis(checked) {
+    const budgetInput = document.getElementById('input-budget');
+    if (!budgetInput) return;
+    budgetInput.disabled = checked;
+    budgetInput.style.opacity = checked ? '0.4' : '1';
+    budgetInput.style.cursor  = checked ? 'not-allowed' : '';
+    if (checked) budgetInput.value = '';
   }
 
   function goStep(n) {

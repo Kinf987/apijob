@@ -339,6 +339,11 @@
       <span class="nav-icon">👥</span>
       <span>Utilisateurs</span>
     </button>
+    <button class="nav-item" onclick="showPanel('verifications')">
+      <span class="nav-icon">🔍</span>
+      <span>Vérifications</span>
+      <span class="nav-badge" id="badge-verif-count" style="display:none;">0</span>
+    </button>
     <button class="nav-item" onclick="showPanel('signalements')">
       <span class="nav-icon">⚠️</span>
       <span>Signalements</span>
@@ -500,6 +505,34 @@
       </div>
     </div>
 
+    <!-- ── VÉRIFICATIONS ── -->
+    <div class="panel" id="panel-verifications">
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">🔍 Vérifications prestataires</div>
+          <div class="table-actions">
+            <span style="font-size:0.78rem;color:var(--muted);">Délai : 72h max après inscription</span>
+          </div>
+        </div>
+        <div id="verif-list" style="padding:0.5rem 0;">
+          <div style="text-align:center;padding:2rem;color:var(--muted);font-size:0.85rem;">Chargement…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODALE REJET -->
+    <div id="modal-rejet" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:none;align-items:center;justify-content:center;">
+      <div style="background:white;border-radius:20px;padding:1.8rem;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;margin-bottom:0.5rem;">❌ Rejeter ce prestataire</div>
+        <p style="font-size:0.83rem;color:var(--muted);margin-bottom:1rem;line-height:1.5;">Cette raison sera affichée dans le bandeau du prestataire sur son dashboard.</p>
+        <textarea id="rejet-raison" rows="3" style="width:100%;border:1.5px solid #E8E0D8;border-radius:10px;padding:0.75rem;font-family:'DM Sans',sans-serif;font-size:0.85rem;resize:none;outline:none;" placeholder="Ex : Numéro Tahiti invalide ou non trouvé dans les registres ISPF."></textarea>
+        <div style="display:flex;gap:0.75rem;margin-top:1rem;">
+          <button onclick="fermerModalRejet()" style="flex:1;padding:0.75rem;background:transparent;border:1.5px solid #E8E0D8;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;">Annuler</button>
+          <button onclick="confirmerRejet()" style="flex:1;padding:0.75rem;background:#CC0A2B;color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:700;cursor:pointer;">Confirmer le rejet</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ── SIGNALEMENTS ── -->
     <div class="panel" id="panel-signalements">
       <div class="table-card">
@@ -646,18 +679,20 @@
       b.classList.toggle('active', b.getAttribute('onclick')?.includes(`'${name}'`));
     });
     const titles = {
-      dashboard:    '📊 Tableau de bord',
-      utilisateurs: '👥 Utilisateurs',
-      signalements: '⚠️ Signalements',
-      annonces:     '📢 Annonces',
-      messagerie:   '💬 Messagerie',
-      avis:         '⭐ Avis',
-      revenus:      '💰 Revenus & Jetons'
+      dashboard:     '📊 Tableau de bord',
+      utilisateurs:  '👥 Utilisateurs',
+      verifications: '🔍 Vérifications prestataires',
+      signalements:  '⚠️ Signalements',
+      annonces:      '📢 Annonces',
+      messagerie:    '💬 Messagerie',
+      avis:          '⭐ Avis',
+      revenus:       '💰 Revenus & Jetons'
     };
     const el = document.getElementById('topbar-title');
     if (el) el.textContent = titles[name] || name;
-    if (name === 'signalements') chargerSignalements();
-    if (name === 'messagerie')   chargerConversations();
+    if (name === 'signalements')  chargerSignalements();
+    if (name === 'messagerie')    chargerConversations();
+    if (name === 'verifications') chargerVerifications();
   }
 
   // ── SIGNALEMENTS RÉELS ──
@@ -976,6 +1011,150 @@
   }
 
   init();
+
+  // ── VÉRIFICATIONS PRESTATAIRES ──
+  let rejetUserId = null;
+
+  async function chargerVerifications() {
+    const wrap = document.getElementById('verif-list');
+    if (!wrap) return;
+    wrap.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:0.85rem;">Chargement…</div>';
+
+    const { data, error } = await db.from('profiles')
+      .select('id, prenom, nom, email, numero_tahiti, created_at, metadata, photo')
+      .eq('role', 'prestataire')
+      .eq('status_verification', 'en_attente')
+      .order('created_at', { ascending: true });
+
+    // Mettre à jour le badge sidebar
+    const badgeVerif = document.getElementById('badge-verif-count');
+    if (badgeVerif) {
+      const nb = (data || []).length;
+      badgeVerif.textContent = nb;
+      badgeVerif.style.display = nb > 0 ? 'inline-flex' : 'none';
+    }
+
+    if (error || !data || data.length === 0) {
+      wrap.innerHTML = '<div style="text-align:center;padding:2.5rem;color:var(--muted);font-size:0.85rem;">✅ Aucun dossier en attente</div>';
+      return;
+    }
+
+    wrap.innerHTML = '';
+    for (const p of data) {
+      const inscritLe  = new Date(p.created_at);
+      const deadline   = new Date(inscritLe.getTime() + 72 * 3600 * 1000);
+      const now        = new Date();
+      const msLeft     = deadline - now;
+      const hLeft      = Math.max(0, Math.floor(msLeft / 3600000));
+      const isUrgent   = hLeft < 12;
+      const deadlineStr = deadline.toLocaleDateString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+      const inscritStr  = inscritLe.toLocaleDateString('fr-FR', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+
+      // Lien pièce d'identité (signed URL)
+      let idLink = '<span style="color:var(--muted);font-size:0.78rem;">Pas de pièce jointe</span>';
+      try {
+        // Chercher le fichier dans le bucket identites
+        const { data: files } = await db.storage.from('identites').list(p.id);
+        if (files && files.length > 0) {
+          const fileName = files[0].name;
+          const { data: signedUrl } = await db.storage.from('identites').createSignedUrl(`${p.id}/${fileName}`, 3600);
+          if (signedUrl?.signedUrl) {
+            idLink = `<a href="${signedUrl.signedUrl}" target="_blank" style="color:var(--rouge);font-weight:600;font-size:0.82rem;text-decoration:none;">📄 Voir la pièce d'identité →</a>`;
+          }
+        }
+      } catch(e) {}
+
+      const ispfUrl = `https://www.ispf.pf/rte/recherche`;
+      const card = document.createElement('div');
+      card.style.cssText = `border-bottom:1px solid #F0EBE5;padding:1.2rem 1rem;display:flex;flex-direction:column;gap:0.6rem;`;
+      card.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;">
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.95rem;">${escAdmin(p.prenom||'')} ${escAdmin(p.nom||'')}</div>
+            <div style="font-size:0.78rem;color:var(--muted);">${escAdmin(p.email||'')} · Inscrit le ${inscritStr}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-size:0.75rem;font-weight:700;color:${isUrgent?'#CC0A2B':'#8A6000'};background:${isUrgent?'rgba(204,10,43,0.08)':'rgba(240,165,0,0.1)'};padding:0.25rem 0.75rem;border-radius:50px;">
+              ${isUrgent ? '🔴' : '⏳'} Deadline : ${deadlineStr} (${hLeft}h restantes)
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
+          <div style="background:#F7F3F0;border-radius:8px;padding:0.35rem 0.75rem;font-size:0.82rem;">
+            <strong>N° Tahiti :</strong> ${escAdmin(p.numero_tahiti||'Non renseigné')}
+          </div>
+          <button onclick="copierNumero('${escAdmin(p.numero_tahiti||'')}', this)" style="font-size:0.78rem;padding:0.3rem 0.8rem;background:transparent;border:1px solid #D4C8BE;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;">📋 Copier</button>
+          <a href="${ispfUrl}" target="_blank" style="font-size:0.78rem;padding:0.3rem 0.8rem;background:rgba(26,122,74,0.08);color:#1A7A4A;border:1px solid rgba(26,122,74,0.2);border-radius:6px;text-decoration:none;font-weight:600;">🔍 Vérifier ISPF →</a>
+        </div>
+        <div style="font-size:0.82rem;">${idLink}</div>
+        <div style="display:flex;gap:0.6rem;margin-top:0.2rem;">
+          <button onclick="approuverVerif('${p.id}', this)" style="flex:1;padding:0.65rem;background:#1A7A4A;color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:700;cursor:pointer;font-size:0.85rem;">✅ Approuver</button>
+          <button onclick="ouvrirModalRejet('${p.id}')" style="flex:1;padding:0.65rem;background:transparent;color:#CC0A2B;border:1.5px solid rgba(204,10,43,0.3);border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:700;cursor:pointer;font-size:0.85rem;">❌ Rejeter</button>
+        </div>`;
+      wrap.appendChild(card);
+    }
+  }
+
+  async function approuverVerif(userId, btn) {
+    btn.disabled = true; btn.textContent = '…';
+    const { error } = await db.from('profiles')
+      .update({ status_verification: 'valide', is_verified: true })
+      .eq('id', userId);
+    if (error) { btn.disabled = false; btn.textContent = '✅ Approuver'; alert('Erreur : ' + error.message); return; }
+    await createNotification(userId, 'profil_verifie', '✅ Profil validé !', 'Ton profil a été vérifié et validé. Tu es maintenant visible dans l\'annuaire API JOB. Ia ora na ! 🌺');
+    btn.closest('div[style*="border-bottom"]').style.opacity = '0.4';
+    btn.textContent = '✅ Validé';
+    chargerVerifications();
+  }
+
+  function ouvrirModalRejet(userId) {
+    rejetUserId = userId;
+    document.getElementById('rejet-raison').value = '';
+    const m = document.getElementById('modal-rejet');
+    m.style.display = 'flex';
+  }
+
+  function fermerModalRejet() {
+    document.getElementById('modal-rejet').style.display = 'none';
+    rejetUserId = null;
+  }
+
+  async function confirmerRejet() {
+    if (!rejetUserId) return;
+    const raison = document.getElementById('rejet-raison').value.trim() || 'Numéro Tahiti invalide ou non trouvé dans les registres ISPF.';
+    const newMeta = {}; // on récupère le metadata actuel si possible
+    const { data: prof } = await db.from('profiles').select('metadata').eq('id', rejetUserId).single();
+    const merged = { ...(prof?.metadata || {}), rejection_reason: raison };
+    const { error } = await db.from('profiles')
+      .update({ status_verification: 'rejete', metadata: merged })
+      .eq('id', rejetUserId);
+    if (error) { alert('Erreur : ' + error.message); return; }
+    await createNotification(rejetUserId, 'profil_rejete', '❌ Vérification refusée', raison);
+    fermerModalRejet();
+    chargerVerifications();
+  }
+
+  function copierNumero(numero, btn) {
+    if (!numero) return;
+    navigator.clipboard.writeText(numero).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = '✅ Copié !';
+      setTimeout(() => btn.textContent = orig, 1500);
+    });
+  }
+
+  // Charger le badge au démarrage
+  async function initVerifBadge() {
+    const { count } = await db.from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'prestataire')
+      .eq('status_verification', 'en_attente');
+    const badge = document.getElementById('badge-verif-count');
+    if (badge && count > 0) { badge.textContent = count; badge.style.display = 'inline-flex'; }
+  }
+
+  init();
+  initVerifBadge();
 </script>
 
 </body>

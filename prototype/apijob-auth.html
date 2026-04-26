@@ -494,6 +494,7 @@
     if (role === 'prestataire') {
       numero_tahiti = document.getElementById('input-numero-tahiti').value.trim();
       if (!numero_tahiti) return showMsg('msg-inscription', 'Saisis ton numéro Tahiti.');
+      if (!/^\d{6,10}$/.test(numero_tahiti)) return showMsg('msg-inscription', 'Numéro Tahiti invalide — il doit contenir entre 6 et 10 chiffres.');
     }
 
     hideMsg('msg-inscription');
@@ -506,7 +507,8 @@
         password,
         options: {
           emailRedirectTo: 'https://apijob.netlify.app/apijob-bienvenue.html',
-          data: { role, prenom, nom, telephone: tel ? '+689' + tel : null, numero_tahiti }
+          data: { role, prenom, nom, telephone: tel ? '+689' + tel : null, numero_tahiti,
+                  status_verification: role === 'prestataire' ? 'en_attente' : 'non_soumis' }
         }
       });
 
@@ -525,6 +527,13 @@
         const ext  = file.name.split('.').pop();
         const path = `${data.user.id}/identite.${ext}`;
         await db.storage.from('identites').upload(path, file, { upsert: true });
+      }
+
+      // Marquer le profil prestataire "en attente de vérification"
+      if (role === 'prestataire' && data.user) {
+        await db.from('profiles')
+          .update({ status_verification: 'en_attente' })
+          .eq('id', data.user.id);
       }
 
       // Déconnexion immédiate pour éviter session active pendant la confirmation
