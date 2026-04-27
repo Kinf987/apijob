@@ -325,6 +325,10 @@
           <label class="form-label">Représentant légal</label>
           <input type="text" class="form-input" id="edit-representant" placeholder="Prénom et nom du gérant">
         </div>
+        <div class="form-group">
+          <label class="form-label">Numéro Kbis (extrait RCS)</label>
+          <input type="text" class="form-input" id="edit-numero-kbis" placeholder="Ex : 123 456 789">
+        </div>
       </div>
     </div>
   </div>
@@ -797,6 +801,7 @@
       if (meta.raison_sociale)     document.getElementById('edit-raison-sociale').value  = meta.raison_sociale;
       if (meta.forme_juridique)    document.getElementById('edit-forme-juridique').value  = meta.forme_juridique;
       if (meta.representant_legal) document.getElementById('edit-representant').value     = meta.representant_legal;
+      if (meta.numero_kbis)        document.getElementById('edit-numero-kbis').value      = meta.numero_kbis;
     }
 
     updateCompletude();
@@ -860,6 +865,7 @@
           metadata.raison_sociale     = document.getElementById('edit-raison-sociale')?.value.trim()  || null;
           metadata.forme_juridique    = document.getElementById('edit-forme-juridique')?.value        || null;
           metadata.representant_legal = document.getElementById('edit-representant')?.value.trim()    || null;
+          metadata.numero_kbis        = document.getElementById('edit-numero-kbis')?.value.trim()     || null;
         }
       }
 

@@ -402,6 +402,11 @@
             <label class="form-label">Représentant légal <span class="required">*</span></label>
             <input type="text" class="form-input" id="input-representant" placeholder="Prénom et nom du gérant">
           </div>
+          <div class="form-group">
+            <label class="form-label">Numéro Kbis (extrait RCS) <span class="required">*</span></label>
+            <input type="text" class="form-input" id="input-numero-kbis" placeholder="Ex : 123 456 789">
+            <div class="form-hint">Numéro d'immatriculation au Registre du Commerce et des Sociétés de Polynésie française.</div>
+          </div>
         </div>
       </div>
 
@@ -546,6 +551,7 @@
         if (!document.getElementById('input-raison-sociale').value.trim()) return showMsg('msg-inscription', 'Saisis la raison sociale de ta société.');
         if (!document.getElementById('input-forme-juridique').value) return showMsg('msg-inscription', 'Choisis la forme juridique.');
         if (!document.getElementById('input-representant').value.trim()) return showMsg('msg-inscription', 'Saisis le nom du représentant légal.');
+        if (!document.getElementById('input-numero-kbis').value.trim()) return showMsg('msg-inscription', 'Saisis le numéro Kbis de ta société.');
       }
     }
 
@@ -578,9 +584,10 @@
         const type_structure = document.querySelector('input[name="type_structure"]:checked')?.value || 'entrepreneur_individuel';
         const metaExtra = { numero_tahiti, type_structure };
         if (type_structure === 'societe') {
-          metaExtra.raison_sociale    = document.getElementById('input-raison-sociale').value.trim();
-          metaExtra.forme_juridique   = document.getElementById('input-forme-juridique').value;
+          metaExtra.raison_sociale     = document.getElementById('input-raison-sociale').value.trim();
+          metaExtra.forme_juridique    = document.getElementById('input-forme-juridique').value;
           metaExtra.representant_legal = document.getElementById('input-representant').value.trim();
+          metaExtra.numero_kbis        = document.getElementById('input-numero-kbis').value.trim();
         }
         const { data: existingProf } = await db.from('profiles').select('metadata').eq('id', data.user.id).single();
         await db.from('profiles')
