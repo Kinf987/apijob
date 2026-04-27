@@ -285,6 +285,50 @@
     </div>
   </div>
 
+  <!-- INFOS PRO — prestataires uniquement -->
+  <div class="section-card" id="section-infos-pro" style="display:none;">
+    <div class="section-header">
+      <span class="section-icon">🏢</span>
+      <span class="section-title">Informations professionnelles</span>
+    </div>
+    <div class="section-body">
+      <div class="form-group">
+        <label class="form-label">Numéro Tahiti</label>
+        <input type="text" class="form-input" id="edit-numero-tahiti" placeholder="Ex : 123456789">
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.35rem;">Numéro attribué par la DICP à votre activité professionnelle déclarée.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Type de structure</label>
+        <select class="form-input" id="edit-type-structure" onchange="toggleEditSociete()">
+          <option value="entrepreneur_individuel">Entrepreneur individuel / Auto-entrepreneur</option>
+          <option value="societe">Société (SARL, SAS, EURL…)</option>
+        </select>
+      </div>
+      <div id="edit-societe-fields" style="display:none;">
+        <div class="form-group">
+          <label class="form-label">Raison sociale</label>
+          <input type="text" class="form-input" id="edit-raison-sociale" placeholder="Ex : Tahiti Services SARL">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Forme juridique</label>
+          <select class="form-input" id="edit-forme-juridique">
+            <option value="">Choisir...</option>
+            <option value="SARL">SARL</option>
+            <option value="SAS">SAS</option>
+            <option value="EURL">EURL</option>
+            <option value="SNC">SNC</option>
+            <option value="SA">SA</option>
+            <option value="Autre">Autre</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Représentant légal</label>
+          <input type="text" class="form-input" id="edit-representant" placeholder="Prénom et nom du gérant">
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- PHOTO -->
   <div class="section-card">
     <div class="section-header">
@@ -636,6 +680,12 @@
     }
   }
 
+  function toggleEditSociete() {
+    const isSociete = document.getElementById('edit-type-structure')?.value === 'societe';
+    const el = document.getElementById('edit-societe-fields');
+    if (el) el.style.display = isSociete ? 'block' : 'none';
+  }
+
   function updateCompletude() {
     let score = 0;
     if (document.getElementById('titre').value) score += 20;
@@ -736,6 +786,19 @@
       });
     }
 
+    // Infos professionnelles (prestataires)
+    if (currentUser.role === 'prestataire') {
+      document.getElementById('section-infos-pro').style.display = 'block';
+      if (meta.numero_tahiti) document.getElementById('edit-numero-tahiti').value = meta.numero_tahiti;
+      if (meta.type_structure) {
+        document.getElementById('edit-type-structure').value = meta.type_structure;
+        toggleEditSociete();
+      }
+      if (meta.raison_sociale)     document.getElementById('edit-raison-sociale').value  = meta.raison_sociale;
+      if (meta.forme_juridique)    document.getElementById('edit-forme-juridique').value  = meta.forme_juridique;
+      if (meta.representant_legal) document.getElementById('edit-representant').value     = meta.representant_legal;
+    }
+
     updateCompletude();
   }
 
@@ -786,6 +849,19 @@
         ...(currentUser.metadata || {}),
         titre, services, zones, disponibilites
       };
+
+      // Infos pro (prestataires)
+      if (currentUser.role === 'prestataire') {
+        const nt = document.getElementById('edit-numero-tahiti')?.value.trim();
+        const ts = document.getElementById('edit-type-structure')?.value || 'entrepreneur_individuel';
+        if (nt) metadata.numero_tahiti = nt;
+        metadata.type_structure = ts;
+        if (ts === 'societe') {
+          metadata.raison_sociale     = document.getElementById('edit-raison-sociale')?.value.trim()  || null;
+          metadata.forme_juridique    = document.getElementById('edit-forme-juridique')?.value        || null;
+          metadata.representant_legal = document.getElementById('edit-representant')?.value.trim()    || null;
+        }
+      }
 
       const prenom = document.getElementById('input-prenom').value.trim();
       const nom    = document.getElementById('input-nom').value.trim();

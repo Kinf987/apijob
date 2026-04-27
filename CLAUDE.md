@@ -40,7 +40,7 @@ apijob-contact.html, apijob-404.html
 - Jetons non remboursables
 
 ## Tables Supabase (déjà créées)
-- profiles (id, email, role, prenom, nom, photo text [URL bucket identites], localisation, bio, tokens, is_pro, metadata jsonb [titre, experience, services, zones, disponibilites], created_at)
+- profiles (id, email, role, prenom, nom, photo text [URL bucket identites], localisation, bio, tokens, is_pro, metadata jsonb [titre, experience, services, zones, disponibilites, numero_tahiti, type_structure, raison_sociale, forme_juridique, representant_legal], identity_doc_path text [STAND-BY], identity_verified_at timestamptz [STAND-BY], created_at)
 - annonces (id, client_id, titre, description, categorie, localisation, statut, created_at)
 - propositions (id, annonce_id, prestataire_id, message, tarif, disponibilite, statut, created_at)
 - missions (id, annonce_id, proposition_id, client_id, prestataire_id, statut, created_at)
@@ -97,7 +97,9 @@ apijob-contact.html, apijob-404.html
 - Clés dans : sauvegarde-terminal/cles-supabase.md (exclu GitHub)
 
 ## Notes techniques importantes
-- `metadata` JSONB dans `profiles` : titre, experience, services, zones, disponibilites
+- `metadata` JSONB dans `profiles` : titre, experience, services, zones, disponibilites, numero_tahiti, type_structure, raison_sociale, forme_juridique, representant_legal
+- `identity_doc_path` et `identity_verified_at` dans `profiles` : colonnes créées, **STAND-BY** — pièce d'identité non collectée pour l'instant, à activer si besoin futur
+- bucket `verifications` dans Supabase Storage : **STAND-BY** — créé mais non utilisé
 - `photo text` dans `profiles` : URL publique du bucket Storage `identites`
 - FK disambiguation Supabase : `profiles!prestataire_id(...)` pour tables avec deux FK vers profiles
 - `apijob-proposition.html` accepter() → crée mission + débite jeton prestataire + notifie

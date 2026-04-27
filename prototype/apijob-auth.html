@@ -202,6 +202,19 @@
   .presta-fields .form-group { margin-bottom: 0.9rem; }
   .presta-fields .form-group:last-child { margin-bottom: 0; }
 
+  /* RADIO TYPE STRUCTURE */
+  .radio-group { display: flex; flex-direction: column; gap: 0.5rem; }
+  .radio-opt {
+    display: flex; align-items: center; gap: 0.6rem;
+    font-size: 0.88rem; color: var(--night);
+    cursor: pointer; padding: 0.55rem 0.8rem;
+    border: 1.5px solid var(--border); border-radius: 10px;
+    transition: all 0.2s;
+  }
+  .radio-opt:has(input:checked) { border-color: var(--or); background: rgba(240,165,0,0.06); }
+  .radio-opt input { accent-color: var(--or); width: 15px; height: 15px; }
+  .form-hint { font-size: 0.75rem; color: var(--muted); margin-top: 0.35rem; }
+
   .upload-btn {
     display: flex; align-items: center; gap: 0.75rem;
     padding: 0.85rem 1rem;
@@ -351,18 +364,44 @@
         <div class="form-group">
           <label class="form-label">Numéro Tahiti <span class="required">*</span></label>
           <input type="text" class="form-input" id="input-numero-tahiti" placeholder="Ex : 123456789">
+          <div class="form-hint">Numéro attribué par la DICP à votre activité professionnelle déclarée.</div>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Pièce d'identité <span class="required">*</span></label>
-          <label class="upload-btn">
-            <input type="file" accept=".jpg,.jpeg,.png,.pdf" id="fileInput">
-            <div class="upload-btn-icon">📄</div>
-            <div class="upload-btn-text">
-              <div class="upload-btn-title" id="fileLabel">Importer un fichier</div>
-              <div class="upload-btn-sub">CNI, passeport ou titre de séjour — JPG, PNG ou PDF</div>
-            </div>
-          </label>
+          <label class="form-label">Type de structure <span class="required">*</span></label>
+          <div class="radio-group">
+            <label class="radio-opt">
+              <input type="radio" name="type_structure" value="entrepreneur_individuel" checked onchange="toggleSocieteFields()">
+              Entrepreneur individuel / Auto-entrepreneur
+            </label>
+            <label class="radio-opt">
+              <input type="radio" name="type_structure" value="societe" onchange="toggleSocieteFields()">
+              Société (SARL, SAS, EURL…)
+            </label>
+          </div>
+        </div>
+
+        <div id="societe-fields" style="display:none;">
+          <div class="form-group">
+            <label class="form-label">Raison sociale <span class="required">*</span></label>
+            <input type="text" class="form-input" id="input-raison-sociale" placeholder="Ex : Tahiti Services SARL">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Forme juridique <span class="required">*</span></label>
+            <select class="form-input" id="input-forme-juridique">
+              <option value="">Choisir...</option>
+              <option value="SARL">SARL</option>
+              <option value="SAS">SAS</option>
+              <option value="EURL">EURL</option>
+              <option value="SNC">SNC</option>
+              <option value="SA">SA</option>
+              <option value="Autre">Autre</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Représentant légal <span class="required">*</span></label>
+            <input type="text" class="form-input" id="input-representant" placeholder="Prénom et nom du gérant">
+          </div>
         </div>
       </div>
 
@@ -442,6 +481,12 @@
     }
   })();
 
+  // ── TOGGLE SOCIÉTÉ ──
+  function toggleSocieteFields() {
+    const isSociete = document.querySelector('input[name="type_structure"]:checked')?.value === 'societe';
+    document.getElementById('societe-fields').style.display = isSociete ? 'block' : 'none';
+  }
+
   // ── TABS ──
   function switchTab(tab) {
     document.querySelectorAll('.tab').forEach((t, i) => {
@@ -495,6 +540,13 @@
       numero_tahiti = document.getElementById('input-numero-tahiti').value.trim();
       if (!numero_tahiti) return showMsg('msg-inscription', 'Saisis ton numéro Tahiti.');
       if (!/^\d{6,10}$/.test(numero_tahiti)) return showMsg('msg-inscription', 'Numéro Tahiti invalide — il doit contenir entre 6 et 10 chiffres.');
+
+      const type_structure = document.querySelector('input[name="type_structure"]:checked')?.value || 'entrepreneur_individuel';
+      if (type_structure === 'societe') {
+        if (!document.getElementById('input-raison-sociale').value.trim()) return showMsg('msg-inscription', 'Saisis la raison sociale de ta société.');
+        if (!document.getElementById('input-forme-juridique').value) return showMsg('msg-inscription', 'Choisis la forme juridique.');
+        if (!document.getElementById('input-representant').value.trim()) return showMsg('msg-inscription', 'Saisis le nom du représentant légal.');
+      }
     }
 
     hideMsg('msg-inscription');
@@ -521,21 +573,20 @@
         return;
       }
 
-      // Upload pièce d'identité si prestataire
-      const file = document.getElementById('fileInput').files[0];
-      if (role === 'prestataire' && file && data.user) {
-        const ext  = file.name.split('.').pop();
-        const path = `${data.user.id}/identite.${ext}`;
-        await db.storage.from('identites').upload(path, file, { upsert: true });
-      }
-
-      // Marquer le profil prestataire "en attente de vérification" + sauvegarder numero_tahiti
+      // Marquer le profil prestataire "en attente de vérification" + sauvegarder infos pro
       if (role === 'prestataire' && data.user) {
+        const type_structure = document.querySelector('input[name="type_structure"]:checked')?.value || 'entrepreneur_individuel';
+        const metaExtra = { numero_tahiti, type_structure };
+        if (type_structure === 'societe') {
+          metaExtra.raison_sociale    = document.getElementById('input-raison-sociale').value.trim();
+          metaExtra.forme_juridique   = document.getElementById('input-forme-juridique').value;
+          metaExtra.representant_legal = document.getElementById('input-representant').value.trim();
+        }
         const { data: existingProf } = await db.from('profiles').select('metadata').eq('id', data.user.id).single();
         await db.from('profiles')
           .update({
             status_verification: 'en_attente',
-            metadata: { ...(existingProf?.metadata || {}), numero_tahiti }
+            metadata: { ...(existingProf?.metadata || {}), ...metaExtra }
           })
           .eq('id', data.user.id);
       }
