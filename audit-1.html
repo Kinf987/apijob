@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>APIJOB — Audit #1</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #fff;
+    color: #1A0008;
+    padding: 3rem;
+    max-width: 860px;
+    margin: 0 auto;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  /* HEADER */
+  .header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    border-bottom: 3px solid #CC0A2B;
+    padding-bottom: 1.5rem; margin-bottom: 2rem;
+  }
+  .header-left {}
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem; font-weight: 800;
+    color: #CC0A2B; letter-spacing: -1px;
+  }
+  .logo span { color: #F0A500; }
+  .audit-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem; font-weight: 700;
+    color: #CC0A2B; letter-spacing: 2px;
+    text-transform: uppercase; margin-top: 0.2rem;
+  }
+  .header-right { text-align: right; }
+  .audit-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 3rem; font-weight: 800;
+    color: rgba(204,10,43,0.08); line-height: 1;
+  }
+  .audit-date {
+    font-size: 0.78rem; color: rgba(26,0,8,0.45);
+    margin-top: 0.3rem;
+  }
+
+  /* SECTION */
+  .section { margin-bottom: 2rem; }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem; font-weight: 800;
+    color: #CC0A2B;
+    border-left: 4px solid #CC0A2B;
+    padding-left: 0.75rem;
+    margin-bottom: 1rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .score {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem; font-weight: 800;
+    color: #F0A500;
+    background: rgba(240,165,0,0.1);
+    padding: 0.1rem 0.6rem; border-radius: 6px;
+  }
+
+  /* SUBSECTION */
+  .subsection { margin-bottom: 1rem; }
+  .subsection-title {
+    font-weight: 600; font-size: 0.88rem;
+    color: #1A0008; margin-bottom: 0.4rem;
+  }
+
+  /* LISTS */
+  ul { list-style: none; margin: 0 0 0.8rem 0; }
+  ul li { padding: 0.2rem 0 0.2rem 1.2rem; position: relative; font-size: 0.88rem; }
+  ul li::before { content: '→'; position: absolute; left: 0; color: #CC0A2B; font-weight: 700; }
+  ul.plus li::before { content: '✓'; color: #1A7A4A; }
+  ul.minus li::before { content: '✗'; color: #CC0A2B; }
+
+  /* BOXES */
+  .box {
+    border-radius: 10px; padding: 1rem 1.2rem;
+    margin-bottom: 0.8rem; font-size: 0.88rem;
+  }
+  .box-green { background: rgba(26,122,74,0.06); border: 1px solid rgba(26,122,74,0.2); }
+  .box-red   { background: rgba(204,10,43,0.05); border: 1px solid rgba(204,10,43,0.15); }
+  .box-or    { background: rgba(240,165,0,0.08); border: 1px solid rgba(240,165,0,0.25); }
+  .box-title { font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem; }
+  .box-green .box-title { color: #1A7A4A; }
+  .box-red   .box-title { color: #CC0A2B; }
+  .box-or    .box-title { color: #B07800; }
+
+  /* SCORES TABLE */
+  .scores-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin-bottom: 2rem;
+  }
+  .score-card {
+    text-align: center;
+    border: 1px solid rgba(204,10,43,0.1);
+    border-radius: 12px; padding: 1rem 0.5rem;
+  }
+  .score-card-label {
+    font-size: 0.72rem; color: rgba(26,0,8,0.45);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 0.4rem;
+  }
+  .score-card-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem; font-weight: 800;
+    color: #CC0A2B;
+  }
+  .score-card-val span { font-size: 1rem; color: rgba(26,0,8,0.3); }
+
+  /* PRIORITIES */
+  .priority {
+    display: flex; gap: 1rem; align-items: flex-start;
+    margin-bottom: 0.8rem;
+  }
+  .priority-num {
+    width: 32px; height: 32px; flex-shrink: 0;
+    background: #CC0A2B; color: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.9rem;
+  }
+  .priority-body {}
+  .priority-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.2rem; }
+  .priority-desc { font-size: 0.83rem; color: rgba(26,0,8,0.6); }
+
+  /* VERDICT */
+  .verdict {
+    background: #1A0008; color: white;
+    border-radius: 14px; padding: 1.5rem 2rem;
+    margin-top: 2rem;
+  }
+  .verdict-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem; font-weight: 800;
+    color: #F0A500; margin-bottom: 0.6rem;
+  }
+  .verdict p { font-size: 0.88rem; color: rgba(255,255,255,0.75); line-height: 1.7; }
+
+  /* FOOTER PAGE */
+  .page-footer {
+    margin-top: 3rem; padding-top: 1rem;
+    border-top: 1px solid rgba(204,10,43,0.15);
+    display: flex; justify-content: space-between;
+    font-size: 0.72rem; color: rgba(26,0,8,0.35);
+  }
+
+  /* PRINT */
+  @media print {
+    body { padding: 2rem; }
+    .section { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo">API<span>JOB</span></div>
+    <div class="audit-label">Rapport d'audit interne</div>
+  </div>
+  <div class="header-right">
+    <div class="audit-num">#1</div>
+    <div class="audit-date">Avril 2026 · Polynésie française</div>
+  </div>
+</div>
+
+<!-- SCORES SYNTHÈSE -->
+<div class="scores-grid">
+  <div class="score-card">
+    <div class="score-card-label">Technique</div>
+    <div class="score-card-val">8<span>/10</span></div>
+  </div>
+  <div class="score-card">
+    <div class="score-card-label">Design</div>
+    <div class="score-card-val">9<span>/10</span></div>
+  </div>
+  <div class="score-card">
+    <div class="score-card-label">Marketing</div>
+    <div class="score-card-val">6<span>/10</span></div>
+  </div>
+  <div class="score-card">
+    <div class="score-card-label">Modèle éco.</div>
+    <div class="score-card-val">7<span>/10</span></div>
+  </div>
+</div>
+
+<!-- TECHNIQUE -->
+<div class="section">
+  <div class="section-title">Technique <span class="score">8/10</span></div>
+  <div class="subsection">
+    <div class="subsection-title">Points forts</div>
+    <ul class="plus">
+      <li>Stack légère et juste : Vanilla JS + Supabase + Netlify — pas de framework inutile, déploiement immédiat</li>
+      <li>29 pages entièrement connectées au backend — couverture fonctionnelle complète pour un MVP</li>
+      <li>Architecture Supabase propre : RLS, pg_cron, temps réel messagerie, Storage, Auth</li>
+      <li>Zéro dette technique visible : pas de workaround, pas de code temporaire</li>
+    </ul>
+  </div>
+  <div class="subsection">
+    <div class="subsection-title">Points faibles</div>
+    <ul class="minus">
+      <li>Pas de gestion d'erreur réseau côté UX (coupure wifi → page silencieuse)</li>
+      <li>SEO inexistant : balises meta génériques, pas de sitemap, pas de structured data</li>
+      <li>Pas de PWA / pas d'installation mobile</li>
+      <li>Stripe non intégré — aucune monétisation réelle possible actuellement</li>
+    </ul>
+  </div>
+</div>
+
+<!-- DESIGN -->
+<div class="section">
+  <div class="section-title">Design <span class="score">9/10</span></div>
+  <div class="subsection">
+    <div class="subsection-title">Points forts</div>
+    <ul class="plus">
+      <li>Identité visuelle forte : rouge polynésien + or + noir — immédiatement reconnaissable et ancré localement</li>
+      <li>Typographie Syne + DM Sans : contraste parfait entre titres impactants et corps de texte lisible</li>
+      <li>Cohérence totale sur 29 pages — rare et difficile à maintenir à cette échelle</li>
+      <li>Logo SVG maison (soleil + mer polynésienne) — détail qui fait professionnel</li>
+    </ul>
+  </div>
+  <div class="subsection">
+    <div class="subsection-title">Points faibles</div>
+    <ul class="minus">
+      <li>Homepage épurée au point d'être presque vide — un visiteur peut passer à côté du concept</li>
+      <li>Aucune photo réelle, aucun visage humain — trop graphique pour un service de confiance interpersonnelle</li>
+      <li>Pas de section réassurance visible — risqué pour un nouveau marché sans réputation établie</li>
+    </ul>
+  </div>
+</div>
+
+<!-- MARKETING -->
+<div class="section">
+  <div class="section-title">Marketing <span class="score">6/10</span></div>
+  <div class="subsection">
+    <div class="subsection-title">Ce qui fonctionne</div>
+    <ul class="plus">
+      <li>"100% local · Gratuit pour les clients" : message clair et différenciant</li>
+      <li>"Comment ça marche" en 3 étapes : efficace et rassurant</li>
+      <li>Modèle freemium côté client : zéro friction à l'acquisition</li>
+    </ul>
+  </div>
+  <div class="subsection">
+    <div class="subsection-title">Ce qui manque</div>
+    <ul class="minus">
+      <li>Zéro preuve sociale : aucun témoignage, avis, ni chiffre clé sur la homepage</li>
+      <li>Problème œuf/poule non résolu : si peu de prestataires au lancement, les clients repartent</li>
+      <li>Le prestataire absent de la homepage — or c'est lui qui paie</li>
+      <li>Pas de stratégie d'acquisition documentée (Facebook PF, Instagram, bouche à oreille, partenariats…)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- MODÈLE ÉCO -->
+<div class="section">
+  <div class="section-title">Modèle économique <span class="score">7/10</span></div>
+  <div class="subsection">
+    <div class="subsection-title">Points forts</div>
+    <ul class="plus">
+      <li>Jeton débité uniquement à l'acceptation : le prestataire paie pour un résultat → faible résistance à l'adoption</li>
+      <li>Starter 900 XPF : prix d'appel très accessible</li>
+      <li>Pro 2 900 XPF/mois : revenus récurrents, base stable</li>
+    </ul>
+  </div>
+  <div class="subsection">
+    <div class="subsection-title">Risques</div>
+    <ul class="minus">
+      <li>Si l'annuaire Pro reste vide au lancement, la valeur du plan Pro est nulle → personne ne s'abonne</li>
+      <li>Différenciation Starter/Pro peu claire au-delà des jetons et de la visibilité annuaire</li>
+      <li>Marché limité à ~200 000 habitants (Tahiti + Moorea) — base prestataires potentiels restreinte</li>
+    </ul>
+  </div>
+</div>
+
+<!-- CHANCES DE RÉUSSITE -->
+<div class="section">
+  <div class="section-title">Analyse des chances de réussite</div>
+  <div class="box box-green">
+    <div class="box-title">Facteurs favorables</div>
+    <ul class="plus">
+      <li>Aucun concurrent local direct connu</li>
+      <li>Le marché polynésien est habitué aux services informels → vraie douleur à résoudre</li>
+      <li>Qualité du produit bien au-dessus d'un MVP local standard</li>
+      <li>Modèle économique léger, sans coût serveur excessif</li>
+    </ul>
+  </div>
+  <div class="box box-red">
+    <div class="box-title">Risques réels</div>
+    <ul class="minus">
+      <li>Lancement sans Stripe = pas de revenus = durée de vie limitée</li>
+      <li>Si les 3 premiers prestataires ont une mauvaise expérience, la réputation est abîmée sur un marché aussi petit</li>
+      <li>Le travail au noir est culturellement ancré en PF — convaincre de se déclarer ET de payer est un double défi</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PRIORITÉS -->
+<div class="section">
+  <div class="section-title">3 priorités concrètes avant lancement</div>
+
+  <div class="priority">
+    <div class="priority-num">1</div>
+    <div class="priority-body">
+      <div class="priority-title">Intégrer Stripe</div>
+      <div class="priority-desc">Sans monétisation réelle, tout le reste est un prototype. C'est le vrai bloquant. Stripe Checkout pour les achats jetons et l'abonnement Pro.</div>
+    </div>
+  </div>
+
+  <div class="priority">
+    <div class="priority-num">2</div>
+    <div class="priority-body">
+      <div class="priority-title">Recruter 15–20 prestataires Pro manuellement avant d'ouvrir aux clients</div>
+      <div class="priority-desc">Offrir 3 mois Pro gratuits aux pionniers. Avoir un annuaire fourni dès le jour 1 est la condition sine qua non pour que les clients restent.</div>
+    </div>
+  </div>
+
+  <div class="priority">
+    <div class="priority-num">3</div>
+    <div class="priority-body">
+      <div class="priority-title">Ajouter de la preuve sociale sur la homepage</div>
+      <div class="priority-desc">Dès les premiers retours : témoignages, nombre de prestataires, missions réalisées. La preuve sociale est le levier n°1 dans ce type de marché local.</div>
+    </div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="verdict">
+  <div class="verdict-title">Verdict</div>
+  <p>Produit solide, design excellent, backend complet. La technique est prête. Ce qui peut faire échouer le projet n'est pas dans le code — c'est la stratégie de lancement et l'intégration Stripe. Le risque principal est de lancer trop tôt avec trop peu de prestataires, créant une mauvaise première impression irréparable sur un marché de 200 000 personnes où le bouche à oreille est roi.</p>
+</div>
+
+<!-- FOOTER -->
+<div class="page-footer">
+  <span>API JOB · Audit interne #1 · Avril 2026</span>
+  <span>Document confidentiel · Usage interne</span>
+</div>
+
+</body>
+</html>
