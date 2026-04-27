@@ -63,7 +63,10 @@
     background: #F0A500;
     border-radius: 50%;
   }
-  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links {
+    display: flex; gap: 2rem; list-style: none;
+    position: absolute; left: 50%; transform: translateX(-50%);
+  }
   .nav-links a {
     text-decoration: none; color: var(--night);
     font-size: 0.88rem; font-weight: 500;
