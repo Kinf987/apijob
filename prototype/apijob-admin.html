@@ -1183,6 +1183,13 @@
           <button onclick="copierNumero('${escAdmin(p.metadata?.numero_tahiti||'')}', this)" style="font-size:0.78rem;padding:0.3rem 0.8rem;background:transparent;border:1px solid #D4C8BE;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;">📋 Copier</button>
           <a href="${ispfUrl}" target="_blank" style="font-size:0.78rem;padding:0.3rem 0.8rem;background:rgba(26,122,74,0.08);color:#1A7A4A;border:1px solid rgba(26,122,74,0.2);border-radius:6px;text-decoration:none;font-weight:600;">🔍 Vérifier ISPF →</a>
         </div>
+        ${p.metadata?.type_structure === 'societe' ? `
+        <div style="background:rgba(240,165,0,0.06);border:1px solid rgba(240,165,0,0.25);border-radius:10px;padding:0.7rem 1rem;font-size:0.82rem;display:flex;flex-wrap:wrap;gap:0.5rem 1.5rem;">
+          <div><strong>Structure :</strong> ${escAdmin(p.metadata?.forme_juridique||'—')}</div>
+          <div><strong>Raison sociale :</strong> ${escAdmin(p.metadata?.raison_sociale||'—')}</div>
+          <div><strong>Représentant :</strong> ${escAdmin(p.metadata?.representant_legal||'—')}</div>
+          <div><strong>N° Kbis :</strong> ${escAdmin(p.metadata?.numero_kbis||'Non renseigné')}</div>
+        </div>` : ''}
         <div style="font-size:0.82rem;">${idLink}</div>
         <div style="display:flex;gap:0.6rem;margin-top:0.2rem;">
           <button onclick="approuverVerif('${p.id}', this)" style="flex:1;padding:0.65rem;background:#1A7A4A;color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:700;cursor:pointer;font-size:0.85rem;">✅ Approuver</button>
