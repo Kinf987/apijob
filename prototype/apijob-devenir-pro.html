@@ -293,6 +293,9 @@
   <p class="hero-sub">Ton profil Pro, c'est ta vitrine locale à Tahiti et Moorea — visible 24h/24 dans l'annuaire. Les clients te trouvent et te contactent directement, même quand tu n'as pas répondu à une seule annonce.</p>
   <a href="apijob-jetons.html" class="hero-cta">⭐ Démarrer — 2 900 XPF/mois</a>
   <div class="hero-note">Sans engagement · Résiliable à tout moment</div>
+  <div id="offre-lancement" style="display:none;margin-top:1rem;background:rgba(240,165,0,0.12);border:1px solid rgba(240,165,0,0.3);border-radius:12px;padding:0.7rem 1.2rem;font-size:0.82rem;color:#8A6000;line-height:1.5;">
+    🎁 <strong id="offre-label">Offre lancement</strong> — <span id="offre-reste"></span>
+  </div>
 </div>
 
 
@@ -378,6 +381,32 @@
   }
 
   async function init() {
+    // Décompte offre lancement
+    try {
+      const { count: nbPros } = await db.from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_pro', true).eq('role', 'prestataire');
+
+      const n = nbPros || 0;
+      const offreEl  = document.getElementById('offre-lancement');
+      const labelEl  = document.getElementById('offre-label');
+      const resteEl  = document.getElementById('offre-reste');
+
+      if (n < 25 && offreEl) {
+        labelEl.textContent = '1 an offert';
+        resteEl.textContent = `Il reste ${25 - n} place${25 - n > 1 ? 's' : ''} à ce tarif.`;
+        offreEl.style.display = '';
+      } else if (n < 100 && offreEl) {
+        labelEl.textContent = '6 mois offerts';
+        resteEl.textContent = `Il reste ${100 - n} place${100 - n > 1 ? 's' : ''} à ce tarif.`;
+        offreEl.style.display = '';
+      } else if (n < 300 && offreEl) {
+        labelEl.textContent = '3 mois offerts';
+        resteEl.textContent = `Il reste ${300 - n} place${300 - n > 1 ? 's' : ''} à ce tarif.`;
+        offreEl.style.display = '';
+      }
+    } catch(e) { /* silencieux */ }
+
     const { data: { session } } = await db.auth.getSession();
     if (!session) return; // non connecté → liens apijob-jetons.html corrects
 
