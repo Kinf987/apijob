@@ -363,7 +363,7 @@
 
         <div class="form-group">
           <label class="form-label">Numéro Tahiti <span class="required">*</span></label>
-          <input type="text" class="form-input" id="input-numero-tahiti" placeholder="Ex : 123456789">
+          <input type="text" class="form-input" id="input-numero-tahiti" placeholder="Ex : TB99510 ou 123456789">
           <div class="form-hint">Numéro attribué par la DICP à votre activité professionnelle déclarée.</div>
         </div>
 
@@ -544,7 +544,7 @@
     if (role === 'prestataire') {
       numero_tahiti = document.getElementById('input-numero-tahiti').value.trim();
       if (!numero_tahiti) return showMsg('msg-inscription', 'Saisis ton numéro Tahiti.');
-      if (!/^\d{6,10}$/.test(numero_tahiti)) return showMsg('msg-inscription', 'Numéro Tahiti invalide — il doit contenir entre 6 et 10 chiffres.');
+      if (!/^[A-Za-z0-9]{4,15}$/.test(numero_tahiti)) return showMsg('msg-inscription', 'Numéro Tahiti invalide — lettres et chiffres uniquement (4 à 15 caractères).');
 
       const type_structure = document.querySelector('input[name="type_structure"]:checked')?.value || 'entrepreneur_individuel';
       if (type_structure === 'societe') {
