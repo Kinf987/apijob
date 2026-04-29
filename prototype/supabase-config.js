@@ -147,6 +147,8 @@ function catEmoji(cat) {
     'Animaux': '🐾',
     'Coiffure à domicile': '✂️',
     'Bien-être': '🧘',
+    'Esthétique': '💅',
+    'Tatoueur': '🪡',
     'Traiteur': '👨‍🍳',
     'Artisanat': '🗿',
     'Couture & retouches': '🧵',
