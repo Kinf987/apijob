@@ -519,14 +519,19 @@
 
     try {
       // 1. Supprimer le profil (table profiles)
-      await db.from('profiles').delete().eq('id', currentUser.id);
+      const { error: errProfil } = await db.from('profiles').delete().eq('id', currentUser.id);
+      if (errProfil) throw new Error('Étape 1 (profil) : ' + errProfil.message);
 
       // 2. Supprimer le compte Supabase Auth via Edge Function
-      const { data: { session } } = await db.auth.getSession();
-      await fetch('https://douncwfmczjpnwcpfsah.supabase.co/functions/v1/delete-user', {
+      const { data: sessionData } = await db.auth.getSession();
+      const session = sessionData?.session;
+      if (!session) throw new Error('Étape 2 : session introuvable');
+
+      const res = await fetch('https://douncwfmczjpnwcpfsah.supabase.co/functions/v1/delete-user', {
         method: 'POST',
         headers: { Authorization: `Bearer ${session.access_token}` }
       });
+      if (!res.ok) throw new Error('Étape 2 (Edge Function) : ' + await res.text());
 
       // 3. Déconnecter et rediriger
       await db.auth.signOut();
@@ -535,6 +540,7 @@
       console.error('Erreur suppression compte :', e);
       btn.disabled = false;
       btn.textContent = 'Supprimer définitivement';
+      alert('Erreur : ' + e.message);
     }
   }
 
