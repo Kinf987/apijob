@@ -776,13 +776,6 @@
         tag.innerHTML = `${zone} <button class="zone-remove" onclick="removeZone(this)">✕</button>`;
         wrap.appendChild(tag);
       });
-    } else if (currentUser.localisation) {
-      const wrap = document.getElementById('zones-wrap');
-      wrap.innerHTML = '';
-      const tag = document.createElement('span');
-      tag.className = 'zone-tag';
-      tag.innerHTML = `${currentUser.localisation} <button class="zone-remove" onclick="removeZone(this)">✕</button>`;
-      wrap.appendChild(tag);
     }
 
     // Disponibilités
