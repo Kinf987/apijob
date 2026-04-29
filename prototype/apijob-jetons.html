@@ -683,15 +683,20 @@
         currentUser.metadata = metaUpdate;
 
         // Adapter le message succès selon l'offre
+        const successModal = document.getElementById('success-overlay');
         if (offerMonths > 0) {
-          const offerLabel = offerMonths === 12 ? '1 an offert 🎁' : offerMonths === 6 ? '6 mois offerts 🎁' : '3 mois offerts 🎁';
-          document.getElementById('success-overlay').querySelector('.success-title').textContent = 'Bienvenue dans l\'offre lancement !';
-          document.getElementById('success-overlay').querySelector('.success-sub').textContent =
-            `Tu fais partie des premiers prestataires Pro — ${offerLabel} dans le cadre de notre offre lancement.`;
+          const offerLabel = offerMonths === 12 ? '1 an offert' : offerMonths === 6 ? '6 mois offerts' : '3 mois offerts';
+          successModal.querySelector('.success-icon').textContent = '🎁';
+          successModal.querySelector('.success-title').textContent = 'Bienvenue dans l\'offre lancement !';
+          successModal.querySelector('.success-sub').textContent =
+            `Tu fais partie des premiers prestataires Pro — ${offerLabel} offerts. Complete ton profil pour apparaître dans l'annuaire dès maintenant.`;
         } else {
-          document.getElementById('success-overlay').querySelector('.success-title').textContent = 'Tu es maintenant Pro !';
-          document.getElementById('success-overlay').querySelector('.success-sub').textContent = 'Ton profil est visible dans l\'annuaire. Les clients peuvent te contacter directement.';
+          successModal.querySelector('.success-icon').textContent = '⭐';
+          successModal.querySelector('.success-title').textContent = 'Tu es maintenant Pro !';
+          successModal.querySelector('.success-sub').textContent = 'Ton profil est visible dans l\'annuaire. Complète-le pour maximiser tes chances d\'être contacté.';
         }
+        successModal.querySelector('.btn-success').textContent = '✏️ Compléter mon profil';
+        successModal.querySelector('.btn-success').onclick = () => window.location = 'apijob-profil-edit.html';
       } else {
         // Ajout de jetons
         const newTokens = (currentUser.tokens || 0) + selectedJetons;
