@@ -1389,7 +1389,11 @@
   async function toggleMaintenance() {
     const newState = !maintenanceMode;
     try {
-      await db.from('site_config').update({ maintenance_mode: newState, updated_at: new Date().toISOString() }).eq('id', 1);
+      const { error } = await db.from('site_config').upsert(
+        { id: 1, maintenance_mode: newState, updated_at: new Date().toISOString() },
+        { onConflict: 'id' }
+      );
+      if (error) throw error;
       updateMaintenanceUI(newState);
     } catch(e) {
       alert('Erreur : ' + e.message);
