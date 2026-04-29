@@ -394,6 +394,49 @@
     <!-- ── DASHBOARD ── -->
     <div class="panel active" id="panel-dashboard">
 
+      <!-- BLOC LANCEMENT -->
+      <div style="display:flex;gap:1.2rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+
+        <!-- Interrupteur maintenance -->
+        <div style="flex:1;min-width:260px;background:var(--blanc);border-radius:16px;border:1.5px solid var(--border);padding:1.2rem 1.5rem;">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.88rem;margin-bottom:0.6rem;">Mode du site</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+            <div style="font-size:0.82rem;color:var(--muted);" id="maintenance-status-text">Chargement…</div>
+            <div style="position:relative;width:52px;height:26px;cursor:pointer;flex-shrink:0;" onclick="toggleMaintenance()">
+              <div id="maintenance-track" style="position:absolute;inset:0;border-radius:26px;background:#ccc;transition:background 0.3s;"></div>
+              <div id="maintenance-knob" style="position:absolute;top:3px;left:3px;width:20px;height:20px;background:white;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.2);transition:transform 0.3s;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Offre lancement -->
+        <div style="flex:2;min-width:300px;background:var(--blanc);border-radius:16px;border:1.5px solid var(--border);padding:1.2rem 1.5rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.8rem;">
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.88rem;">🚀 Offre lancement</div>
+            <div style="font-size:0.78rem;color:var(--muted);"><span id="lancement-nb-pros">…</span> pro(s) inscrits</div>
+          </div>
+          <div style="display:flex;gap:0.6rem;flex-wrap:wrap;">
+            <div id="palier-1" style="flex:1;min-width:90px;padding:0.6rem 0.7rem;border-radius:10px;text-align:center;border:1.5px solid rgba(26,122,74,0.2);background:rgba(26,122,74,0.06);">
+              <div style="font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.15rem;">0–24 pros</div>
+              <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.92rem;color:#1A7A4A;">1 an offert</div>
+              <div style="font-size:0.68rem;color:var(--muted);margin-top:0.1rem;" id="palier-1-reste"></div>
+            </div>
+            <div id="palier-2" style="flex:1;min-width:90px;padding:0.6rem 0.7rem;border-radius:10px;text-align:center;border:1.5px solid rgba(240,165,0,0.2);background:rgba(240,165,0,0.06);">
+              <div style="font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.15rem;">25–99 pros</div>
+              <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.92rem;color:#B07800;">6 mois offerts</div>
+              <div style="font-size:0.68rem;color:var(--muted);margin-top:0.1rem;" id="palier-2-reste"></div>
+            </div>
+            <div id="palier-3" style="flex:1;min-width:90px;padding:0.6rem 0.7rem;border-radius:10px;text-align:center;border:1.5px solid rgba(204,10,43,0.15);background:rgba(204,10,43,0.04);">
+              <div style="font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.15rem;">100–299 pros</div>
+              <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.92rem;color:var(--rouge);">3 mois offerts</div>
+              <div style="font-size:0.68rem;color:var(--muted);margin-top:0.1rem;" id="palier-3-reste"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <!-- FIN BLOC LANCEMENT -->
+
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-icon">👥</div>
@@ -1050,6 +1093,34 @@
     set('stat-nb-pros',         nbPros     || 0);
     set('stat-nb-annonces',     nbAnnonceMois || 0);
 
+    // ── Bloc lancement ──
+    const nbProsActuels = nbPros || 0;
+    set('lancement-nb-pros', nbProsActuels);
+
+    // Paliers
+    const p1Reste = Math.max(0, 25  - nbProsActuels);
+    const p2Reste = Math.max(0, 100 - nbProsActuels);
+    const p3Reste = Math.max(0, 300 - nbProsActuels);
+    const p1El = document.getElementById('palier-1-reste');
+    const p2El = document.getElementById('palier-2-reste');
+    const p3El = document.getElementById('palier-3-reste');
+    if (p1El) p1El.textContent = nbProsActuels < 25  ? `${p1Reste} place${p1Reste > 1 ? 's' : ''} restante${p1Reste > 1 ? 's' : ''}` : '✓ Terminé';
+    if (p2El) p2El.textContent = nbProsActuels < 100 ? (nbProsActuels >= 25 ? `${p2Reste} restante${p2Reste > 1 ? 's' : ''}` : 'Pas encore actif') : '✓ Terminé';
+    if (p3El) p3El.textContent = nbProsActuels < 300 ? (nbProsActuels >= 100 ? `${p3Reste} restante${p3Reste > 1 ? 's' : ''}` : 'Pas encore actif') : '✓ Terminé';
+
+    // Mettre en avant le palier actif
+    const palierActif = nbProsActuels < 25 ? 1 : nbProsActuels < 100 ? 2 : nbProsActuels < 300 ? 3 : 0;
+    if (palierActif > 0) {
+      const activeEl = document.getElementById(`palier-${palierActif}`);
+      if (activeEl) activeEl.style.boxShadow = '0 0 0 2px currentColor';
+    }
+
+    // État maintenance
+    try {
+      const { data: cfg } = await db.from('site_config').select('maintenance_mode').eq('id', 1).single();
+      updateMaintenanceUI(cfg?.maintenance_mode || false);
+    } catch(e) { /* table pas encore créée */ }
+
     // Badge signalements sidebar
     const badgeSig = document.getElementById('badge-signal-count');
     if (badgeSig) { badgeSig.textContent = nbSignalements || 0; badgeSig.style.display = nbSignalements > 0 ? '' : 'none'; }
@@ -1292,6 +1363,31 @@
     if (error) { btn.disabled = false; alert('Erreur : ' + error.message); return; }
     btn.closest('tr').style.opacity = '0.3';
     setTimeout(() => btn.closest('tr').remove(), 500);
+  }
+
+  // ── Mode maintenance ──
+  let maintenanceMode = false;
+
+  function updateMaintenanceUI(isOn) {
+    maintenanceMode = isOn;
+    const track  = document.getElementById('maintenance-track');
+    const knob   = document.getElementById('maintenance-knob');
+    const status = document.getElementById('maintenance-status-text');
+    if (track) track.style.background = isOn ? '#CC0A2B' : '#ccc';
+    if (knob)  knob.style.transform   = isOn ? 'translateX(26px)' : 'translateX(0)';
+    if (status) status.textContent    = isOn
+      ? '🔴 Site en maintenance — visiteurs redirigés'
+      : '🟢 Site en ligne — accessible à tous';
+  }
+
+  async function toggleMaintenance() {
+    const newState = !maintenanceMode;
+    try {
+      await db.from('site_config').update({ maintenance_mode: newState, updated_at: new Date().toISOString() }).eq('id', 1);
+      updateMaintenanceUI(newState);
+    } catch(e) {
+      alert('Erreur : ' + e.message);
+    }
   }
 
   // ── Charger le badge au démarrage ──

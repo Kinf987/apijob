@@ -658,11 +658,40 @@
       let nouveauSolde;
 
       if (isPro) {
+        // Compter les pros actuels pour déterminer le palier lancement
+        const { count: nbProsActuels } = await db.from('profiles')
+          .select('id', { count: 'exact', head: true })
+          .eq('is_pro', true).eq('role', 'prestataire');
+
+        let offerMonths = 0;
+        let palierNum   = 0;
+        if (nbProsActuels < 25)       { offerMonths = 12; palierNum = 1; }
+        else if (nbProsActuels < 100) { offerMonths = 6;  palierNum = 2; }
+        else if (nbProsActuels < 300) { offerMonths = 3;  palierNum = 3; }
+
+        const metaUpdate = {
+          ...(currentUser.metadata || {}),
+          pro_offer_months: offerMonths || null,
+          pro_offer_palier: palierNum   || null,
+        };
+
         // Passage au statut Pro
-        await db.from('profiles').update({ is_pro: true }).eq('id', currentUser.id);
+        await db.from('profiles').update({ is_pro: true, metadata: metaUpdate }).eq('id', currentUser.id);
         await db.from('transactions_jetons').insert({ user_id: currentUser.id, type: 'achat_pro', quantite: 0 });
         nouveauSolde = '∞';
         currentUser.is_pro = true;
+        currentUser.metadata = metaUpdate;
+
+        // Adapter le message succès selon l'offre
+        if (offerMonths > 0) {
+          const offerLabel = offerMonths === 12 ? '1 an offert 🎁' : offerMonths === 6 ? '6 mois offerts 🎁' : '3 mois offerts 🎁';
+          document.getElementById('success-overlay').querySelector('.success-title').textContent = 'Bienvenue dans l\'offre lancement !';
+          document.getElementById('success-overlay').querySelector('.success-sub').textContent =
+            `Tu fais partie des premiers prestataires Pro — ${offerLabel} dans le cadre de notre offre lancement.`;
+        } else {
+          document.getElementById('success-overlay').querySelector('.success-title').textContent = 'Tu es maintenant Pro !';
+          document.getElementById('success-overlay').querySelector('.success-sub').textContent = 'Ton profil est visible dans l\'annuaire. Les clients peuvent te contacter directement.';
+        }
       } else {
         // Ajout de jetons
         const newTokens = (currentUser.tokens || 0) + selectedJetons;

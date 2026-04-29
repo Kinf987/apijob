@@ -66,6 +66,29 @@ async function signOut() {
 }
 
 // ============================================================
+// MAINTENANCE
+// ============================================================
+
+async function checkMaintenance() {
+  try {
+    const { data } = await db.from('site_config').select('maintenance_mode').eq('id', 1).single();
+    if (!data?.maintenance_mode) return;
+    // Admin connecté → bypass
+    const session = await getSession();
+    if (session) {
+      const { data: profile } = await db.from('profiles').select('role').eq('id', session.user.id).single();
+      if (profile?.role === 'admin') return;
+    }
+    if (!window.location.pathname.includes('apijob-maintenance')) {
+      window.location.replace('apijob-maintenance.html');
+    }
+  } catch(e) {
+    // Table pas encore créée ou erreur réseau → on ne bloque pas
+    console.warn('checkMaintenance:', e);
+  }
+}
+
+// ============================================================
 // NOTIFICATIONS
 // ============================================================
 
