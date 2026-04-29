@@ -573,7 +573,7 @@
         options: {
           emailRedirectTo: 'https://apijob.netlify.app/apijob-bienvenue.html',
           data: { role, prenom, nom, telephone: tel ? '+689' + tel : null, numero_tahiti,
-                  status_verification: role === 'prestataire' ? 'en_attente' : 'non_soumis' }
+                  status_verification: 'non_soumis' }
         }
       });
 

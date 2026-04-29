@@ -776,7 +776,7 @@
       // Bandeau vérification
       const sv = currentUser.status_verification;
       const bandeauEl = document.getElementById('bandeau-verif');
-      if (bandeauEl && sv && sv !== 'non_soumis' && sv !== 'valide') {
+      if (bandeauEl && sv && sv !== 'non_soumis' && sv !== 'valide' && currentUser.is_pro) {
         if (sv === 'en_attente') {
           bandeauEl.style.cssText = 'display:flex;align-items:center;gap:0.75rem;border-radius:14px;padding:0.9rem 1.2rem;margin-bottom:1.2rem;font-size:0.85rem;line-height:1.5;background:rgba(240,165,0,0.1);border:1.5px solid rgba(240,165,0,0.3);color:#8A6000;';
           bandeauEl.innerHTML = '<span style="font-size:1.4rem;flex-shrink:0;">⏳</span><div><strong>Profil en cours de vérification</strong><br>Notre équipe vérifie ton dossier sous <strong>72h</strong>. Tu peux déjà explorer les annonces, mais ton profil ne sera visible dans l\'annuaire qu\'après validation.</div>';
