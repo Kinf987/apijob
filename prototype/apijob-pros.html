@@ -738,12 +738,14 @@ function buildProCard(profile, avgNote, nbAvis) {
   const grid = document.getElementById('prosGrid');
   grid.innerHTML = '';
 
-  // Trier par note décroissante
+  // Trier par note pondérée décroissante : (nbAvis × avg) / (nbAvis + 5)
+  // Évite qu'un prestataire avec 1 seul 5★ passe devant un 4.8★ sur 40 avis
   const prosWithNote = pros.map(p => {
-    const notes = notesMap[p.id] || [];
-    const avg   = notes.length ? notes.reduce((s,n) => s+n, 0) / notes.length : 0;
-    return { profile: p, avg, nbAvis: notes.length };
-  }).sort((a, b) => b.avg - a.avg);
+    const notes  = notesMap[p.id] || [];
+    const avg    = notes.length ? notes.reduce((s,n) => s+n, 0) / notes.length : 0;
+    const score  = notes.length ? (notes.length * avg) / (notes.length + 5) : 0;
+    return { profile: p, avg, nbAvis: notes.length, score };
+  }).sort((a, b) => b.score - a.score);
 
   prosWithNote.forEach(({ profile, avg, nbAvis }) => {
     grid.appendChild(buildProCard(profile, avg || null, nbAvis));
