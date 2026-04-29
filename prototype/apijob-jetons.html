@@ -674,6 +674,7 @@
           pro_offer_months: offerMonths || null,
           pro_offer_palier: palierNum   || null,
         };
+        if (palierNum === 1) metaUpdate.fondateur = true;
 
         // Passage au statut Pro
         await db.from('profiles').update({ is_pro: true, metadata: metaUpdate }).eq('id', currentUser.id);

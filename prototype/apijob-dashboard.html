@@ -737,7 +737,8 @@
     // Greeter & avatar
     const prenom = currentUser.prenom || 'Ia ora na';
     const nom    = currentUser.nom || '';
-    const initiales = ((currentUser.prenom||'?')[0] + (currentUser.nom||'?')[0]).toUpperCase();
+    const initiales = (((currentUser.prenom||'')[0]||'') + ((currentUser.nom||'')[0]||'')).toUpperCase()
+      || (currentUser.email?.[0] || '?').toUpperCase();
 
     document.querySelectorAll('.dash-greeting span').forEach(el => el.textContent = prenom);
 
@@ -947,7 +948,8 @@
 
     } catch(e) { console.error('Dashboard init error:', e); }
   })().finally(() => {
-    document.documentElement.style.visibility = 'visible';
+    // N'afficher que si l'auth a réussi — évite le flash avant redirect
+    if (currentUser) document.documentElement.style.visibility = 'visible';
   });
 
   window.addEventListener('error', () => { document.documentElement.style.visibility = 'visible'; });

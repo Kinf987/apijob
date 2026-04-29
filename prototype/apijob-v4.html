@@ -616,12 +616,20 @@
     const btn = document.querySelector('.nav-cta');
     const session = await getSession();
     if (!session) {
-      if (btn) btn.style.visibility = 'visible';
+      if (btn) {
+        btn.href = 'apijob-auth.html?tab=connexion';
+        btn.textContent = 'Se connecter';
+        btn.style.visibility = 'visible';
+      }
       return;
     }
     const user = await getCurrentUser();
     if (!user) {
-      if (btn) btn.style.visibility = 'visible';
+      if (btn) {
+        btn.href = 'apijob-auth.html?tab=connexion';
+        btn.textContent = 'Se connecter';
+        btn.style.visibility = 'visible';
+      }
       return;
     }
     // Connecté : rediriger les boutons split directement vers le dashboard
@@ -632,7 +640,8 @@
     const navPrestaLink = document.getElementById('nav-presta-link');
     if (navPrestaLink) navPrestaLink.style.display = 'none'; // déjà connecté, inutile
 
-    const initiales = (((user.prenom||'')[0]||'') + ((user.nom||'')[0]||'')).toUpperCase() || '?';
+    const initiales = (((user.prenom||'')[0]||'') + ((user.nom||'')[0]||'')).toUpperCase()
+      || (user.email?.[0] || '?').toUpperCase();
     if (!btn) return;
     btn.href = 'apijob-dashboard.html';
     btn.textContent = '';

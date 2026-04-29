@@ -770,13 +770,16 @@
         : `<span class="badge badge-actif">✅ Actif</span>`;
       if (statut === 'suspendu') badge = `<span class="badge badge-suspendu">⏸ Suspendu</span>`;
       if (statut === 'banni')    badge = `<span class="badge badge-banni">🚫 Banni</span>`;
+      const fondBadge = u.metadata?.fondateur
+        ? `<span class="badge" style="background:linear-gradient(135deg,#FFD700,#FFA500);color:#4A2800;margin-left:0.3rem;font-size:0.68rem;">🥇 Fondateur</span>`
+        : '';
       const date = new Date(u.created_at).toLocaleDateString('fr-FR');
       return `<tr>
         <td><div class="user-cell"><div class="user-avatar-sm">${ini}</div><div><div class="user-name">${escAdmin(nom)}</div><div class="user-email">${escAdmin(u.email || '')} · ${roleStr}</div></div></div></td>
         <td>${date}</td>
         <td>${u.role === 'prestataire' ? (u.tokens || 0) + ' 🪙' : '—'}</td>
         <td>${u.role === 'prestataire' ? `<span class="badge badge-pending" style="font-size:0.68rem;">${u.status_verification || '—'}</span>` : '—'}</td>
-        <td>${badge}</td>
+        <td>${badge}${fondBadge}</td>
         <td><div class="action-btns">
           <button class="btn-action btn-voir" onclick="location.href='apijob-profil-public.html?id=${u.id}'">Voir</button>
           <button class="btn-action btn-suspendre" onclick="actionUser('${u.id}','suspendu', this)">Suspendre</button>
@@ -1067,7 +1070,7 @@
       db.from('missions').select('id', { count: 'exact', head: true }).gte('created_at', startOfMonth),
       db.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', startOfMonth),
       db.from('notifications').select('id', { count: 'exact', head: true }).eq('type', 'signalement').eq('lu', false),
-      db.from('profiles').select('id, prenom, nom, email, role, is_pro, tokens, created_at, status_verification').order('created_at', { ascending: false }).limit(10),
+      db.from('profiles').select('id, prenom, nom, email, role, is_pro, tokens, created_at, status_verification, metadata').order('created_at', { ascending: false }).limit(10),
       db.from('annonces').select('id, titre, categorie, localisation, statut, created_at, client:profiles!client_id(prenom, nom)').order('created_at', { ascending: false }).limit(10),
       db.from('transactions_jetons').select('id, type, quantite, created_at, user:profiles!user_id(prenom, nom)').order('created_at', { ascending: false }).limit(15),
       db.from('evaluations').select('note_globale'),
@@ -1146,11 +1149,14 @@
         const badge = u.is_pro
           ? `<span class="badge badge-pro">⭐ Pro</span>`
           : `<span class="badge badge-actif">✅ ${u.role === 'prestataire' ? 'Prestataire' : 'Client'}</span>`;
+        const fondBadge = u.metadata?.fondateur
+          ? `<span class="badge" style="background:linear-gradient(135deg,#FFD700,#FFA500);color:#4A2800;margin-left:0.3rem;">🥇 Fondateur</span>`
+          : '';
         const date = new Date(u.created_at).toLocaleString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
         return `<tr>
           <td><div class="user-cell"><div class="user-avatar-sm">${ini}</div><div><div class="user-name">${escAdmin(nom)}</div><div class="user-email">${escAdmin(u.email || '')}</div></div></div></td>
           <td>${date}</td>
-          <td>${badge}</td>
+          <td>${badge}${fondBadge}</td>
           <td><div class="action-btns"><button class="btn-action btn-voir" onclick="location.href='apijob-profil-public.html?id=${u.id}'">Voir</button></div></td>
         </tr>`;
       }).join('');
