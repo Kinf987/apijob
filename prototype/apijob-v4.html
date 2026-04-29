@@ -494,6 +494,10 @@
     footer { flex-direction: column; text-align: center; }
     .nav-presta-btn { font-size: 0.78rem; padding: 0.4rem 0.8rem; }
   }
+  @media (max-width: 480px) {
+    .nav-links { display: none; }
+    .mobile-presta-link { display: block; }
+  }
 </style>
 </head>
 <body>
@@ -529,6 +533,8 @@
     </a>
 
   </div>
+
+  <a href="apijob-auth.html?role=prestataire" class="mobile-presta-link" style="display:none; margin-top:1rem; font-size:0.85rem; color:var(--muted); text-decoration:none; font-weight:500;">🛠️ Tu es prestataire ? <span style="color:var(--rouge); font-weight:700;">Par ici →</span></a>
 
   <!-- BLOC NOS PROS -->
   <div class="pros-promo-wrap">
