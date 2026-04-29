@@ -906,6 +906,12 @@
     currentUser = await requireAuth('apijob-auth.html?role=prestataire');
     if (!currentUser) return;
 
+    // Clients redirigés vers leur dashboard
+    if (currentUser.role !== 'prestataire') {
+      window.location.replace('apijob-dashboard.html');
+      return;
+    }
+
     // Révéler l'historique uniquement après auth confirmée
     const historiqueEl = document.getElementById('historique');
     if (historiqueEl) historiqueEl.style.display = '';

@@ -367,18 +367,20 @@
     // Mettre à jour la proposition
     await db.from('propositions').update({ statut: 'acceptee' }).eq('id', propositionId);
 
-    // Débiter 1 jeton au prestataire
+    // Débiter 1 jeton au prestataire (sauf Pro)
     const presta = proposition.prestataire || {};
-    const newTokens = Math.max(0, (presta.tokens || 0) - 1);
-    await Promise.all([
-      db.from('profiles').update({ tokens: newTokens }).eq('id', proposition.prestataire_id),
-      db.from('transactions_jetons').insert({
-        user_id: proposition.prestataire_id,
-        type: 'debit_mission',
-        quantite: -1,
-        mission_id: mission.id
-      })
-    ]);
+    if (!presta.is_pro) {
+      const newTokens = Math.max(0, (presta.tokens || 0) - 1);
+      await Promise.all([
+        db.from('profiles').update({ tokens: newTokens }).eq('id', proposition.prestataire_id),
+        db.from('transactions_jetons').insert({
+          user_id: proposition.prestataire_id,
+          type: 'debit_mission',
+          quantite: -1,
+          mission_id: mission.id
+        })
+      ]);
+    }
 
     // Notifier le prestataire
     const nomClient = `${currentUser.prenom || ''} ${currentUser.nom || ''}`.trim() || 'Le client';
@@ -413,16 +415,29 @@
     currentUser = await requireAuth();
     if (!currentUser) return;
 
+    // Seuls les clients peuvent accéder à cette page
+    if (currentUser.role !== 'client') {
+      window.location.replace('apijob-dashboard.html');
+      return;
+    }
+
     const params = new URLSearchParams(window.location.search);
     propositionId = params.get('proposition');
     if (!propositionId) return; // mode démo
 
     const { data: prop, error } = await db.from('propositions')
-      .select('*, prestataire:profiles!prestataire_id(id, prenom, nom, tokens, is_pro, is_verified), annonce:annonces!annonce_id(id, titre, categorie, localisation, created_at)')
+      .select('*, prestataire:profiles!prestataire_id(id, prenom, nom, tokens, is_pro, is_verified), annonce:annonces!annonce_id(id, titre, categorie, localisation, created_at, client_id)')
       .eq('id', propositionId)
       .single();
 
-    if (error || !prop) return;
+    if (error || !prop) { window.location.replace('apijob-dashboard.html'); return; }
+
+    // Vérifier que l'annonce appartient bien à ce client
+    if (prop.annonce?.client_id !== currentUser.id) {
+      window.location.replace('apijob-dashboard.html');
+      return;
+    }
+
     proposition = prop;
 
     // Stats prestataire

@@ -34,6 +34,16 @@ async function getCurrentUser() {
     .eq('id', session.user.id)
     .single();
   if (error) { console.error('Profil introuvable:', error); return null; }
+
+  // Vérifier expiration Pro à chaque chargement
+  if (profile.is_pro && profile.metadata?.pro_cancel_scheduled) {
+    const expiry = new Date(profile.metadata.pro_cancel_scheduled);
+    if (expiry < new Date()) {
+      await db.from('profiles').update({ is_pro: false }).eq('id', session.user.id);
+      profile.is_pro = false;
+    }
+  }
+
   return profile;
 }
 

@@ -692,6 +692,13 @@
     btns.innerHTML = '<span style="font-size:0.82rem;color:var(--muted);">Traitement…</span>';
 
     try {
+      // Vérifier que la proposition n'est pas déjà traitée (anti double-débit)
+      const { data: propCheck } = await db.from('propositions').select('statut').eq('id', propositionId).single();
+      if (propCheck?.statut !== 'en_attente') {
+        btns.innerHTML = '<span style="color:var(--vert);font-weight:600;">✅ Déjà acceptée</span>';
+        return;
+      }
+
       await db.from('propositions').update({ statut: 'acceptee' }).eq('id', propositionId);
       await db.from('missions').update({ statut: 'en_cours' }).eq('id', currentMission.id);
 
