@@ -112,6 +112,46 @@
   }
   .btn-contacter:hover { background:var(--rouge-dark); transform:translateY(-1px); box-shadow:0 6px 20px rgba(204,10,43,0.3); }
 
+  /* GALERIE PORTFOLIO */
+  .portfolio-grid {
+    display:grid; grid-template-columns:repeat(4,1fr); gap:0.5rem;
+  }
+  @media(max-width:480px) { .portfolio-grid { grid-template-columns:repeat(3,1fr); } }
+  .portfolio-thumb {
+    aspect-ratio:1; border-radius:10px; overflow:hidden;
+    background:var(--gris2); cursor:pointer;
+    transition:transform 0.2s, box-shadow 0.2s;
+  }
+  .portfolio-thumb:hover { transform:scale(1.03); box-shadow:0 4px 14px rgba(0,0,0,0.12); }
+  .portfolio-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+
+  /* LIGHTBOX */
+  .lightbox {
+    display:none; position:fixed; inset:0; z-index:1000;
+    background:rgba(0,0,0,0.88); align-items:center; justify-content:center;
+    padding:1.5rem;
+  }
+  .lightbox.open { display:flex; }
+  .lightbox img {
+    max-width:100%; max-height:90vh;
+    border-radius:12px; object-fit:contain;
+    box-shadow:0 8px 40px rgba(0,0,0,0.5);
+  }
+  .lightbox-close {
+    position:absolute; top:1rem; right:1rem;
+    background:rgba(255,255,255,0.15); border:none; color:white;
+    width:38px; height:38px; border-radius:50%;
+    font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .lightbox-nav {
+    position:absolute; top:50%; transform:translateY(-50%);
+    background:rgba(255,255,255,0.15); border:none; color:white;
+    width:42px; height:42px; border-radius:50%;
+    font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .lightbox-prev { left:1rem; }
+  .lightbox-next { right:1rem; }
+
   /* SECTIONS */
   .section-card {
     background:var(--blanc); border-radius:20px;
@@ -289,10 +329,24 @@
     <p class="profil-desc"></p>
   </div>
 
+  <!-- GALERIE RÉALISATIONS -->
+  <div class="section-card" id="section-portfolio" style="display:none;">
+    <div class="section-card-title">🖼️ Réalisations</div>
+    <div class="portfolio-grid" id="portfolio-grid"></div>
+  </div>
+
   <!-- ZONE D'INTERVENTION -->
   <div class="section-card">
     <div class="section-card-title">📍 Zone d'intervention</div>
     <div class="zone-tags"></div>
+  </div>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox" onclick="fermerLightbox(event)">
+    <button class="lightbox-close" onclick="fermerLightbox()">✕</button>
+    <button class="lightbox-nav lightbox-prev" onclick="navLightbox(-1, event)">‹</button>
+    <img id="lightbox-img" src="" alt="">
+    <button class="lightbox-nav lightbox-next" onclick="navLightbox(1, event)">›</button>
   </div>
 
   <!-- AVIS -->
@@ -447,6 +501,20 @@
       descEl.innerHTML = profile.bio.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
     }
 
+    // --- Portfolio ---
+    const portfolio = profile.metadata?.portfolio;
+    if (Array.isArray(portfolio) && portfolio.length > 0) {
+      const section = document.getElementById('section-portfolio');
+      const grid    = document.getElementById('portfolio-grid');
+      if (section && grid) {
+        grid.innerHTML = portfolio.map((url, i) =>
+          `<div class="portfolio-thumb" onclick="ouvrirLightbox(${i})"><img src="${url}" loading="lazy" alt="Réalisation ${i+1}"></div>`
+        ).join('');
+        section.style.display = '';
+        window._portfolioUrls = portfolio;
+      }
+    }
+
     // --- Zones d'intervention ---
     const zoneTagsEl = document.querySelector('.zone-tags');
     if (zoneTagsEl) {
@@ -520,6 +588,34 @@
   window.addEventListener('pageshow', (e) => { if (e.persisted) { document.documentElement.style.visibility = 'hidden'; init().finally(() => { document.documentElement.style.visibility = 'visible'; }); } });
   window.addEventListener('error', () => { document.documentElement.style.visibility = 'visible'; });
   window.addEventListener('unhandledrejection', () => { document.documentElement.style.visibility = 'visible'; });
+
+  // ── LIGHTBOX ──
+  let _lbIndex = 0;
+  function ouvrirLightbox(i) {
+    const urls = window._portfolioUrls;
+    if (!urls) return;
+    _lbIndex = i;
+    document.getElementById('lightbox-img').src = urls[i];
+    document.getElementById('lightbox').classList.add('open');
+  }
+  function fermerLightbox(e) {
+    if (e && e.target !== document.getElementById('lightbox') && !e.currentTarget.classList?.contains('lightbox-close')) return;
+    document.getElementById('lightbox').classList.remove('open');
+  }
+  function navLightbox(dir, e) {
+    e?.stopPropagation();
+    const urls = window._portfolioUrls;
+    if (!urls) return;
+    _lbIndex = (_lbIndex + dir + urls.length) % urls.length;
+    document.getElementById('lightbox-img').src = urls[_lbIndex];
+  }
+  document.addEventListener('keydown', e => {
+    const lb = document.getElementById('lightbox');
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') lb.classList.remove('open');
+    if (e.key === 'ArrowLeft')  navLightbox(-1, null);
+    if (e.key === 'ArrowRight') navLightbox(1, null);
+  });
 </script>
 
 </body>
