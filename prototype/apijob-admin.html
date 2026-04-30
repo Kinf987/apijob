@@ -1278,14 +1278,24 @@
 
   async function approuverVerif(userId, btn) {
     btn.disabled = true; btn.textContent = '…';
-    const { error } = await db.from('profiles')
-      .update({ status_verification: 'valide', is_verified: true })
+    const { error, count } = await db.from('profiles')
+      .update({ status_verification: 'valide' }, { count: 'exact' })
       .eq('id', userId);
-    if (error) { btn.disabled = false; btn.textContent = '✅ Approuver'; alert('Erreur : ' + error.message); return; }
+    if (error) {
+      btn.disabled = false; btn.textContent = '✅ Approuver';
+      alert('Erreur : ' + error.message);
+      return;
+    }
+    if (count === 0) {
+      btn.disabled = false; btn.textContent = '✅ Approuver';
+      alert('Mise à jour bloquée (RLS). Vérifiez les politiques Supabase sur la table profiles.');
+      return;
+    }
     await createNotification(userId, 'profil_verifie', '✅ Profil validé !', 'Ton profil a été vérifié et validé. Tu es maintenant visible dans l\'annuaire API JOB. Ia ora na ! 🌺');
-    btn.closest('div[style*="border-bottom"]').style.opacity = '0.4';
+    const card = btn.closest('div[style*="border-bottom"]');
+    if (card) card.style.opacity = '0.4';
     btn.textContent = '✅ Validé';
-    chargerVerifications();
+    setTimeout(() => chargerVerifications(), 800);
   }
 
   function ouvrirModalRejet(userId) {
