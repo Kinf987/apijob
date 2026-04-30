@@ -363,6 +363,10 @@
       <span class="nav-icon">💰</span>
       <span>Revenus & jetons</span>
     </button>
+    <button class="nav-item" onclick="showPanel('statistiques')">
+      <span class="nav-icon">📈</span>
+      <span>Statistiques</span>
+    </button>
   </nav>
 
   <div class="sidebar-footer">
@@ -677,6 +681,26 @@
         </div>
       </div>
 
+      <!-- RÉCAPITULATIF MENSUEL -->
+      <div class="table-card" style="margin-bottom:1.5rem;">
+        <div class="table-header">
+          <div class="table-title">📊 Récapitulatif mensuel</div>
+          <button onclick="exporterComptabilite()" style="padding:0.5rem 1rem;background:var(--vert);color:white;border:none;border-radius:50px;font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:0.4rem;transition:all 0.2s;" onmouseover="this.style.background='#156038'" onmouseout="this.style.background='var(--vert)'">📥 Export CSV comptabilité</button>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Mois</th>
+            <th>Abonnements Pro</th>
+            <th>Achats jetons</th>
+            <th>Nb transactions</th>
+            <th>Total XPF</th>
+          </tr></thead>
+          <tbody id="tbody-compta">
+            <tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--muted);">Chargement…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
       <div class="table-card">
         <div class="table-header">
           <div class="table-title">📋 Dernières transactions</div>
@@ -696,10 +720,56 @@
 
     </div>
 
+    <!-- ── STATISTIQUES ── -->
+    <div class="panel" id="panel-statistiques">
+
+      <!-- Résumé rapide -->
+      <div class="stats-grid" style="margin-bottom:1.5rem;" id="stats-inscriptions-grid">
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-num" id="si-total">…</div>
+          <div class="stat-label">Total inscrits</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔧</div>
+          <div class="stat-num or" id="si-presta">…</div>
+          <div class="stat-label">Prestataires</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-num vert" id="si-pros">…</div>
+          <div class="stat-label">Prestataires Pro</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🙋</div>
+          <div class="stat-num rouge" id="si-clients">…</div>
+          <div class="stat-label">Clients</div>
+        </div>
+      </div>
+
+      <!-- Graphique -->
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">📈 Évolution mensuelle des inscriptions</div>
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <select id="chart-mode" onchange="chargerStatistiques()" style="font-size:0.78rem;padding:0.3rem 0.6rem;border:1.5px solid var(--border);border-radius:8px;background:var(--blanc);">
+              <option value="cumul">Cumulé</option>
+              <option value="mensuel">Par mois</option>
+            </select>
+          </div>
+        </div>
+        <div style="padding:1.5rem 1.5rem 1rem;">
+          <canvas id="chart-inscriptions" height="110"></canvas>
+        </div>
+      </div>
+
+    </div>
+
   </div><!-- /content -->
 </div><!-- /main -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="supabase-config.js"></script>
 <script>
   function showPanel(name) {
@@ -716,7 +786,8 @@
       annonces:      '📢 Annonces',
       messagerie:    '💬 Messagerie',
       avis:          '⭐ Avis',
-      revenus:       '💰 Revenus & Jetons'
+      revenus:       '💰 Revenus & Jetons',
+      statistiques:  '📈 Statistiques'
     };
     const el = document.getElementById('topbar-title');
     if (el) el.textContent = titles[name] || name;
@@ -726,6 +797,8 @@
     if (name === 'avis')          chargerAvis();
     if (name === 'annonces')      chargerAnnonces();
     if (name === 'utilisateurs')  chargerUtilisateurs();
+    if (name === 'revenus')       chargerComptabilite();
+    if (name === 'statistiques')  chargerStatistiques();
   }
 
   // ── UTILISATEURS ──
@@ -1162,6 +1235,9 @@
       }).join('');
     }
 
+    // Comptabilité mensuelle chargée au démarrage du panel revenus
+    chargerComptabilite();
+
     // Annonces et utilisateurs chargés via leurs fonctions dédiées au clic de nav
 
     // ── Panel revenus — transactions ──
@@ -1408,6 +1484,177 @@
     } catch(e) {
       alert('Erreur : ' + e.message);
     }
+  }
+
+  // ── STATISTIQUES INSCRIPTIONS ──
+  let _chartInscriptions = null;
+
+  async function chargerStatistiques() {
+    const { data: profiles } = await db.from('profiles')
+      .select('created_at, role, is_pro')
+      .neq('role', 'admin')
+      .order('created_at', { ascending: true });
+
+    if (!profiles || !profiles.length) return;
+
+    // Totaux globaux
+    const total   = profiles.length;
+    const prestas = profiles.filter(p => p.role === 'prestataire').length;
+    const pros    = profiles.filter(p => p.role === 'prestataire' && p.is_pro).length;
+    const clients = profiles.filter(p => p.role === 'client').length;
+
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    set('si-total', total); set('si-presta', prestas); set('si-pros', pros); set('si-clients', clients);
+
+    // Grouper par mois
+    const months = {};
+    profiles.forEach(p => {
+      const d   = new Date(p.created_at);
+      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+      if (!months[key]) months[key] = { total:0, prestas:0, pros:0, clients:0 };
+      months[key].total++;
+      if (p.role === 'prestataire')            months[key].prestas++;
+      if (p.role === 'prestataire' && p.is_pro) months[key].pros++;
+      if (p.role === 'client')                  months[key].clients++;
+    });
+
+    const sortedKeys = Object.keys(months).sort();
+    const labels = sortedKeys.map(k => {
+      const [y, m] = k.split('-');
+      return new Date(y, m-1).toLocaleDateString('fr-FR', { month:'short', year:'2-digit' });
+    });
+
+    const mode = document.getElementById('chart-mode')?.value || 'cumul';
+    let dTotal = [], dPrestas = [], dPros = [], dClients = [];
+
+    if (mode === 'cumul') {
+      let cT=0, cP=0, cPr=0, cC=0;
+      sortedKeys.forEach(k => {
+        cT+=months[k].total; cP+=months[k].prestas; cPr+=months[k].pros; cC+=months[k].clients;
+        dTotal.push(cT); dPrestas.push(cP); dPros.push(cPr); dClients.push(cC);
+      });
+    } else {
+      sortedKeys.forEach(k => {
+        dTotal.push(months[k].total); dPrestas.push(months[k].prestas);
+        dPros.push(months[k].pros); dClients.push(months[k].clients);
+      });
+    }
+
+    const ctx = document.getElementById('chart-inscriptions')?.getContext('2d');
+    if (!ctx) return;
+    if (_chartInscriptions) _chartInscriptions.destroy();
+    _chartInscriptions = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label:'Total inscrits',      data:dTotal,   borderColor:'#CC0A2B', backgroundColor:'rgba(204,10,43,0.08)', tension:0.4, fill:true,  pointRadius:4, borderWidth:2 },
+          { label:'Prestataires',        data:dPrestas, borderColor:'#F0A500', backgroundColor:'transparent',           tension:0.4, fill:false, pointRadius:4, borderWidth:2 },
+          { label:'Pros (abonnés)',      data:dPros,    borderColor:'#1A7A4A', backgroundColor:'transparent',           tension:0.4, fill:false, pointRadius:4, borderWidth:2, borderDash:[6,3] },
+          { label:'Clients',             data:dClients, borderColor:'#1E7FC2', backgroundColor:'transparent',           tension:0.4, fill:false, pointRadius:4, borderWidth:2 },
+        ]
+      },
+      options: {
+        responsive:true,
+        interaction:{ mode:'index', intersect:false },
+        plugins:{
+          legend:{ position:'bottom', labels:{ font:{ family:'DM Sans', size:12 }, padding:16, usePointStyle:true } },
+          tooltip:{ callbacks:{ label: ctx => ` ${ctx.dataset.label} : ${ctx.parsed.y}` } }
+        },
+        scales:{
+          x:{ grid:{ color:'rgba(0,0,0,0.04)' }, ticks:{ font:{ family:'DM Sans' } } },
+          y:{ beginAtZero:true, ticks:{ precision:0, font:{ family:'DM Sans' } }, grid:{ color:'rgba(0,0,0,0.06)' } }
+        }
+      }
+    });
+  }
+
+  // ── COMPTABILITÉ MENSUELLE ──
+  async function chargerComptabilite() {
+    const tbody = document.getElementById('tbody-compta');
+    if (!tbody) return;
+
+    const { data: txs } = await db.from('transactions_jetons')
+      .select('id, type, quantite, created_at')
+      .in('type', ['achat', 'achat_pro'])
+      .order('created_at', { ascending: false });
+
+    if (!txs || !txs.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--muted);">Aucune transaction</td></tr>';
+      return;
+    }
+
+    // Prix par type
+    const montantTx = t => t.type === 'achat_pro' ? 2900 : (t.quantite === 3 ? 900 : 2000);
+
+    // Grouper par mois
+    const months = {};
+    txs.forEach(t => {
+      const d   = new Date(t.created_at);
+      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+      if (!months[key]) months[key] = { pros:0, achats:0, nb:0, total:0 };
+      const m = montantTx(t);
+      months[key].nb++;
+      months[key].total += m;
+      if (t.type === 'achat_pro') months[key].pros++;
+      else months[key].achats++;
+    });
+
+    const fmt = n => n.toLocaleString('fr-FR') + ' XPF';
+    tbody.innerHTML = Object.keys(months).sort().reverse().map(k => {
+      const [y, m] = k.split('-');
+      const label = new Date(y, m-1).toLocaleDateString('fr-FR', { month:'long', year:'numeric' });
+      const mo = months[k];
+      return `<tr>
+        <td style="font-weight:600;text-transform:capitalize;">${label}</td>
+        <td>${mo.pros} abonnement${mo.pros > 1 ? 's' : ''}</td>
+        <td>${mo.achats} achat${mo.achats > 1 ? 's' : ''}</td>
+        <td style="color:var(--muted);">${mo.nb}</td>
+        <td style="font-family:'Syne',sans-serif;font-weight:800;color:var(--rouge);">${fmt(mo.total)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── EXPORT CSV COMPTABILITÉ ──
+  async function exporterComptabilite() {
+    const btn = event.currentTarget;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '⏳ Export…'; btn.disabled = true;
+
+    const { data: txs } = await db.from('transactions_jetons')
+      .select('id, type, quantite, created_at, user:profiles!user_id(prenom, nom, email)')
+      .in('type', ['achat', 'achat_pro'])
+      .order('created_at', { ascending: false });
+
+    if (!txs || !txs.length) { alert('Aucune transaction à exporter.'); btn.innerHTML = orig; btn.disabled = false; return; }
+
+    const montantTx = t => t.type === 'achat_pro' ? 2900 : (t.quantite === 3 ? 900 : 2000);
+
+    const header = 'Date;Référence;Type;Description;Montant XPF;Prestataire;Email\n';
+    const rows = txs.map(t => {
+      const date  = new Date(t.created_at).toLocaleDateString('fr-FR');
+      const ref   = `FAC-${new Date(t.created_at).getFullYear()}-${(t.id||'').substring(0,8).toUpperCase()}`;
+      const desc  = t.type === 'achat_pro' ? 'Abonnement Pro mensuel — jetons illimités' : `Achat pack jetons — ${t.quantite} jetons`;
+      const xpf   = montantTx(t);
+      const user  = t.user || {};
+      const nom   = `${user.prenom||''} ${user.nom||''}`.trim() || '—';
+      return `${date};${ref};${t.type};${desc};${xpf};${nom};${user.email||''}`;
+    });
+
+    // Total ligne
+    const totalXPF = txs.reduce((s, t) => s + montantTx(t), 0);
+    rows.push(`;;;TOTAL;;${totalXPF} XPF;`);
+
+    const csv  = header + rows.join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type:'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = `comptabilite-apijob-${new Date().toISOString().slice(0,7)}.csv`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    btn.innerHTML = orig; btn.disabled = false;
   }
 
   // ── Charger le badge au démarrage ──
