@@ -321,6 +321,16 @@
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdW5jd2ZtY3pqcG53Y3Bmc2FoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0OTYyOTgsImV4cCI6MjA5MjA3MjI5OH0.UGOwjNd1oGD563dkOnTXQiAYNQr3dSb4lJjXB0OR97o';
   const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  // Si le mode maintenance est désactivé → retour à l'accueil
+  (async () => {
+    try {
+      const { data } = await db.from('site_config').select('maintenance_mode').eq('id', 1).single();
+      if (!data?.maintenance_mode) {
+        window.location.replace('apijob-v4.html');
+      }
+    } catch(e) { /* erreur réseau → on reste sur la page */ }
+  })();
+
   async function mettreAJourCompteurs() {
     try {
       const { count } = await db.from('transactions_jetons')
