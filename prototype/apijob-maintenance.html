@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>API JOB — Bientôt disponible</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
@@ -169,30 +170,39 @@
     font-family:'Syne',sans-serif;
     font-size:0.8rem; font-weight:800; color:#F0A500;
   }
-  .btn-offre {
-    display:block; width:100%;
-    padding:0.9rem;
-    background:#F0A500; color:#1A0008;
-    border:none; border-radius:50px;
-    font-family:'Syne',sans-serif;
-    font-size:0.88rem; font-weight:800;
-    cursor:pointer; text-align:center;
-    text-decoration:none;
-    transition:all 0.2s;
-    letter-spacing:-0.2px;
+  .palier-reste {
+    font-size:0.65rem; color:rgba(255,255,255,0.45);
+    margin-top:0.3rem; line-height:1.3;
+    min-height:0.9rem;
   }
-  .btn-offre:hover { background:#FFB800; transform:translateY(-1px); }
+  .palier.active {
+    border-color:rgba(240,165,0,0.55);
+    background:rgba(240,165,0,0.08);
+    box-shadow:0 0 0 1px rgba(240,165,0,0.2);
+  }
+  .palier.active .palier-reste { color:#F0A500; font-weight:700; }
+  .palier.complet { opacity:0.4; }
+  .palier.complet .palier-val { color:rgba(255,255,255,0.4); }
+
+  /* BADGE BIENTÔT */
+  .badge-bientot {
+    display:block; width:100%;
+    padding:0.85rem;
+    background:rgba(255,255,255,0.05);
+    border:1.5px solid rgba(255,255,255,0.1);
+    border-radius:50px;
+    font-family:'Syne',sans-serif;
+    font-size:0.82rem; font-weight:700;
+    color:rgba(255,255,255,0.4);
+    text-align:center;
+    letter-spacing:0.02em;
+  }
 
   /* FOOTER */
   .footer-note {
     font-size:0.75rem;
     color:rgba(255,255,255,0.22);
   }
-  .footer-note a {
-    color:rgba(255,255,255,0.35);
-    text-decoration:none;
-  }
-  .footer-note a:hover { color:rgba(255,255,255,0.6); }
 </style>
 </head>
 <body>
@@ -281,27 +291,89 @@
     <div class="offre-title">Tu es prestataire ?<br>Rejoins-nous <span>avant l'ouverture.</span></div>
     <p class="offre-desc">Les premiers inscrits bénéficient d'une offre exceptionnelle sur l'abonnement Pro. Plus tu t'inscris tôt, plus l'offre est avantageuse.</p>
     <div class="offre-paliers">
-      <div class="palier">
+      <div class="palier" id="palier-1">
         <div class="palier-label">0–25<br>premiers</div>
         <div class="palier-val">1 an offert</div>
+        <div class="palier-reste" id="reste-1">—</div>
       </div>
-      <div class="palier">
+      <div class="palier" id="palier-2">
         <div class="palier-label">25–100<br>suivants</div>
         <div class="palier-val">6 mois offerts</div>
+        <div class="palier-reste" id="reste-2">—</div>
       </div>
-      <div class="palier">
+      <div class="palier" id="palier-3">
         <div class="palier-label">100–300<br>inscrits</div>
         <div class="palier-val">3 mois offerts</div>
+        <div class="palier-reste" id="reste-3">—</div>
       </div>
     </div>
-    <a href="apijob-auth.html?role=prestataire" class="btn-offre">Réserver ma place avant le lancement →</a>
+    <div class="badge-bientot">🔒 Inscriptions ouvertes au lancement</div>
   </div>
 
   <div class="footer-note">
-    Tu es un client ? <a href="apijob-auth.html">Crée ton compte gratuitement →</a>
+    Ouverture prochaine — clients &amp; prestataires.
   </div>
 
 </div>
 
+<script>
+  const SUPABASE_URL     = 'https://douncwfmczjpnwcpfsah.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdW5jd2ZtY3pqcG53Y3Bmc2FoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0OTYyOTgsImV4cCI6MjA5MjA3MjI5OH0.UGOwjNd1oGD563dkOnTXQiAYNQr3dSb4lJjXB0OR97o';
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function mettreAJourCompteurs() {
+    try {
+      const { count } = await db.from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_pro', true)
+        .eq('role', 'prestataire');
+      const nb = count || 0;
+
+      // Palier 1 : 0–25
+      const p1 = document.getElementById('palier-1');
+      const r1 = document.getElementById('reste-1');
+      if (nb < 25) {
+        p1.className = 'palier active';
+        r1.textContent = `${25 - nb} place${25 - nb > 1 ? 's' : ''} restante${25 - nb > 1 ? 's' : ''}`;
+      } else {
+        p1.className = 'palier complet';
+        r1.textContent = 'Complet';
+      }
+
+      // Palier 2 : 25–100
+      const p2 = document.getElementById('palier-2');
+      const r2 = document.getElementById('reste-2');
+      if (nb >= 25 && nb < 100) {
+        p2.className = 'palier active';
+        r2.textContent = `${100 - nb} place${100 - nb > 1 ? 's' : ''} restante${100 - nb > 1 ? 's' : ''}`;
+      } else if (nb < 25) {
+        p2.className = 'palier';
+        r2.textContent = `75 places`;
+      } else {
+        p2.className = 'palier complet';
+        r2.textContent = 'Complet';
+      }
+
+      // Palier 3 : 100–300
+      const p3 = document.getElementById('palier-3');
+      const r3 = document.getElementById('reste-3');
+      if (nb >= 100 && nb < 300) {
+        p3.className = 'palier active';
+        r3.textContent = `${300 - nb} place${300 - nb > 1 ? 's' : ''} restante${300 - nb > 1 ? 's' : ''}`;
+      } else if (nb < 100) {
+        p3.className = 'palier';
+        r3.textContent = `200 places`;
+      } else {
+        p3.className = 'palier complet';
+        r3.textContent = 'Complet';
+      }
+    } catch(e) {
+      console.warn('Compteur offre:', e);
+    }
+  }
+
+  mettreAJourCompteurs();
+  setInterval(mettreAJourCompteurs, 30000);
+</script>
 </body>
 </html>
