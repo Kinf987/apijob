@@ -1320,7 +1320,7 @@
       </div>`).join('');
   }
 
-  // ── PORTFOLIO PHOTOS PRO ──
+  // ── PORTFOLIO PHOTOS PRO (lecture seule — gestion via Modifier mon profil) ──
   function renderPortfolioGrid() {
     const photosBody = document.getElementById('photos-pro-body');
     if (!photosBody) return;
@@ -1329,16 +1329,15 @@
     let html = '<div class="photos-grid">';
     for (let i = 0; i < SLOTS; i++) {
       if (photos[i]) {
-        html += `<div class="photo-slot" style="cursor:pointer;" onclick="supprimerPortfolioPhoto(${i})" title="Cliquer pour supprimer">
-          <img src="${photos[i]}" alt="Photo ${i+1}">
-          <div style="position:absolute;inset:0;background:rgba(26,0,8,0.45);opacity:0;transition:opacity 0.2s;display:flex;align-items:center;justify-content:center;font-size:1.4rem;border-radius:10px;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">🗑️</div>
-        </div>`;
+        html += `<div class="photo-slot"><img src="${photos[i]}" alt="Photo ${i+1}"></div>`;
       } else {
-        html += `<div class="photo-slot photo-slot-empty" onclick="ouvrirUploadPortfolio()" title="Ajouter une photo">+</div>`;
+        html += `<div class="photo-slot photo-slot-empty" style="cursor:default;pointer-events:none;opacity:0.35;">+</div>`;
       }
     }
     html += '</div>';
-    html += '<input type="file" id="portfolio-file-input" accept="image/*" style="display:none;" onchange="uploadPortfolioPhoto(this)">';
+    html += `<div style="margin-top:0.8rem;text-align:center;">
+      <a href="apijob-profil-edit.html" style="font-size:0.78rem;color:var(--rouge);text-decoration:none;font-weight:600;">✏️ Gérer mes photos →</a>
+    </div>`;
     photosBody.innerHTML = html;
     photosBody.classList.remove('photos-blank');
   }
