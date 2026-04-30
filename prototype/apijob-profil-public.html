@@ -78,6 +78,9 @@
   .badge-verifie { background:var(--vert-light); color:var(--vert); }
   .badge-pro { background:rgba(240,165,0,0.12); color:#B07800; }
   .badge-online { background:var(--vert-light); color:var(--vert); }
+  .badge-fondateur-or     { background:linear-gradient(135deg,#FFD700,#FFA500); color:#4A2800; border:1px solid rgba(255,165,0,0.4); }
+  .badge-fondateur-argent { background:linear-gradient(135deg,#E8E8E8,#B8B8B8); color:#2A2A2A; border:1px solid rgba(180,180,180,0.5); }
+  .badge-fondateur-bronze { background:linear-gradient(135deg,#CD7F32,#A0522D); color:#FFF3E0; border:1px solid rgba(160,82,45,0.4); }
   .profil-stars { display:flex; align-items:center; gap:0.4rem; margin-bottom:0.6rem; }
   .stars { color:var(--or); font-size:1rem; letter-spacing:1px; }
   .rating-num { font-family:'Syne',sans-serif; font-size:1rem; font-weight:800; }
@@ -391,6 +394,10 @@
       badgesEl.innerHTML = '';
       if (profile.is_verified) badgesEl.innerHTML += `<span class="badge badge-verifie">✅ Profil vérifié</span>`;
       if (profile.is_pro) badgesEl.innerHTML += `<span class="badge badge-pro">⭐ Pro</span>`;
+      const palier = profile.metadata?.pro_offer_palier;
+      if      (palier === 1) badgesEl.innerHTML += `<span class="badge badge-fondateur-or">🥇 Fondateur Or</span>`;
+      else if (palier === 2) badgesEl.innerHTML += `<span class="badge badge-fondateur-argent">🥈 Fondateur Argent</span>`;
+      else if (palier === 3) badgesEl.innerHTML += `<span class="badge badge-fondateur-bronze">🥉 Fondateur Bronze</span>`;
     }
 
     // --- Étoiles & note moyenne ---

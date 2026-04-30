@@ -843,8 +843,12 @@
         : `<span class="badge badge-actif">✅ Actif</span>`;
       if (statut === 'suspendu') badge = `<span class="badge badge-suspendu">⏸ Suspendu</span>`;
       if (statut === 'banni')    badge = `<span class="badge badge-banni">🚫 Banni</span>`;
-      const fondBadge = u.metadata?.fondateur
-        ? `<span class="badge" style="background:linear-gradient(135deg,#FFD700,#FFA500);color:#4A2800;margin-left:0.3rem;font-size:0.68rem;">🥇 Fondateur</span>`
+      const fondBadge = u.metadata?.pro_offer_palier === 1
+        ? `<span class="badge" style="background:linear-gradient(135deg,#FFD700,#FFA500);color:#4A2800;margin-left:0.3rem;font-size:0.68rem;">🥇 Mana</span>`
+        : u.metadata?.pro_offer_palier === 2
+        ? `<span class="badge" style="background:linear-gradient(135deg,#E8E8E8,#B8B8B8);color:#2A2A2A;margin-left:0.3rem;font-size:0.68rem;">🥈 Ari'i</span>`
+        : u.metadata?.pro_offer_palier === 3
+        ? `<span class="badge" style="background:linear-gradient(135deg,#CD7F32,#A0522D);color:#FFF3E0;margin-left:0.3rem;font-size:0.68rem;">🥉 Toa</span>`
         : '';
       const date = new Date(u.created_at).toLocaleDateString('fr-FR');
       return `<tr>
@@ -1222,8 +1226,12 @@
         const badge = u.is_pro
           ? `<span class="badge badge-pro">⭐ Pro</span>`
           : `<span class="badge badge-actif">✅ ${u.role === 'prestataire' ? 'Prestataire' : 'Client'}</span>`;
-        const fondBadge = u.metadata?.fondateur
-          ? `<span class="badge" style="background:linear-gradient(135deg,#FFD700,#FFA500);color:#4A2800;margin-left:0.3rem;">🥇 Fondateur</span>`
+        const fondBadge = u.metadata?.pro_offer_palier === 1
+          ? `<span class="badge" style="background:linear-gradient(135deg,#FFD700,#FFA500);color:#4A2800;margin-left:0.3rem;">🥇 Mana</span>`
+          : u.metadata?.pro_offer_palier === 2
+          ? `<span class="badge" style="background:linear-gradient(135deg,#E8E8E8,#B8B8B8);color:#2A2A2A;margin-left:0.3rem;">🥈 Ari'i</span>`
+          : u.metadata?.pro_offer_palier === 3
+          ? `<span class="badge" style="background:linear-gradient(135deg,#CD7F32,#A0522D);color:#FFF3E0;margin-left:0.3rem;">🥉 Toa</span>`
           : '';
         const date = new Date(u.created_at).toLocaleString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
         return `<tr>

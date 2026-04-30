@@ -271,12 +271,13 @@
   .badge-fondateur {
     font-size: 0.65rem; font-weight: 700;
     padding: 0.15rem 0.55rem; border-radius: 50px;
-    background: linear-gradient(135deg, #FFD700, #FFA500);
-    color: #4A2800; letter-spacing: 0.02em;
-    display: flex; align-items: center; gap: 0.2rem;
-    border: 1px solid rgba(255,165,0,0.35);
+    letter-spacing: 0.02em;
+    display: inline-flex; align-items: center; gap: 0.2rem;
     white-space: nowrap;
   }
+  .badge-fondateur.or     { background: linear-gradient(135deg,#FFD700,#FFA500); color:#4A2800; border:1px solid rgba(255,165,0,0.4); }
+  .badge-fondateur.argent { background: linear-gradient(135deg,#E8E8E8,#B8B8B8); color:#2A2A2A; border:1px solid rgba(180,180,180,0.5); }
+  .badge-fondateur.bronze { background: linear-gradient(135deg,#CD7F32,#A0522D); color:#FFF3E0; border:1px solid rgba(160,82,45,0.4); }
   .pro-zone {
     font-size: 0.78rem; color: var(--muted);
     display: flex; align-items: center; gap: 0.3rem;
@@ -683,7 +684,10 @@ function buildProCard(profile, avgNote, nbAvis) {
         ${titre ? `<div class="pro-titre">${escHTML(titre)}</div>` : ''}
         <div class="pro-badges">
           <span class="badge-pro">⭐ PRO</span>
-          ${meta.fondateur ? `<span class="badge-fondateur">🥇 Membre Fondateur</span>` : ''}
+          ${meta.pro_offer_palier === 1 ? `<span class="badge-fondateur or">🥇 Mana</span>`
+          : meta.pro_offer_palier === 2 ? `<span class="badge-fondateur argent">🥈 Ari'i</span>`
+          : meta.pro_offer_palier === 3 ? `<span class="badge-fondateur bronze">🥉 Toa</span>`
+          : ''}
           <span class="badge-verifie">✓ Vérifié</span>
         </div>
         <div class="pro-zone">📍 ${escHTML(zoneLabel)}</div>
