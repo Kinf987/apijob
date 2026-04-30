@@ -510,7 +510,7 @@
     }
 
     // --- Portfolio ---
-    const portfolio = profile.metadata?.portfolio;
+    const portfolio = profile.metadata?.photos || profile.metadata?.portfolio;
     if (Array.isArray(portfolio) && portfolio.length > 0) {
       const section = document.getElementById('section-portfolio');
       const grid    = document.getElementById('portfolio-grid');

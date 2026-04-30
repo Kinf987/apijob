@@ -923,7 +923,7 @@
     }
 
     // Portfolio existant
-    portfolioUrls = Array.isArray(meta.portfolio) ? [...meta.portfolio] : [];
+    portfolioUrls = Array.isArray(meta.photos) ? [...meta.photos] : (Array.isArray(meta.portfolio) ? [...meta.portfolio] : []);
     portfolioNew  = [];
     portfolioSuppr = [];
     renderPortfolioGrid();
@@ -996,7 +996,7 @@
       const metadata = {
         ...(currentUser.metadata || {}),
         titre, services, zones, disponibilites,
-        portfolio: portfolioUrls
+        photos: portfolioUrls
       };
 
       // Infos pro (prestataires)
