@@ -1174,22 +1174,27 @@
     set('stat-nb-annonces',     nbAnnonceMois || 0);
 
     // ── Bloc lancement ──
-    const nbProsActuels = nbPros || 0;
-    set('lancement-nb-pros', nbProsActuels);
+    set('lancement-nb-pros', nbPros || 0);
+
+    // Compteur historique des attributions (résistant aux suppressions de compte)
+    const { count: nbOffresAttribuees } = await db.from('transactions_jetons')
+      .select('id', { count: 'exact', head: true })
+      .eq('type', 'offre_lancement');
+    const nbHisto = nbOffresAttribuees || 0;
 
     // Paliers
-    const p1Reste = Math.max(0, 25  - nbProsActuels);
-    const p2Reste = Math.max(0, 100 - nbProsActuels);
-    const p3Reste = Math.max(0, 300 - nbProsActuels);
+    const p1Reste = Math.max(0, 25  - nbHisto);
+    const p2Reste = Math.max(0, 100 - nbHisto);
+    const p3Reste = Math.max(0, 300 - nbHisto);
     const p1El = document.getElementById('palier-1-reste');
     const p2El = document.getElementById('palier-2-reste');
     const p3El = document.getElementById('palier-3-reste');
-    if (p1El) p1El.textContent = nbProsActuels < 25  ? `${p1Reste} place${p1Reste > 1 ? 's' : ''} restante${p1Reste > 1 ? 's' : ''}` : '✓ Terminé';
-    if (p2El) p2El.textContent = nbProsActuels < 100 ? (nbProsActuels >= 25 ? `${p2Reste} restante${p2Reste > 1 ? 's' : ''}` : 'Pas encore actif') : '✓ Terminé';
-    if (p3El) p3El.textContent = nbProsActuels < 300 ? (nbProsActuels >= 100 ? `${p3Reste} restante${p3Reste > 1 ? 's' : ''}` : 'Pas encore actif') : '✓ Terminé';
+    if (p1El) p1El.textContent = nbHisto < 25  ? `${p1Reste} place${p1Reste > 1 ? 's' : ''} restante${p1Reste > 1 ? 's' : ''}` : '✓ Terminé';
+    if (p2El) p2El.textContent = nbHisto < 100 ? (nbHisto >= 25 ? `${p2Reste} restante${p2Reste > 1 ? 's' : ''}` : 'Pas encore actif') : '✓ Terminé';
+    if (p3El) p3El.textContent = nbHisto < 300 ? (nbHisto >= 100 ? `${p3Reste} restante${p3Reste > 1 ? 's' : ''}` : 'Pas encore actif') : '✓ Terminé';
 
     // Mettre en avant le palier actif
-    const palierActif = nbProsActuels < 25 ? 1 : nbProsActuels < 100 ? 2 : nbProsActuels < 300 ? 3 : 0;
+    const palierActif = nbHisto < 25 ? 1 : nbHisto < 100 ? 2 : nbHisto < 300 ? 3 : 0;
     if (palierActif > 0) {
       const activeEl = document.getElementById(`palier-${palierActif}`);
       if (activeEl) activeEl.style.boxShadow = '0 0 0 2px currentColor';
@@ -1380,9 +1385,9 @@
     // Appliquer l'offre lancement Pro si le prestataire n'est pas encore Pro
     const { data: profCible } = await db.from('profiles').select('is_pro, metadata').eq('id', userId).single();
     if (profCible && !profCible.is_pro) {
-      const { count: nbPros } = await db.from('profiles')
+      const { count: nbPros } = await db.from('transactions_jetons')
         .select('id', { count: 'exact', head: true })
-        .eq('is_pro', true).eq('role', 'prestataire');
+        .eq('type', 'offre_lancement');
       let offerMonths = 0, palierNum = 0;
       if      ((nbPros || 0) < 25)  { offerMonths = 12; palierNum = 1; }
       else if ((nbPros || 0) < 100) { offerMonths = 6;  palierNum = 2; }

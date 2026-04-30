@@ -605,9 +605,9 @@
           .eq('id', data.user.id);
 
         // Offre lancement Pro automatique (prestataires uniquement)
-        const { count: nbPros } = await db.from('profiles')
+        const { count: nbPros } = await db.from('transactions_jetons')
           .select('id', { count: 'exact', head: true })
-          .eq('is_pro', true).eq('role', 'prestataire');
+          .eq('type', 'offre_lancement');
         let offerMonths = 0, palierNum = 0;
         if      ((nbPros || 0) < 25)  { offerMonths = 12; palierNum = 1; }
         else if ((nbPros || 0) < 100) { offerMonths = 6;  palierNum = 2; }

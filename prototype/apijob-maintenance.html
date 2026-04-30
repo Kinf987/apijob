@@ -323,10 +323,9 @@
 
   async function mettreAJourCompteurs() {
     try {
-      const { count } = await db.from('profiles')
+      const { count } = await db.from('transactions_jetons')
         .select('id', { count: 'exact', head: true })
-        .eq('is_pro', true)
-        .eq('role', 'prestataire');
+        .eq('type', 'offre_lancement');
       const nb = count || 0;
 
       // Palier 1 : 0–25
