@@ -604,29 +604,6 @@
           })
           .eq('id', data.user.id);
 
-        // Offre lancement Pro automatique (prestataires uniquement)
-        const { count: nbPros } = await db.from('transactions_jetons')
-          .select('id', { count: 'exact', head: true })
-          .eq('type', 'offre_lancement');
-        let offerMonths = 0, palierNum = 0;
-        if      ((nbPros || 0) < 25)  { offerMonths = 12; palierNum = 1; }
-        else if ((nbPros || 0) < 100) { offerMonths = 6;  palierNum = 2; }
-        else if ((nbPros || 0) < 300) { offerMonths = 3;  palierNum = 3; }
-        if (offerMonths > 0) {
-          const expiry = new Date();
-          expiry.setMonth(expiry.getMonth() + offerMonths);
-          const expiryStr = expiry.toISOString().split('T')[0];
-          const { data: profFresh } = await db.from('profiles').select('metadata').eq('id', data.user.id).single();
-          const offerMeta = {
-            ...(profFresh?.metadata || {}),
-            pro_offer_months:  offerMonths,
-            pro_offer_palier:  palierNum,
-            pro_offer_expires: expiryStr,
-            ...(palierNum === 1 ? { fondateur: true } : {})
-          };
-          await db.from('profiles').update({ is_pro: true, metadata: offerMeta }).eq('id', data.user.id);
-          await db.from('transactions_jetons').insert({ user_id: data.user.id, type: 'offre_lancement', quantite: 0 });
-        }
       }
 
       // Déconnexion immédiate pour éviter session active pendant la confirmation

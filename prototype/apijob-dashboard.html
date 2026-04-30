@@ -299,6 +299,9 @@
     padding: 0.2rem 0.7rem; border-radius: 50px;
     margin: 0.4rem 0 0.8rem;
   }
+  .badge-mana   { display:inline-flex; align-items:center; gap:0.25rem; font-size:0.72rem; font-weight:700; padding:0.2rem 0.7rem; border-radius:50px; margin:0.25rem 0.2rem 0; background:linear-gradient(135deg,#FFD700,#FFA500); color:#4A2800; border:1px solid rgba(255,165,0,0.4); }
+  .badge-arii   { display:inline-flex; align-items:center; gap:0.25rem; font-size:0.72rem; font-weight:700; padding:0.2rem 0.7rem; border-radius:50px; margin:0.25rem 0.2rem 0; background:linear-gradient(135deg,#E8E8E8,#B8B8B8); color:#2A2A2A; border:1px solid rgba(180,180,180,0.5); }
+  .badge-toa    { display:inline-flex; align-items:center; gap:0.25rem; font-size:0.72rem; font-weight:700; padding:0.2rem 0.7rem; border-radius:50px; margin:0.25rem 0.2rem 0; background:linear-gradient(135deg,#CD7F32,#A0522D); color:#FFF3E0; border:1px solid rgba(160,82,45,0.4); }
   .profil-stars { color: var(--or); font-size: 0.85rem; }
   .profil-reviews { font-size: 0.75rem; color: var(--muted); margin-left: 0.3rem; }
   .profil-completude {
@@ -552,6 +555,7 @@
         <div class="profil-avatar">?</div>
         <div class="profil-name"></div>
         <div class="profil-badge" id="badge-verifie" style="display:none;">⭐ Pro vérifié</div>
+        <div id="badge-fondateur" style="display:none;"></div>
         <div>
           <span class="profil-stars">☆☆☆☆☆</span>
           <span class="profil-reviews">Pas encore d'avis</span>
@@ -804,6 +808,18 @@
       if (currentUser.is_pro) {
         const badgeVerifie = document.getElementById('badge-verifie');
         if (badgeVerifie) badgeVerifie.style.display = '';
+        const palier = currentUser.metadata?.pro_offer_palier;
+        const badgeFond = document.getElementById('badge-fondateur');
+        if (badgeFond && palier) {
+          const cfg = palier === 1 ? { cls: 'badge-mana',  label: '🥇 Mana'  }
+                    : palier === 2 ? { cls: 'badge-arii',  label: "🥈 Ari'i" }
+                    : palier === 3 ? { cls: 'badge-toa',   label: '🥉 Toa'   }
+                    : null;
+          if (cfg) {
+            badgeFond.innerHTML = `<span class="${cfg.cls}">${cfg.label}</span>`;
+            badgeFond.style.display = '';
+          }
+        }
         const btnAcheter = document.getElementById('btn-acheter-jetons');
         if (btnAcheter) btnAcheter.style.display = 'none';
         document.getElementById('jetons-sub').textContent = 'Abonnement Pro actif · Jetons illimités';
