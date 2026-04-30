@@ -35,11 +35,22 @@ async function getCurrentUser() {
     .single();
   if (error) { console.error('Profil introuvable:', error); return null; }
 
-  // Vérifier expiration Pro à chaque chargement
-  if (profile.is_pro && profile.metadata?.pro_cancel_scheduled) {
-    const expiry = new Date(profile.metadata.pro_cancel_scheduled);
-    if (expiry < new Date()) {
-      await db.from('profiles').update({ is_pro: false }).eq('id', session.user.id);
+  // Vérifier expiration Pro à chaque chargement (résiliation volontaire OU fin d'offre lancement)
+  if (profile.is_pro) {
+    const today        = new Date();
+    const cancelSched  = profile.metadata?.pro_cancel_scheduled;
+    const offerExpires = profile.metadata?.pro_offer_expires;
+    const expired = (cancelSched  && new Date(cancelSched)  < today)
+                 || (offerExpires && new Date(offerExpires) < today);
+    if (expired) {
+      const newMeta = { ...(profile.metadata || {}) };
+      delete newMeta.pro_cancel_scheduled;
+      delete newMeta.pro_offer_expires;
+      await db.from('profiles').update({
+        is_pro: false,
+        tokens: Math.max(3, profile.tokens || 3),
+        metadata: newMeta
+      }).eq('id', session.user.id);
       profile.is_pro = false;
     }
   }

@@ -819,17 +819,28 @@
 
         const billingEl = document.getElementById('jetons-billing-info');
         if (billingEl) {
-          const cancelDate = currentUser.metadata?.pro_cancel_scheduled;
+          const cancelDate   = currentUser.metadata?.pro_cancel_scheduled;
+          const offerExpires = currentUser.metadata?.pro_offer_expires;
+          const offerMonths  = currentUser.metadata?.pro_offer_months;
           const dateOpts = { day: 'numeric', month: 'long', year: 'numeric' };
-          // Renouvellement = date de souscription + 1 mois
-          const renewalDate = proTx ? (() => { const d = new Date(proTx.created_at); d.setMonth(d.getMonth() + 1); return d; })() : (() => { const d = new Date(); d.setMonth(d.getMonth() + 1); return d; })();
-          const periodeStr = proTx
-            ? new Date(proTx.created_at).toLocaleDateString('fr-FR', dateOpts)
-            : new Date().toLocaleDateString('fr-FR', dateOpts);
-          const finStr = (cancelDate ? new Date(cancelDate) : renewalDate).toLocaleDateString('fr-FR', dateOpts);
-          billingEl.innerHTML = cancelDate
-            ? `⚠️ Résiliation prévue le ${finStr}<br>Accès Pro maintenu jusqu\'à cette date`
-            : `Payé le ${periodeStr} · Renouvellement le ${finStr}`;
+          if (offerExpires) {
+            // Offre lancement Pro gratuite
+            const finStr = new Date(offerExpires).toLocaleDateString('fr-FR', dateOpts);
+            const duree  = offerMonths ? ` (${offerMonths} mois offerts)` : '';
+            billingEl.innerHTML = `🎁 Offre lancement — Accès Pro gratuit jusqu'au ${finStr}${duree}`;
+          } else if (cancelDate) {
+            // Résiliation volontaire en cours
+            const finStr = new Date(cancelDate).toLocaleDateString('fr-FR', dateOpts);
+            billingEl.innerHTML = `⚠️ Résiliation prévue le ${finStr}<br>Accès Pro maintenu jusqu\'à cette date`;
+          } else {
+            // Abonnement actif payant classique
+            const renewalDate = proTx ? (() => { const d = new Date(proTx.created_at); d.setMonth(d.getMonth() + 1); return d; })() : (() => { const d = new Date(); d.setMonth(d.getMonth() + 1); return d; })();
+            const periodeStr = proTx
+              ? new Date(proTx.created_at).toLocaleDateString('fr-FR', dateOpts)
+              : new Date().toLocaleDateString('fr-FR', dateOpts);
+            const finStr = renewalDate.toLocaleDateString('fr-FR', dateOpts);
+            billingEl.innerHTML = `Payé le ${periodeStr} · Renouvellement le ${finStr}`;
+          }
           billingEl.style.display = 'block';
         }
       }
