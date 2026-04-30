@@ -70,20 +70,32 @@ async function signOut() {
 // ============================================================
 
 async function checkMaintenance() {
+  // Cacher la page immédiatement pour éviter le flash avant la redirection
+  document.documentElement.style.visibility = 'hidden';
   try {
     const { data } = await db.from('site_config').select('maintenance_mode').eq('id', 1).single();
-    if (!data?.maintenance_mode) return;
+    if (!data?.maintenance_mode) {
+      document.documentElement.style.visibility = 'visible';
+      return;
+    }
     // Admin connecté → bypass
     const session = await getSession();
     if (session) {
       const { data: profile } = await db.from('profiles').select('role').eq('id', session.user.id).single();
-      if (profile?.role === 'admin') return;
+      if (profile?.role === 'admin') {
+        document.documentElement.style.visibility = 'visible';
+        return;
+      }
     }
+    // Maintenance active + non admin → redirection (page reste cachée)
     if (!window.location.pathname.includes('apijob-maintenance')) {
       window.location.replace('apijob-maintenance.html');
+    } else {
+      document.documentElement.style.visibility = 'visible';
     }
   } catch(e) {
-    // Table pas encore créée ou erreur réseau → on ne bloque pas
+    // Erreur réseau → on affiche quand même
+    document.documentElement.style.visibility = 'visible';
     console.warn('checkMaintenance:', e);
   }
 }
