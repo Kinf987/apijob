@@ -398,7 +398,15 @@
 
     // Charger le profil
     const { data: profile, error } = await db.from('profiles').select('*').eq('id', profileId).single();
-    if (error || !profile) return;
+    if (error || !profile) {
+      console.error('Profil non chargé:', error?.message, '| id:', profileId, '| session:', session?.user?.id);
+      document.body.innerHTML = `<div style="padding:3rem;text-align:center;font-family:sans-serif;color:#CC0A2B;">
+        <p style="font-size:1.1rem;font-weight:700;">Profil introuvable</p>
+        <p style="font-size:0.85rem;color:#666;margin-top:0.5rem;">${error?.message || 'Aucune donnée retournée'}</p>
+        <a href="javascript:history.back()" style="display:inline-block;margin-top:1.5rem;font-size:0.85rem;color:#CC0A2B;">← Retour</a>
+      </div>`;
+      return;
+    }
 
     const meta = profile.metadata || {};
 
