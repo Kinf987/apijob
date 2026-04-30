@@ -275,6 +275,12 @@
     <div class="step-dot" id="dot-4">4</div>
   </div>
 
+  <!-- BANNIÈRE DEVIS PRIVÉ (masquée par défaut, affichée par JS) -->
+  <div id="banniere-pro" style="display:none;background:rgba(240,165,0,0.1);border:1.5px solid rgba(240,165,0,0.35);border-radius:14px;padding:0.9rem 1.2rem;margin-bottom:1.2rem;display:none;align-items:center;gap:0.75rem;font-size:0.85rem;color:#8A6000;line-height:1.5;">
+    <span style="font-size:1.4rem;flex-shrink:0;">🎯</span>
+    <div><strong>Demande de devis privée</strong><br>Cette annonce sera envoyée <strong id="banniere-pro-nom"></strong> uniquement. Il sera le seul à pouvoir y répondre.</div>
+  </div>
+
   <div class="form-card">
 
     <!-- ÉTAPE 1 — CATÉGORIE -->
@@ -633,6 +639,18 @@
   let selectedCat = '';
   let selectedUrgence = '';
 
+  // Devis ciblé (depuis profil public)
+  const _params   = new URLSearchParams(window.location.search);
+  const _proId    = _params.get('pro_id')  || null;
+  const _proNom   = decodeURIComponent(_params.get('pro_nom') || '');
+  if (_proId) {
+    const banniere = document.getElementById('banniere-pro');
+    if (banniere) {
+      document.getElementById('banniere-pro-nom').textContent = `à ${_proNom || 'ce professionnel'}`;
+      banniere.style.display = 'flex';
+    }
+  }
+
   const communes = {
     Tahiti: [
       'Papeete', "Faa'a", 'Punaauia', 'Paea', 'Papara',
@@ -783,39 +801,47 @@
       const dateEl  = document.getElementById('input-date').value;
 
       const { data, error } = await db.from('annonces').insert({
-        client_id:     user.id,
-        titre:         titre.trim(),
-        description:   desc.trim(),
-        categorie:     selectedCat,
-        ile:           ile,
-        commune:       commune || null,
-        urgence:       urgence,
+        client_id:      user.id,
+        titre:          titre.trim(),
+        description:    desc.trim(),
+        categorie:      selectedCat,
+        ile:            ile,
+        commune:        commune || null,
+        urgence:        urgence,
         date_souhaitee: (urgence === 'Date précise' && dateEl) ? dateEl : null,
-        budget:        budget ? parseInt(budget) : null,
-        devis:         document.getElementById('input-devis').checked,
-        statut:        'active'
+        budget:         budget ? parseInt(budget) : null,
+        devis:          document.getElementById('input-devis').checked,
+        statut:         'active',
+        destinataire_id: _proId || null
       }).select().single();
 
       if (error) { throw error; }
 
-      // Notification au client
-      await createNotification(user.id, 'annonce_publiee', '✅ Annonce publiée !',
-        `Ton annonce "${titre}" est en ligne. Les prestataires vont bientôt te contacter.`);
-
-      // Notifier les prestataires dont les services correspondent à la catégorie
-      const { data: prestas } = await db
-        .from('profiles')
-        .select('id, metadata')
-        .eq('role', 'prestataire');
-      if (prestas) {
-        for (const p of prestas) {
-          const services = p.metadata?.services || [];
-          const catLow = selectedCat.toLowerCase();
-          if (services.some(s => s.replace(/^[^a-zA-ZÀ-ÿ]+/, '').toLowerCase() === catLow)) {
-            await createNotification(p.id, 'nouvelle_annonce',
-              `🔔 Nouvelle annonce : ${selectedCat}`,
-              `Une annonce "${titre}" vient d'être publiée dans ton domaine.`
-            );
+      if (_proId) {
+        // Devis privé — notifier uniquement le pro ciblé
+        await createNotification(user.id, 'annonce_publiee', '✅ Devis envoyé !',
+          `Ta demande de devis a été envoyée à ${_proNom || 'ce professionnel'}.`);
+        await createNotification(_proId, 'nouvelle_annonce', `🎯 Demande de devis privée`,
+          `${user.prenom || 'Un client'} t'a envoyé une demande de devis directement : "${titre}".`,
+          `apijob-annonces.html`);
+      } else {
+        // Annonce publique — notifier le client + prestataires du bon secteur
+        await createNotification(user.id, 'annonce_publiee', '✅ Annonce publiée !',
+          `Ton annonce "${titre}" est en ligne. Les prestataires vont bientôt te contacter.`);
+        const { data: prestas } = await db
+          .from('profiles')
+          .select('id, metadata')
+          .eq('role', 'prestataire');
+        if (prestas) {
+          for (const p of prestas) {
+            const services = p.metadata?.services || [];
+            const catLow = selectedCat.toLowerCase();
+            if (services.some(s => s.replace(/^[^a-zA-ZÀ-ÿ]+/, '').toLowerCase() === catLow)) {
+              await createNotification(p.id, 'nouvelle_annonce',
+                `🔔 Nouvelle annonce : ${selectedCat}`,
+                `Une annonce "${titre}" vient d'être publiée dans ton domaine.`
+              );
+            }
           }
         }
       }

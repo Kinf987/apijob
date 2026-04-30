@@ -530,11 +530,13 @@
 
   // ── CHARGER LES ANNONCES ──
   async function chargerAnnonces() {
-    const { data, error } = await db
-      .from('annonces')
-      .select('*')
-      .eq('statut', 'active')
-      .order('created_at', { ascending: false });
+    // Prestataires : annonces publiques + annonces ciblées vers eux
+    // Clients : toutes les annonces actives (pour voir ce qu'il y a)
+    let query = db.from('annonces').select('*').eq('statut', 'active');
+    if (currentUser?.role === 'prestataire') {
+      query = query.or(`destinataire_id.is.null,destinataire_id.eq.${currentUser.id}`);
+    }
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       document.getElementById('annonces-list').innerHTML = `

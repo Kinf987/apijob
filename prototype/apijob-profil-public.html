@@ -582,9 +582,10 @@
     const btnContacter = document.querySelector('.btn-contacter');
     if (btnContacter && currentUser) {
       if (currentUser.role === 'client') {
-        // Client connecté → publier une annonce
-        btnContacter.onclick = () => window.location.href = 'apijob-annonce.html';
-        btnContacter.innerHTML = '📋 Publier une annonce';
+        // Client connecté → demande de devis ciblée
+        const proNom = encodeURIComponent(`${profile.prenom || ''} ${profile.nom || ''}`.trim());
+        btnContacter.onclick = () => window.location.href = `apijob-annonce.html?pro_id=${profileId}&pro_nom=${proNom}`;
+        btnContacter.innerHTML = `📋 Demander un devis à ${profile.prenom || 'ce pro'}`;
       } else {
         // Prestataire connecté → masquer le bouton
         btnContacter.style.display = 'none';
